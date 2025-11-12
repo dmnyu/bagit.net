@@ -18,4 +18,8 @@
     <Using Include="Xunit" />
   </ItemGroup>
 
+  <ItemGroup>
+    <ProjectReference Include="..\bagit.net\bagit.net.csproj" />
+  </ItemGroup>
+
 </Project>
