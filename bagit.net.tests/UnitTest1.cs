@@ -1,35 +1,46 @@
-﻿namespace bagit.net.tests
+﻿using Microsoft.VisualBasic;
+
+namespace bagit.net.tests
 {
     public class BagitTests
     {
+        string TestDataDir = Path.Combine(AppContext.BaseDirectory, "TestData");
+        readonly static Bagit bagit = new Bagit();
+
         [Fact]
-        public void IsEquals_ReturnsTrue_WhenNumbersAreEqual()
+        public void CreateBag_Throws_On_Nonexistant_Directory()
         {
-            // Arrange
-            var bagit = new Bagit();
-            int a = 5;
-            int b = 5;
-
-            // Act
-            bool result = bagit.IsEquals(a, b);
-
-            // Assert
-            Assert.True(result);
+            Assert.Throws<DirectoryNotFoundException>(() =>
+                bagit.CreateBag(Path.Combine(TestDataDir, "Foo")));
         }
 
         [Fact]
-        public void IsEquals_ReturnsFalse_WhenNumbersAreNotEqual()
+        public void CreateBag_Throws_On_Null_Value()
         {
-            // Arrange
-            var bagit = new Bagit();
-            int a = 5;
-            int b = 10;
+            Assert.Throws<ArgumentNullException>(() =>
+                bagit.CreateBag(null));
+        }
 
-            // Act
-            bool result = bagit.IsEquals(a, b);
+        [Fact]
+        public void CreateBag_DoesNotThrow_On_ValidDirectory()
+        {
+            var validDir = Path.Combine(TestDataDir, "Dir");
+            var exception = Record.Exception(() => bagit.CreateBag(validDir));
+            Assert.Null(exception);
+        }
 
-            // Assert
-            Assert.False(result);
+        [Fact]
+        public void CreateBag_Created_Data_Dir()
+        {
+            Assert.True(Directory.Exists(Path.Combine(TestDataDir, "Dir", "data")));
+        }
+
+        [Fact]
+        public void CreateBag_Moved_Files()
+        {
+            Assert.True(File.Exists(Path.Combine(TestDataDir, "Dir", "data", "hello.txt")));
+            Assert.True(Directory.Exists(Path.Combine(TestDataDir, "Dir", "data", "subdir")));
+            Assert.True(File.Exists(Path.Combine(TestDataDir, "Dir", "data", "subdir", "test.txt")));
         }
     }
 }

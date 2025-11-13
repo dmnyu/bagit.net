@@ -22,4 +22,14 @@
     <ProjectReference Include="..\bagit.net\bagit.net.csproj" />
   </ItemGroup>
 
+  <ItemGroup>
+    <None Update="TestData\**\*">
+		<CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+	</None>
+  </ItemGroup>
+
+  <ItemGroup>
+    <Folder Include="TestData\Dir\subdir\" />
+  </ItemGroup>
+
 </Project>
