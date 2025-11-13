@@ -4,7 +4,7 @@ using bagit.net.cli.Commands;
 
 namespace bagit.net.cli;
 
-class Bagit
+class BagitCLI
 {
     const string VERSION = "0.1.0";
     static int Main(string[] args)

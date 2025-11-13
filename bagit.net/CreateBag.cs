@@ -40,10 +40,15 @@ namespace bagit.net
 
         internal void CreateTempDataDir()
         {
-            tempDataDir = Path.Combine(bagLocation, Guid.NewGuid().ToString());
+            Console.WriteLine("Creating data directory");
+            const string chars = "abcdefghijklmnopqrstuvwxyz0123456789";
+            var random = new Random();
+            var suffix = new string(Enumerable.Range(0, 8)
+                                             .Select(_ => chars[random.Next(chars.Length)])
+                                             .ToArray());
 
-            if (!Directory.Exists(tempDataDir))
-                Directory.CreateDirectory(tempDataDir);
+            tempDataDir = Path.Combine(bagLocation, $"tmp{suffix}");
+            Directory.CreateDirectory(tempDataDir);
         }
 
         internal void MoveContentsToTemp()
@@ -51,7 +56,9 @@ namespace bagit.net
             // Move all top-level files
             foreach (var file in Directory.GetFiles(bagLocation))
             {
-                var dest = Path.Combine(tempDataDir, Path.GetFileName(file));
+                var filename = Path.GetFileName(file);
+                var dest = Path.Combine(tempDataDir, filename);
+                Console.WriteLine($"Moving {filename} to {dest}");
                 File.Move(file, dest);
             }
 
@@ -61,13 +68,17 @@ namespace bagit.net
                 if (dir.Equals(tempDataDir, StringComparison.OrdinalIgnoreCase))
                     continue;
 
-                var destDir = Path.Combine(tempDataDir, Path.GetFileName(dir));
+                var dirName = Path.GetFileName(dir);
+                var destDir = Path.Combine(tempDataDir, dirName);
+                Console.WriteLine($"Moving {dirName} to {destDir}");
                 Directory.Move(dir, destDir);
             }
         }
 
         internal void MoveTempToDataDir()
         {
+            var tmpName = Path.GetFileName(tempDataDir);
+            Console.WriteLine($"Moving {tmpName} to data");
             Directory.Move(tempDataDir, dataDir);
         }
     }
