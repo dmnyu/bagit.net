@@ -6,17 +6,21 @@ namespace bagit.net.tests
 {
     public class TestCreateBag
     {
-        // Helper: creates temp folder, copies TestData, returns path
+        [Fact]
+        public void Get_Version()
+        {
+            Assert.NotEmpty(Bagit.VERSION);
+        }
 
 
         [Fact]
         public void CreateBag_Throws_On_Invalid_Directories()
         {
             var tempDir = PrepareTempTestData();
-            var bagit = new Bagit();
+            var bagger = new Bagger();
 
-            Assert.Throws<ArgumentNullException>(() => bagit.CreateBag(null));
-            Assert.Throws<DirectoryNotFoundException>(() => bagit.CreateBag(Path.Combine(tempDir, "Foo")));
+            Assert.Throws<ArgumentNullException>(() => bagger.CreateBag(null));
+            Assert.Throws<DirectoryNotFoundException>(() => bagger.CreateBag(Path.Combine(tempDir, "Foo")));
 
             Directory.Delete(tempDir, true);
         }
@@ -28,8 +32,8 @@ namespace bagit.net.tests
             var validDir = Path.Combine(tempDir, "dir");
             var dataDir = Path.Combine(validDir, "data");
 
-            var bagit = new Bagit();
-            var ex = Record.Exception(() => bagit.CreateBag(validDir));
+            var bagger = new Bagger();
+            var ex = Record.Exception(() => bagger.CreateBag(validDir));
             
             Assert.Null(ex);
             Assert.True(Directory.Exists(validDir));

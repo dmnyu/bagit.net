@@ -6,21 +6,14 @@ namespace bagit.net.cli;
 
 class BagitCLI
 {
-    const string VERSION = "0.1.0";
     static int Main(string[] args)
     {
         var app = new CommandApp();
         app.SetDefaultCommand<BagCommand>();
 
-        app.Configure(config =>
+        if (args[0] == "--version")
         {
-            config.AddCommand<ValidateCommand>("validate")
-                .WithDescription("Validate an existing BagIt bag.");
-        });
-
-        if (args.Length == 1 && args[0] == "--version")
-        {
-            AnsiConsole.MarkupLine($"[green]bagit.net v{VERSION}[/]");
+            AnsiConsole.MarkupLine($"[green]bagit.net {Bagit.VERSION}[/]");
             return 0;
         }
 

@@ -3,7 +3,7 @@ using System.IO;
 
 namespace bagit.net
 {
-    public class Bagit
+    public class Bagger
     {
         private string bagLocation = string.Empty;
         private string dataDir = string.Empty;

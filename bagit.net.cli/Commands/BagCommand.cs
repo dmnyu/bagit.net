@@ -19,8 +19,8 @@ class BagCommand : Command<BagCommand.Settings>
     {
         var bagPath = Path.GetFullPath(settings.Path!);
         AnsiConsole.MarkupLine($"[yellow]Creating bag for directory[/] {bagPath}");
-        var bagit = new Bagit();
-        bagit.CreateBag(bagPath);
+        var bagger = new Bagger();
+        bagger.CreateBag(bagPath);
         return 0;
     }
 }
