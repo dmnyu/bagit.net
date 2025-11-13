@@ -1,57 +1,74 @@
-﻿namespace bagit.net
+﻿using System;
+using System.IO;
+
+namespace bagit.net
 {
     public class Bagit
     {
         private string bagLocation = string.Empty;
         private string dataDir = string.Empty;
+        private string tempDataDir = string.Empty;
 
         public void CreateBag(string path)
         {
-            if (path == null)
-                throw new ArgumentNullException(nameof(path));
+            ArgumentNullException.ThrowIfNull(path);
 
             if (!Directory.Exists(path))
                 throw new DirectoryNotFoundException($"{path} does not exist");
 
             bagLocation = path;
-            createDataDir();
-            moveFiles();
+            dataDir = Path.Combine(bagLocation, "data");
+
+            if (Directory.Exists(dataDir))
+                throw new IOException($"Target data directory already exists: {dataDir}");
+
+            try
+            {
+                CreateTempDataDir();
+                MoveContentsToTemp();
+                MoveTempToDataDir();
+            }
+            catch (IOException ex)
+            {
+                throw new InvalidOperationException($"Failed to create bag at {path}", ex);
+            }
+            catch (UnauthorizedAccessException ex)
+            {
+                throw new InvalidOperationException($"Access denied when creating bag at {path}", ex);
+            }
         }
 
-        internal void createDataDir()
+        internal void CreateTempDataDir()
         {
-            dataDir = Path.Combine(bagLocation, Guid.NewGuid().ToString());
+            tempDataDir = Path.Combine(bagLocation, Guid.NewGuid().ToString());
 
-            if (!Directory.Exists(dataDir))
-                Directory.CreateDirectory(dataDir);
+            if (!Directory.Exists(tempDataDir))
+                Directory.CreateDirectory(tempDataDir);
         }
 
-        internal void moveFiles()
+        internal void MoveContentsToTemp()
         {
-            // Move all top-level files into the temp data folder
+            // Move all top-level files
             foreach (var file in Directory.GetFiles(bagLocation))
             {
-                File.Move(file, Path.Combine(dataDir, Path.GetFileName(file)));
+                var dest = Path.Combine(tempDataDir, Path.GetFileName(file));
+                File.Move(file, dest);
             }
 
-            // Move all subdirectories except the temp folder itself into the temp folder
+            // Move all top-level directories except the temp folder itself
             foreach (var dir in Directory.GetDirectories(bagLocation))
             {
-                // Skip the temp folder
-                if (dir.Equals(dataDir, StringComparison.OrdinalIgnoreCase))
+                if (dir.Equals(tempDataDir, StringComparison.OrdinalIgnoreCase))
                     continue;
 
-                var destDir = Path.Combine(dataDir, Path.GetFileName(dir));
+                var destDir = Path.Combine(tempDataDir, Path.GetFileName(dir));
                 Directory.Move(dir, destDir);
             }
+        }
 
-            // Rename the temp GUID folder to "data"
-            var finalDataDir = Path.Combine(bagLocation, "data");
-
-            Directory.Move(dataDir, finalDataDir);
-
-            // Update internal reference
-            dataDir = finalDataDir;
+        internal void MoveTempToDataDir()
+        {
+            Directory.Move(tempDataDir, dataDir);
         }
     }
 }
