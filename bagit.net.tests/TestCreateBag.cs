@@ -19,7 +19,7 @@ namespace bagit.net.tests
             var tempDir = PrepareTempTestData();
             var bagger = new Bagger();
 
-            Assert.Throws<ArgumentNullException>(() => bagger.CreateBag(null));
+            Assert.Throws<ArgumentNullException>(() => bagger.CreateBag(null!));
             Assert.Throws<DirectoryNotFoundException>(() => bagger.CreateBag(Path.Combine(tempDir, "Foo")));
 
             Directory.Delete(tempDir, true);
