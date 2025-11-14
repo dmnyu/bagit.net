@@ -12,10 +12,9 @@ namespace bagit.net
         private string tempDataDir = string.Empty;
         private string nl = Environment.NewLine;
 
-        public void CreateBag(string path)
+        public void CreateBag(string? path, ChecksumAlgorithm algorithm)
         {
-            ArgumentNullException.ThrowIfNull(path);
-
+            if (path == null) throw new ArgumentNullException("The path to a directory cannot be null");
             if (!Directory.Exists(path))
                 throw new DirectoryNotFoundException($"{path} does not exist");
 
@@ -31,6 +30,7 @@ namespace bagit.net
                 MoveContentsToTemp();
                 MoveTempToDataDir();
                 CreateBagitTXT();
+                Manifest.CreatePayloadManifest(bagLocation, algorithm);
             }
             catch (IOException ex)
             {

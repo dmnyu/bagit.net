@@ -20,7 +20,7 @@ namespace bagit.net
     }
     public static class Checksum
     {
-        public static string CalculateChecksum(string filePath, ChecksumAlgorithm algorithm)
+        public static string CalculateChecksum(string? filePath, ChecksumAlgorithm algorithm)
         {
             ArgumentNullException.ThrowIfNull(filePath);
             if (!File.Exists(filePath))
@@ -44,7 +44,7 @@ namespace bagit.net
             return Convert.ToHexString(hashBytes).ToLowerInvariant();
         }
 
-        public static bool CompareChecksum(string path, string checksum, ChecksumAlgorithm algorithm)
+        public static bool CompareChecksum(string? path, string checksum, ChecksumAlgorithm algorithm)
         {
             var cleanedChecksum = CleanChecksum(checksum, algorithm);
             if (cleanedChecksum is null)
@@ -79,6 +79,19 @@ namespace bagit.net
                 throw new ArgumentException($"the specified algorithm size for {algorithm} and the checksum size do not match.");
 
             return checksum;
+        }
+
+        internal static string GetAlgorithmCode(ChecksumAlgorithm algorithm)
+        {
+            switch (algorithm)
+            {
+                case ChecksumAlgorithm.MD5: return "md5";
+                case ChecksumAlgorithm.SHA1: return "sha1";
+                case ChecksumAlgorithm.SHA256: return "sha256";
+                case ChecksumAlgorithm.SHA384: return "sha384";
+                case ChecksumAlgorithm.SHA512: return "sha512";
+                default: throw new ArgumentException($"checksum algorithm: {algorithm} is not supported");
+            }
         }
     }
 

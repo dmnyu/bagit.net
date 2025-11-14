@@ -20,7 +20,7 @@ class BagCommand : Command<BagCommand.Settings>
         var bagPath = Path.GetFullPath(settings.Path!);
         AnsiConsole.MarkupLine($"[yellow]Creating bag for directory[/] {bagPath}");
         var bagger = new Bagger();
-        bagger.CreateBag(bagPath);
+        bagger.CreateBag(bagPath, ChecksumAlgorithm.MD5);
         return 0;
     }
 }

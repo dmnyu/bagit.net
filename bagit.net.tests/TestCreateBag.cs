@@ -5,8 +5,23 @@ using Xunit;
 
 namespace bagit.net.tests
 {
-    public class TestCreateBag
+    public class TestCreateBag : IDisposable
     {
+        private readonly string _tmpDir;
+        private readonly Bagger bagger;
+
+        public TestCreateBag()
+        {
+            _tmpDir = TestHelpers.PrepareTempTestData();
+            bagger = new Bagger();
+        }
+
+        public void Dispose()
+        {
+            if (Directory.Exists(_tmpDir))
+                Directory.Delete(_tmpDir, true);
+        }
+
         [Fact]
         public void Get_Version()
         {
@@ -18,68 +33,49 @@ namespace bagit.net.tests
         [Fact]
         public void CreateBag_Throws_On_Invalid_Directories()
         {
-            var tempDir = TestHelpers.PrepareTempTestData();
-            var bagger = new Bagger();
-
-            try
-            {
-                Assert.Throws<ArgumentNullException>(() => bagger.CreateBag(null!));
-                Assert.Throws<DirectoryNotFoundException>(() => bagger.CreateBag(Path.Combine(tempDir, "Foo")));
-            }
-            finally
-            {
-                Directory.Delete(tempDir, true);
-            }
+            Assert.Throws<ArgumentNullException>(() => bagger.CreateBag(null, ChecksumAlgorithm.MD5));
+            Assert.Throws<DirectoryNotFoundException>(() => bagger.CreateBag(Path.Combine(_tmpDir, "Foo"), ChecksumAlgorithm.MD5));
         }
 
         [Fact]
         public void Test_Bag_Exists()
         {
-            var tempDir = TestHelpers.PrepareTempTestData();
-            var validDir = Path.Combine(tempDir, "dir");
+
+            var validDir = Path.Combine(_tmpDir, "dir");
             var dataDir = Path.Combine(validDir, "data");
-
-            var bagger = new Bagger();
-            try
-            {
-                var ex = Record.Exception(() => bagger.CreateBag(validDir));
-
-                Assert.Null(ex);
-                Assert.True(Directory.Exists(validDir));
-                Assert.True(Directory.Exists(dataDir));
-                Assert.True(File.Exists(Path.Combine(dataDir, "hello.txt")));
-                Assert.True(Directory.Exists(Path.Combine(dataDir, "subdir")));
-                Assert.True(File.Exists(Path.Combine(dataDir, "subdir", "test.txt")));
-            }
-            finally
-            {
-                Directory.Delete(tempDir, true);
-            }
+            var ex = Record.Exception(() => bagger.CreateBag(validDir, ChecksumAlgorithm.MD5));
+            Assert.Null(ex);
+            Assert.True(Directory.Exists(validDir));
+            Assert.True(Directory.Exists(dataDir));
+            Assert.True(File.Exists(Path.Combine(dataDir, "hello.txt")));
+            Assert.True(Directory.Exists(Path.Combine(dataDir, "subdir")));
+            Assert.True(File.Exists(Path.Combine(dataDir, "subdir", "test.txt")));
         }
+
+
 
         [Fact]
         public void Test_Bag_Has_Valid_BagitTxt_File()
         {
-            var tempDir = TestHelpers.PrepareTempTestData();
-            try
-            {
-                var bagger = new Bagger();
-                bagger.CreateBag(tempDir);
-                var bagitTxt = Path.Combine(tempDir, "bagit.txt");
-                Assert.True(File.Exists(bagitTxt));
 
-                var content = File.ReadAllText(bagitTxt, Encoding.UTF8);
-                Assert.Contains($"BagIt-Version: {Bagit.BAGIT_VERSION}", content);
-                Assert.Contains("Tag-File-Character-Encoding: UTF-8", content);
+            bagger.CreateBag(_tmpDir, ChecksumAlgorithm.MD5);
+            var bagitTxt = Path.Combine(_tmpDir, "bagit.txt");
+            Assert.True(File.Exists(bagitTxt));
 
-                var lines = File.ReadAllLines(bagitTxt, Encoding.UTF8);
-                Assert.Equal(2, lines.Length);
-            }
-            finally
-            {
-                Directory.Delete(tempDir, true);
-            }
+            var content = File.ReadAllText(bagitTxt, Encoding.UTF8);
+            Assert.Contains($"BagIt-Version: {Bagit.BAGIT_VERSION}", content);
+            Assert.Contains("Tag-File-Character-Encoding: UTF-8", content);
+
+            var lines = File.ReadAllLines(bagitTxt, Encoding.UTF8);
+            Assert.Equal(2, lines.Length);
+
         }
 
+        [Fact]
+        public void Test_Bag_Has_Payload_Manifest()
+        {
+            bagger.CreateBag(_tmpDir, ChecksumAlgorithm.MD5);
+            Assert.True(File.Exists(Path.Combine(_tmpDir, "manifest-md5.txt")));
+        }
     }
 }

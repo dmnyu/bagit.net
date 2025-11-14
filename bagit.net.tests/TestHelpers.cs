@@ -10,7 +10,7 @@ namespace bagit.net.tests
     {
         public static string PrepareTempTestData()
         {
-            var tempDir = Path.Combine(Path.GetTempPath(), "BagitTest_" + Guid.NewGuid());
+            var tempDir = Path.Combine(Path.GetTempPath(), "$BagitTest_{Guid.NewGuid()}");
             var originalDir = Path.Combine(AppContext.BaseDirectory, "TestData");
 
             CopyDirectory(originalDir, tempDir);
@@ -22,10 +22,10 @@ namespace bagit.net.tests
         {
             Directory.CreateDirectory(destDir);
 
-            foreach (var file in Directory.GetFiles(sourceDir))
-                File.Copy(file, Path.Combine(destDir, Path.GetFileName(file)));
+            foreach (var file in Directory.EnumerateFiles(sourceDir))
+                File.Copy(file, Path.Combine(destDir, Path.GetFileName(file)), overwrite: true);
 
-            foreach (var dir in Directory.GetDirectories(sourceDir))
+            foreach (var dir in Directory.EnumerateDirectories(sourceDir))
                 CopyDirectory(dir, Path.Combine(destDir, Path.GetFileName(dir)));
         }
     }
