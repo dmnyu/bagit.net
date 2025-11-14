@@ -18,7 +18,7 @@ namespace bagit.net.tests
         [Fact]
         public void CreateBag_Throws_On_Invalid_Directories()
         {
-            var tempDir = PrepareTempTestData();
+            var tempDir = TestHelpers.PrepareTempTestData();
             var bagger = new Bagger();
 
             try
@@ -35,7 +35,7 @@ namespace bagit.net.tests
         [Fact]
         public void Test_Bag_Exists()
         {
-            var tempDir = PrepareTempTestData();
+            var tempDir = TestHelpers.PrepareTempTestData();
             var validDir = Path.Combine(tempDir, "dir");
             var dataDir = Path.Combine(validDir, "data");
 
@@ -60,7 +60,7 @@ namespace bagit.net.tests
         [Fact]
         public void Test_Bag_Has_Valid_BagitTxt_File()
         {
-            var tempDir = PrepareTempTestData();
+            var tempDir = TestHelpers.PrepareTempTestData();
             try
             {
                 var bagger = new Bagger();
@@ -81,26 +81,5 @@ namespace bagit.net.tests
             }
         }
 
-        //helper functions
-        private string PrepareTempTestData()
-        {
-            var tempDir = Path.Combine(Path.GetTempPath(), "BagitTest_" + Guid.NewGuid());
-            var originalDir = Path.Combine(AppContext.BaseDirectory, "TestData");
-
-            CopyDirectory(originalDir, tempDir);
-            return tempDir;
-        }
-
-       
-        private void CopyDirectory(string sourceDir, string destDir)
-        {
-            Directory.CreateDirectory(destDir);
-
-            foreach (var file in Directory.GetFiles(sourceDir))
-                File.Copy(file, Path.Combine(destDir, Path.GetFileName(file)));
-
-            foreach (var dir in Directory.GetDirectories(sourceDir))
-                CopyDirectory(dir, Path.Combine(destDir, Path.GetFileName(dir)));
-        }
     }
 }
