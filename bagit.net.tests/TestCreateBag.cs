@@ -1,5 +1,6 @@
 ﻿using System;
 using System.IO;
+using System.Text;
 using Xunit;
 
 namespace bagit.net.tests
@@ -10,6 +11,7 @@ namespace bagit.net.tests
         public void Get_Version()
         {
             Assert.NotEmpty(Bagit.VERSION);
+            Assert.Matches(@"^\d+\.\d+$", Bagit.BAGIT_VERSION);
         }
 
 
@@ -19,10 +21,15 @@ namespace bagit.net.tests
             var tempDir = PrepareTempTestData();
             var bagger = new Bagger();
 
-            Assert.Throws<ArgumentNullException>(() => bagger.CreateBag(null!));
-            Assert.Throws<DirectoryNotFoundException>(() => bagger.CreateBag(Path.Combine(tempDir, "Foo")));
-
-            Directory.Delete(tempDir, true);
+            try
+            {
+                Assert.Throws<ArgumentNullException>(() => bagger.CreateBag(null!));
+                Assert.Throws<DirectoryNotFoundException>(() => bagger.CreateBag(Path.Combine(tempDir, "Foo")));
+            }
+            finally
+            {
+                Directory.Delete(tempDir, true);
+            }
         }
 
         [Fact]
@@ -33,16 +40,45 @@ namespace bagit.net.tests
             var dataDir = Path.Combine(validDir, "data");
 
             var bagger = new Bagger();
-            var ex = Record.Exception(() => bagger.CreateBag(validDir));
-            
-            Assert.Null(ex);
-            Assert.True(Directory.Exists(validDir));
-            Assert.True(Directory.Exists(dataDir));
-            Assert.True(File.Exists(Path.Combine(dataDir, "hello.txt")));
-            Assert.True(Directory.Exists(Path.Combine(dataDir, "subdir")));
-            Assert.True(File.Exists(Path.Combine(dataDir, "subdir", "test.txt")));
+            try
+            {
+                var ex = Record.Exception(() => bagger.CreateBag(validDir));
 
-            Directory.Delete(tempDir, true);
+                Assert.Null(ex);
+                Assert.True(Directory.Exists(validDir));
+                Assert.True(Directory.Exists(dataDir));
+                Assert.True(File.Exists(Path.Combine(dataDir, "hello.txt")));
+                Assert.True(Directory.Exists(Path.Combine(dataDir, "subdir")));
+                Assert.True(File.Exists(Path.Combine(dataDir, "subdir", "test.txt")));
+            }
+            finally
+            {
+                Directory.Delete(tempDir, true);
+            }
+        }
+
+        [Fact]
+        public void Test_Bag_Has_Valid_BagitTxt_File()
+        {
+            var tempDir = PrepareTempTestData();
+            try
+            {
+                var bagger = new Bagger();
+                bagger.CreateBag(tempDir);
+                var bagitTxt = Path.Combine(tempDir, "bagit.txt");
+                Assert.True(File.Exists(bagitTxt));
+
+                var content = File.ReadAllText(bagitTxt, Encoding.UTF8);
+                Assert.Contains($"BagIt-Version: {Bagit.BAGIT_VERSION}", content);
+                Assert.Contains("Tag-File-Character-Encoding: UTF-8", content);
+
+                var lines = File.ReadAllLines(bagitTxt, Encoding.UTF8);
+                Assert.Equal(2, lines.Length);
+            }
+            finally
+            {
+                Directory.Delete(tempDir, true);
+            }
         }
 
         //helper functions
