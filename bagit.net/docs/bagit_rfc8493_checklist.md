@@ -1,18 +1,18 @@
 # 🧾 BagIt 1.0 (RFC 8493) Compliance Checklist
 
-## 📁 Bag Structure
-- [ ] Bag base directory exists.
-- [ ] Contains a `data/` directory with payload files.
-- [ ] Contains `bagit.txt` file at root with:
-  - [ ] `BagIt-Version: 1.0`
-  - [ ] `Tag-File-Character-Encoding: UTF-8`
+## 📁 Create A Bag
+- [X] Bag base directory exists.
+- [X] Contains a `data/` directory with payload files.
+- [X] Contains `bagit.txt` file at root with:
+  - [X] `BagIt-Version: 1.0`
+  - [X] `Tag-File-Character-Encoding: UTF-8`
 - [ ] At least one payload manifest (`manifest-<algorithm>.txt`).
 - [ ] No required file missing, no duplicate file paths.
 
 ## 🪪 Bag Declaration (`bagit.txt`)
-- [ ] Exactly two lines, properly terminated (`\r\n` or `\n` acceptable per platform).
-- [ ] Keys case-sensitive (`BagIt-Version`, `Tag-File-Character-Encoding`).
-- [ ] Encoding name must be a valid IANA encoding label (e.g. UTF-8).
+- [X] Exactly two lines, properly terminated (`\r\n` or `\n` acceptable per platform).
+- [X] Keys case-sensitive (`BagIt-Version`, `Tag-File-Character-Encoding`).
+- [X] Encoding name must be a valid IANA encoding label (e.g. UTF-8).
 
 ## 🧩 Payload Manifests
 - [ ] Each `manifest-<alg>.txt` matches `<alg>` supported by implementation (e.g., `sha256`, `sha512`).
@@ -29,9 +29,10 @@
 - [ ] Tag files themselves excluded from payload manifests.
 
 ## 🧮 Algorithms & Checksums
-- [ ] Must support **SHA-256**.
-- [ ] Should support **SHA-512**.
-- [ ] May support MD5 or SHA-1 for legacy bags.
+- [X] Must support **SHA-256**.
+- [X] Should support **SHA-512**.
+- [X] May support MD5 or SHA-1 for legacy bags.
+- [X] Supports SHA-384 (why not)
 - [ ] When validating, check that manifest’s algorithm matches filename.
 - [ ] For new bags, use consistent algorithm for all manifests.
 
@@ -56,10 +57,10 @@
 - **Valid** = complete + all checksums match.
 
 ## 🧰 Suggested Features for `bagit.net`
-- [ ] `bagit.net --version`
-- [ ] `bagit.net --validate <path>`
-- [ ] `bagit.net <path>` → create new bag.
-- [ ] `bagit.net --algorithm sha512` → choose digest algorithm.
+- [ ] `bagit.net-cli --version` → print the version of bagit.net and the bagit specification version
+- [ ] `bagit.net-cli --validate <path>`
+- [ ] `bagit.net-cli <path>` → create new bag, by default use sha256 and sha512 algorithms.
+- [ ] `bagit.net --md5Sum --sha1Sum <path>` → support multiple digest algorithm.
 - [ ] Verbose / quiet modes for progress.
 - [ ] Human-readable validation report.
 - [ ] JSON validation report output (optional).
