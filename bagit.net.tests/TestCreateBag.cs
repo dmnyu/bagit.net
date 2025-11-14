@@ -63,7 +63,6 @@ namespace bagit.net.tests
             var tempDir = PrepareTempTestData();
             try
             {
-                
                 var bagger = new Bagger();
                 bagger.CreateBag(tempDir);
                 var bagitTxt = Path.Combine(tempDir, "bagit.txt");
