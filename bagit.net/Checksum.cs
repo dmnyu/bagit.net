@@ -71,6 +71,7 @@ namespace bagit.net
                 ChecksumAlgorithm.MD5 => 32,
                 ChecksumAlgorithm.SHA1 => 40,
                 ChecksumAlgorithm.SHA256 => 64,
+                ChecksumAlgorithm.SHA384 => 96,
                 ChecksumAlgorithm.SHA512 => 128,
                 _ => 0
             };
