@@ -1,5 +1,7 @@
 ﻿using System;
 using System.IO;
+using System.Runtime.InteropServices;
+using System.Text;
 
 namespace bagit.net
 {
@@ -8,6 +10,7 @@ namespace bagit.net
         private string bagLocation = string.Empty;
         private string dataDir = string.Empty;
         private string tempDataDir = string.Empty;
+        private string nl = Environment.NewLine;
 
         public void CreateBag(string path)
         {
@@ -27,6 +30,7 @@ namespace bagit.net
                 CreateTempDataDir();
                 MoveContentsToTemp();
                 MoveTempToDataDir();
+                CreateBagitTXT();
             }
             catch (IOException ex)
             {
@@ -80,6 +84,16 @@ namespace bagit.net
             var tmpName = Path.GetFileName(tempDataDir);
             Console.WriteLine($"Moving {tmpName} to data");
             Directory.Move(tempDataDir, dataDir);
+        }
+
+        internal void CreateBagitTXT()
+        {
+            var bagitTxt = Path.Combine(bagLocation, "bagit.txt");
+            if (!System.Text.RegularExpressions.Regex.IsMatch(Bagit.BAGIT_VERSION, @"^\d+\.\d+$"))
+                throw new InvalidOperationException($"Invalid BagIt version: {Bagit.BAGIT_VERSION}. Must be in 'major.minor' format.");
+
+            var content = $"BagIt-Version: {Bagit.BAGIT_VERSION}{nl}Tag-File-Character-Encoding: UTF-8{nl}";
+            File.WriteAllText(bagitTxt, content, Encoding.UTF8);
         }
     }
 }
