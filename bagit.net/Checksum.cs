@@ -1,9 +1,11 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.IO;
+using System.IO.Enumeration;
 using System.Linq;
 using System.Security.Cryptography;
 using System.Text;
+using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 
 namespace bagit.net
@@ -44,10 +46,40 @@ namespace bagit.net
 
         public static bool CompareChecksum(string path, string checksum, ChecksumAlgorithm algorithm)
         {
+            var cleanedChecksum = CleanChecksum(checksum, algorithm);
+            if (cleanedChecksum is null)
+                return false;
+
             var calculatedMD5 = CalculateChecksum(path, algorithm);
 
-            return calculatedMD5.Equals(checksum, StringComparison.OrdinalIgnoreCase);
+            return calculatedMD5.Equals(cleanedChecksum, StringComparison.OrdinalIgnoreCase);
+        }
 
+        private static string CleanChecksum(string checksum, ChecksumAlgorithm algorithm)
+        {
+            if (string.IsNullOrWhiteSpace(checksum))
+                throw new ArgumentNullException("the checksum passed is blank or null");
+
+
+            checksum = checksum.Trim();
+
+            checksum = checksum.ToLowerInvariant();
+
+            checksum = Regex.Replace(checksum, @"[^0-9A-Fa-f]", "");
+            int expectedLen = algorithm switch
+            {
+                ChecksumAlgorithm.MD5 => 32,
+                ChecksumAlgorithm.SHA1 => 40,
+                ChecksumAlgorithm.SHA256 => 64,
+                ChecksumAlgorithm.SHA512 => 128,
+                _ => 0
+            };
+
+            if (expectedLen > 0 && checksum.Length != expectedLen)
+                throw new ArgumentException($"the specified algorithm size for {algorithm} and the checksum size do not match.");
+
+            return checksum;
         }
     }
+
 }
