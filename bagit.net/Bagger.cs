@@ -21,9 +21,6 @@ namespace bagit.net
             bagLocation = path;
             dataDir = Path.Combine(bagLocation, "data");
 
-            if (Directory.Exists(dataDir))
-                throw new IOException($"Target data directory already exists: {dataDir}");
-
             try
             {
                 CreateTempDataDir();
@@ -31,6 +28,7 @@ namespace bagit.net
                 MoveTempToDataDir();
                 Manifest.CreatePayloadManifest(bagLocation, algorithm);
                 CreateBagitTXT();
+                BagInfo.CreateBagInfo(bagLocation);
             }
             catch (IOException ex)
             {
