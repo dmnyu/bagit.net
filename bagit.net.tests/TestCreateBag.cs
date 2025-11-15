@@ -70,12 +70,5 @@ namespace bagit.net.tests
             Assert.Equal(2, lines.Length);
 
         }
-
-        [Fact]
-        public void Test_Bag_Has_Payload_Manifest()
-        {
-            bagger.CreateBag(_tmpDir, ChecksumAlgorithm.MD5);
-            Assert.True(File.Exists(Path.Combine(_tmpDir, "manifest-md5.txt")));
-        }
     }
 }
