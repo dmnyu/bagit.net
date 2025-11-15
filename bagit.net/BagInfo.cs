@@ -31,7 +31,7 @@ namespace bagit.net
             long numBytes = 0;
             
             if (!Directory.Exists(dataDir))
-                throw new ArgumentException();
+                throw new ArgumentException($"Data directory does not exist: {dataDir}");
 
             foreach (var file in Directory.EnumerateFiles(dataDir, "*", SearchOption.AllDirectories))
             {
