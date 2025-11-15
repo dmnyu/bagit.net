@@ -14,7 +14,7 @@ namespace bagit.net
 
         public void CreateBag(string? path, ChecksumAlgorithm algorithm)
         {
-            if (path == null) throw new ArgumentNullException("The path to a directory cannot be null");
+            if (path == null) throw new ArgumentNullException(nameof(path), "The path to a directory cannot be null");
             if (!Directory.Exists(path))
                 throw new DirectoryNotFoundException($"{path} does not exist");
 
