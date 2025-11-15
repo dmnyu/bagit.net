@@ -51,7 +51,7 @@ namespace bagit.net
                 {
                     var parts = line.Split(": ", 2);
                     if (parts.Length != 2)
-                        throw new FormatException($"Invalid manifest line: {line}");
+                        throw new FormatException($"Invalid bag-info.txt line: {line}");
                     return new KeyValuePair<string, string>(parts[0].Trim(), parts[1].Trim());
                 })
                 .ToList();
