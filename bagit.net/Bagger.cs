@@ -12,10 +12,9 @@ namespace bagit.net
         private string tempDataDir = string.Empty;
         private string nl = Environment.NewLine;
 
-        public void CreateBag(string path)
+        public void CreateBag(string? path, ChecksumAlgorithm algorithm)
         {
-            ArgumentNullException.ThrowIfNull(path);
-
+            if (path == null) throw new ArgumentNullException(nameof(path), "The path to a directory cannot be null");
             if (!Directory.Exists(path))
                 throw new DirectoryNotFoundException($"{path} does not exist");
 
@@ -30,6 +29,7 @@ namespace bagit.net
                 CreateTempDataDir();
                 MoveContentsToTemp();
                 MoveTempToDataDir();
+                Manifest.CreatePayloadManifest(bagLocation, algorithm);
                 CreateBagitTXT();
             }
             catch (IOException ex)
@@ -82,12 +82,13 @@ namespace bagit.net
         internal void MoveTempToDataDir()
         {
             var tmpName = Path.GetFileName(tempDataDir);
-            Console.WriteLine($"Moving {tmpName} to data");
+            Console.WriteLine($"Moving {tempDataDir} to data");
             Directory.Move(tempDataDir, dataDir);
         }
 
         internal void CreateBagitTXT()
         {
+            Console.WriteLine("Creating bagit.txt");
             var bagitTxt = Path.Combine(bagLocation, "bagit.txt");
             if (!System.Text.RegularExpressions.Regex.IsMatch(Bagit.BAGIT_VERSION, @"^\d+\.\d+$"))
                 throw new InvalidOperationException($"Invalid BagIt version: {Bagit.BAGIT_VERSION}. Must be in 'major.minor' format.");

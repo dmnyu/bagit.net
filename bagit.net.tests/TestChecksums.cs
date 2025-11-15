@@ -80,10 +80,10 @@ namespace bagit.net.tests
         [InlineData("")]
         [InlineData("     ")]
         [InlineData(null)]
-        public void Test_Blank_Checksum(string checksum)
+        public void Test_Blank_Checksum(string? checksum)
         {
             var file = Path.Combine(_tmpDir, "Dir", "hello.txt");
-            Assert.Throws<ArgumentNullException>(() => Checksum.CompareChecksum(file, checksum, ChecksumAlgorithm.SHA512));
+            Assert.Throws<ArgumentNullException>(() => Checksum.CompareChecksum(file, checksum!, ChecksumAlgorithm.SHA512));
         }
 
     private void AssertFileChecksum(string filePath, string expected, ChecksumAlgorithm algorithm) =>
