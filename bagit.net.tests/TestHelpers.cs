@@ -10,7 +10,7 @@ namespace bagit.net.tests
     {
         public static string PrepareTempTestData()
         {
-            var tempDir = Path.Combine(Path.GetTempPath(), "$BagitTest_{Guid.NewGuid()}");
+            var tempDir = Path.Combine(Path.GetTempPath(), $"BagitTest_{Guid.NewGuid()}");
             var originalDir = Path.Combine(AppContext.BaseDirectory, "TestData");
 
             CopyDirectory(originalDir, tempDir);
