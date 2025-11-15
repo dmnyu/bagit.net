@@ -33,7 +33,7 @@ namespace bagit.net.tests
             var tmpDir = TestHelpers.PrepareTempTestData();
             var bagger = new Bagger();
             var algorithmCode = Checksum.GetAlgorithmCode(algorithm);
-            bagger.CreateBag(_tmpDir, algorithm);
+            bagger.CreateBag(tmpDir, algorithm);
             Assert.True(File.Exists(Path.Combine(tmpDir, $"manifest-{algorithmCode}.txt")));
         }
 
