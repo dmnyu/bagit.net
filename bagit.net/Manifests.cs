@@ -12,15 +12,17 @@ namespace bagit.net
     {
         public static void CreatePayloadManifest(string bagRoot, ChecksumAlgorithm algorithm)
         {
+            var algorithmCode = Checksum.GetAlgorithmCode(algorithm);
+            Console.WriteLine($"Using 1 processes to generate manifests:{algorithmCode}");
             var manifestContent = new StringBuilder();
             var fileEntries = GetPayloadFiles(bagRoot);
             foreach (var entry in fileEntries)
             {
+                Console.WriteLine($"Generating manifest lines for file {entry}");
                 var checksum = Checksum.CalculateChecksum(Path.Combine(bagRoot, entry), algorithm);
                 manifestContent.AppendLine($"{checksum} {entry}");
             }
 
-            var algorithmCode = Checksum.GetAlgorithmCode(algorithm);
             var manifestFilename = Path.Combine(bagRoot, $"manifest-{algorithmCode}.txt");
             File.WriteAllText(manifestFilename, manifestContent.ToString(), Encoding.UTF8);
         }
@@ -38,6 +40,20 @@ namespace bagit.net
                 relativePath = relativePath.Replace(Path.DirectorySeparatorChar, '/');
                 yield return relativePath;
             }
+        }
+
+        public static List<KeyValuePair<string, string>> GetManifestAsKeyValuePairs(string manifestPath)
+        {
+            return File.ReadAllLines(manifestPath)
+                .Where(line => !string.IsNullOrWhiteSpace(line))
+                .Select(line =>
+                {
+                    var parts = line.Split(' ', 2);
+                    if (parts.Length != 2)
+                        throw new FormatException($"Invalid manifest line: {line}");
+                    return new KeyValuePair<string, string>(parts[0].Trim(), parts[1].Trim());
+                })
+                .ToList();
         }
     }
 }

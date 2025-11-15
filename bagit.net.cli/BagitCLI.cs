@@ -17,6 +17,12 @@ class BagitCLI
             return 0;
         }
 
+        app.Configure(config =>
+        {
+            config.AddCommand<BagCommand>("create")
+                  .WithDescription("Create a BagIt bag from a directory.");
+        });
+
         return app.Run(args);
     }
 }

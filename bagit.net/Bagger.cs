@@ -29,8 +29,8 @@ namespace bagit.net
                 CreateTempDataDir();
                 MoveContentsToTemp();
                 MoveTempToDataDir();
-                CreateBagitTXT();
                 Manifest.CreatePayloadManifest(bagLocation, algorithm);
+                CreateBagitTXT();
             }
             catch (IOException ex)
             {
@@ -82,12 +82,13 @@ namespace bagit.net
         internal void MoveTempToDataDir()
         {
             var tmpName = Path.GetFileName(tempDataDir);
-            Console.WriteLine($"Moving {tmpName} to data");
+            Console.WriteLine($"Moving {tempDataDir} to data");
             Directory.Move(tempDataDir, dataDir);
         }
 
         internal void CreateBagitTXT()
         {
+            Console.WriteLine("Creating bagit.txt");
             var bagitTxt = Path.Combine(bagLocation, "bagit.txt");
             if (!System.Text.RegularExpressions.Regex.IsMatch(Bagit.BAGIT_VERSION, @"^\d+\.\d+$"))
                 throw new InvalidOperationException($"Invalid BagIt version: {Bagit.BAGIT_VERSION}. Must be in 'major.minor' format.");
