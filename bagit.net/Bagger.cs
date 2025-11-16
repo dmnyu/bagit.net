@@ -29,6 +29,7 @@ namespace bagit.net
                 Manifest.CreatePayloadManifest(bagLocation, algorithm);
                 CreateBagitTXT();
                 BagInfo.CreateBagInfo(bagLocation);
+                Manifest.CreateTagManifestFile(bagLocation, algorithm);
             }
             catch (IOException ex)
             {
@@ -92,7 +93,7 @@ namespace bagit.net
                 throw new InvalidOperationException($"Invalid BagIt version: {Bagit.BAGIT_VERSION}. Must be in 'major.minor' format.");
 
             var content = $"BagIt-Version: {Bagit.BAGIT_VERSION}{nl}Tag-File-Character-Encoding: UTF-8{nl}";
-            File.WriteAllText(bagitTxt, content, Encoding.UTF8);
+            File.WriteAllText(bagitTxt, content, new UTF8Encoding(encoderShouldEmitUTF8Identifier: false));
         }
     }
 }

@@ -8,11 +8,13 @@ namespace bagit.net.tests
     public class TestCreateBag : IDisposable
     {
         private readonly string _tmpDir;
+        private readonly string _testDir;
         private readonly Bagger bagger;
 
         public TestCreateBag()
         {
             _tmpDir = TestHelpers.PrepareTempTestData();
+            _testDir = Path.Combine(_tmpDir, "test-bag");
             bagger = new Bagger();
         }
 
@@ -41,11 +43,10 @@ namespace bagit.net.tests
         public void Test_Bag_Exists()
         {
 
-            var validDir = Path.Combine(_tmpDir, "dir");
-            var dataDir = Path.Combine(validDir, "data");
-            var ex = Record.Exception(() => bagger.CreateBag(validDir, ChecksumAlgorithm.MD5));
+            var dataDir = Path.Combine(_testDir, "data");
+            var ex = Record.Exception(() => bagger.CreateBag(_testDir, ChecksumAlgorithm.MD5));
             Assert.Null(ex);
-            Assert.True(Directory.Exists(validDir));
+            Assert.True(Directory.Exists(_testDir));
             Assert.True(Directory.Exists(dataDir));
             Assert.True(File.Exists(Path.Combine(dataDir, "hello.txt")));
             Assert.True(Directory.Exists(Path.Combine(dataDir, "subdir")));
@@ -58,8 +59,8 @@ namespace bagit.net.tests
         public void Test_Bag_Has_Valid_BagitTxt_File()
         {
 
-            bagger.CreateBag(_tmpDir, ChecksumAlgorithm.MD5);
-            var bagitTxt = Path.Combine(_tmpDir, "bagit.txt");
+            bagger.CreateBag(_testDir, ChecksumAlgorithm.MD5);
+            var bagitTxt = Path.Combine(_testDir, "bagit.txt");
             Assert.True(File.Exists(bagitTxt));
 
             var content = File.ReadAllText(bagitTxt, Encoding.UTF8);

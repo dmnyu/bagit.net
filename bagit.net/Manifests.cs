@@ -1,10 +1,11 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using System.IO;
 using System.IO.Enumeration;
+using System.Linq;
+using System.Security.Cryptography;
+using System.Text;
+using System.Threading.Tasks;
 
 namespace bagit.net
 {
@@ -24,7 +25,24 @@ namespace bagit.net
             }
 
             var manifestFilename = Path.Combine(bagRoot, $"manifest-{algorithmCode}.txt");
-            File.WriteAllText(manifestFilename, manifestContent.ToString(), Encoding.UTF8);
+            File.WriteAllText(manifestFilename, manifestContent.ToString(), new UTF8Encoding(encoderShouldEmitUTF8Identifier: false));
+        }
+
+        public static void CreateTagManifestFile(string bagRoot, ChecksumAlgorithm algorithm)
+        {
+            var algorithmCode = Checksum.GetAlgorithmCode(algorithm);
+            var manifestFilename = Path.Combine(bagRoot, $"tagmanifest-{algorithmCode}.txt");
+            Console.WriteLine($"Creating {manifestFilename}");
+            
+            StringBuilder sb  = new StringBuilder();
+            var fileEntries = GetRootFiles(bagRoot);
+            foreach (var entry in fileEntries)
+            {
+                var checksum = Checksum.CalculateChecksum(Path.Combine(bagRoot, entry), algorithm);
+                sb.AppendLine($"{checksum} {entry}");
+            }
+            
+            File.WriteAllText(manifestFilename, sb.ToString(), new UTF8Encoding(encoderShouldEmitUTF8Identifier: false));
         }
 
         internal static IEnumerable<string> GetPayloadFiles(string bagRoot)
@@ -35,6 +53,16 @@ namespace bagit.net
                 yield break;
 
             foreach (var file in Directory.EnumerateFiles(dataDir, "*", SearchOption.AllDirectories))
+            {
+                string relativePath = Path.GetRelativePath(bagRoot, file);
+                relativePath = relativePath.Replace(Path.DirectorySeparatorChar, '/');
+                yield return relativePath;
+            }
+        }
+
+        internal static IEnumerable<string> GetRootFiles(string bagRoot)
+        {
+            foreach (var file in Directory.EnumerateFiles(bagRoot, "*", SearchOption.TopDirectoryOnly))
             {
                 string relativePath = Path.GetRelativePath(bagRoot, file);
                 relativePath = relativePath.Replace(Path.DirectorySeparatorChar, '/');

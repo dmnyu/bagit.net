@@ -12,6 +12,7 @@ namespace bagit.net
 
         public static void CreateBagInfo(string bagDir)
         {
+            Console.WriteLine("Creating bag-info.txt");
             var oxum = GetOxum(bagDir);
             var sb = new StringBuilder();
 
@@ -21,7 +22,7 @@ namespace bagit.net
             sb.AppendLine($"Payload-Oxum: {oxum}");
 
             var bagInfoFile = Path.Combine(bagDir, "bag-info.txt");
-            File.WriteAllText(bagInfoFile, sb.ToString(), Encoding.UTF8);
+            File.WriteAllText(bagInfoFile, sb.ToString(), new UTF8Encoding(encoderShouldEmitUTF8Identifier: false));
         }
 
         internal static string GetOxum(string bagRoot)
