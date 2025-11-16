@@ -10,10 +10,13 @@ namespace bagit.net.tests
     public class TestChecksums : IDisposable
     {
         private readonly string _tmpDir;
+        private readonly string _testDir;
+
 
         public TestChecksums()
         {
             _tmpDir = TestHelpers.PrepareTempTestData();
+            _testDir = Path.Combine(_tmpDir, "test-bag");
         }
 
         public void Dispose()
@@ -46,14 +49,14 @@ namespace bagit.net.tests
         [InlineData(ChecksumAlgorithm.SHA512, "3615f80c9d293ed7402687f94b22d58e529b8cc7916f8fac7fddf7fbd5af4cf777d3d795a7a00a16bf7e7f3fb9561ee9baae480da9fe7a18769e71886b03f315")]
         public void Test_Calculate_Checksums_For_File(ChecksumAlgorithm algorithm, string checksum)
         {
-            var file = Path.Combine(_tmpDir, "Dir", "hello.txt");
+            var file = Path.Combine(_testDir, "hello.txt");
             AssertFileChecksum(file, checksum, algorithm);
         }
 
         [Fact]
         public void Test_Compare_Invalid_Checksum_For_File()
         {
-                var file = Path.Combine(_tmpDir, "Dir", "hello.txt");
+                var file = Path.Combine(_testDir, "hello.txt");
                 Assert.False(Checksum.CompareChecksum(file, "d41d8cd98f00b204e9800998ecf8427e", ChecksumAlgorithm.MD5));
  
         }
@@ -65,14 +68,14 @@ namespace bagit.net.tests
         [InlineData("8b1a9953-c461-1296-a827-abf8c47804d7")]
         public void Test_Checksum_Variants(string variant)
         {
-            var file = Path.Combine(_tmpDir, "Dir", "hello.txt");
+            var file = Path.Combine(_testDir, "hello.txt");
             Assert.True(Checksum.CompareChecksum(file, variant, ChecksumAlgorithm.MD5));   
         }
 
         [Fact]
         public void Test_Checksum_Algorithm_Mismatch()
         {
-            var file = Path.Combine(_tmpDir, "Dir", "hello.txt");
+            var file = Path.Combine(_testDir, "hello.txt");
             Assert.Throws<ArgumentException>(() => Checksum.CompareChecksum(file, "8b1a9953c4611296a827abf8c47804d7", ChecksumAlgorithm.SHA1));
         }
 
@@ -82,7 +85,7 @@ namespace bagit.net.tests
         [InlineData(null)]
         public void Test_Blank_Checksum(string? checksum)
         {
-            var file = Path.Combine(_tmpDir, "Dir", "hello.txt");
+            var file = Path.Combine(_testDir, "hello.txt");
             Assert.Throws<ArgumentNullException>(() => Checksum.CompareChecksum(file, checksum!, ChecksumAlgorithm.SHA512));
         }
 
