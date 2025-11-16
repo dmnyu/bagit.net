@@ -9,9 +9,11 @@ namespace bagit.net.tests
     public class TestManifests : IDisposable
     {
         private readonly string _tmpDir;
+        private readonly string _testDir;
         private readonly Bagger _bagger;
         public TestManifests() {
             _tmpDir = TestHelpers.PrepareTempTestData();
+            _testDir = Path.Combine(_tmpDir, "test-bag");
             _bagger = new Bagger();
         }
 
@@ -46,8 +48,8 @@ namespace bagit.net.tests
 
             var expected = new[]
             {
-                ("data/Dir/hello.txt", "8b1a9953c4611296a827abf8c47804d7"),
-                ("data/Dir/subdir/test.txt", "098f6bcd4621d373cade4e832627b4f6")
+                ("data/test-bag/hello.txt", "8b1a9953c4611296a827abf8c47804d7"),
+                ("data/test-bag/subdir/test.txt", "098f6bcd4621d373cade4e832627b4f6")
             };
 
             foreach (var (file, checksum) in expected)
