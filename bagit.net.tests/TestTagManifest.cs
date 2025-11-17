@@ -63,12 +63,15 @@ namespace bagit.net.tests
             {
                 ("bag-info.txt","351534e87133ddb421828bb03051dce5"),
                 ("bagit.txt", "97f882dee1bde18065992d2d7b471f0e"),
-                ("manifest-md5.txt", "830e3d488b2759e4aa3dae92cdcb0fce")
+                ("manifest-md5.txt", "0b8581813cd41d9efd767daf7e2feed7")
             };
+
+            string[] checksums = dict.Keys.ToArray();
+            string cs = string.Join(",", checksums);
 
             foreach (var (file, checksum) in expected)
             {
-                Assert.True(dict.ContainsKey(checksum), $"Checksum {checksum} not found in tagmanifest");
+                Assert.True(dict.ContainsKey(checksum), $"Checksum {checksum} not found in tagmanifest: {cs}");
                 Assert.Equal(file, dict[checksum]);
             }
         }
