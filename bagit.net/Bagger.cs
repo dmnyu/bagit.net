@@ -53,7 +53,7 @@ namespace bagit.net
             }
             catch (Exception ex){
                 Bagit.Logger.LogCritical(ex, "Unknown exception while creating bag at {path}", path);
-                throw new Exception($"Unknown exception while creating bag at {path}");
+                throw new Exception($"Unknown exception while creating bag at {path}", ex);
             }
         }
 
