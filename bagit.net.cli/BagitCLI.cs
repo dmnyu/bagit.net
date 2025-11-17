@@ -38,8 +38,4 @@ class BagitCLI
         return app.Run(args);
     }
 
-    static string GetHelpMessage()
-    {
-        return "hello";
-    }
 }
