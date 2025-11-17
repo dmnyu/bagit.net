@@ -43,7 +43,7 @@ class BagCommand : Command<BagCommand.Settings>
         if (string.IsNullOrWhiteSpace(settings.Directory))
         {
             AnsiConsole.MarkupLine("[red][bold]ERROR:[/][/]");
-            AnsiConsole.MarkupLine("[red]a directory to be bag must be specified when creating a bag[/]\n");
+            AnsiConsole.MarkupLine("[red]a directory to bag must be specified when creating a bag[/]\n");
             BagitCLI.app.Run(new string[]{ "help" }, cancellationToken);
             return 1;
         }
