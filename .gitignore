@@ -1,5 +1,6 @@
 .vs/*
 */bin/*
 */obj/*
-*launchSettings.json
+/*/Properties/launchSettings.json
 bagit.net/docs/*.md
+

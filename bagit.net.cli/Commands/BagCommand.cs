@@ -1,4 +1,5 @@
-﻿using Spectre.Console;
+﻿using Microsoft.Extensions.Logging;
+using Spectre.Console;
 using Spectre.Console.Cli;
 using System.ComponentModel;
 using System.IO;
@@ -26,6 +27,9 @@ class BagCommand : Command<BagCommand.Settings>
         [CommandOption("--sha512")]
         public bool Sha512 { get; set; }
 
+        [CommandOption("--log")]
+        public string logFile { get; set; }
+
         [CommandArgument(0, "<directory>")]
         [Description("Path to the directory to bag.")]
         public string Directory { get; set; } = null!;
@@ -45,9 +49,10 @@ class BagCommand : Command<BagCommand.Settings>
         if (algorithms.Count == 0)
         {
             algorithms.Add(ChecksumAlgorithm.SHA256);
-            algorithms.Add(ChecksumAlgorithm.SHA1);
         }
 
+        Bagit.InitLogger(settings.logFile);
+        Bagit.Logger.LogInformation($"Using bagit.net v{Bagit.VERSION}");
         var bagger = new Bagger();
         bagger.CreateBag(bagPath, algorithms[0]);
         return 0;
