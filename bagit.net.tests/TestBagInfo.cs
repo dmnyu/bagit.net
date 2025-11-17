@@ -15,8 +15,8 @@ namespace bagit.net.tests
         public TestBagInfo()
         {
             _tmpDir = TestHelpers.PrepareTempTestData();
-            _bagger = new Bagger();
             Bagit.InitLogger();
+            _bagger = new Bagger();
         }
 
         public void Dispose()
