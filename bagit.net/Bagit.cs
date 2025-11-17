@@ -29,8 +29,7 @@ namespace bagit.net
                     formatter,
                     logFileLocation
                 );
-            } else
-            {
+            } else {
                 loggerConfig.WriteTo.Console(formatter);
             }
 
