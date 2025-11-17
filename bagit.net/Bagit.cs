@@ -23,7 +23,7 @@ namespace bagit.net
                     .SetMinimumLevel(LogLevel.Debug);
             });
 
-            Logger = loggerFactory.CreateLogger("");
+            Logger = loggerFactory.CreateLogger(typeof(Bagit).FullName);
         }
 
     }
