@@ -1,4 +1,3 @@
-﻿using Microsoft.Extensions.Options;
 using Spectre.Console;
 using Spectre.Console.Cli;
 using System.IO;
