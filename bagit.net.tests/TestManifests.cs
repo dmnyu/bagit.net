@@ -14,6 +14,7 @@ namespace bagit.net.tests
         public TestManifests() {
             _tmpDir = TestHelpers.PrepareTempTestData();
             _testDir = Path.Combine(_tmpDir, "test-bag");
+            Bagit.InitLogger();
             _bagger = new Bagger();
         }
 
@@ -44,7 +45,7 @@ namespace bagit.net.tests
             var algorithmCode = Checksum.GetAlgorithmCode(ChecksumAlgorithm.MD5);
             _bagger.CreateBag(_tmpDir, algorithm);
             var kvp = Manifest.GetManifestAsKeyValuePairs(Path.Combine(_tmpDir, $"manifest-{algorithmCode}.txt"));
-
+            Assert.Equal(2, kvp.Count);
 
             var expected = new[]
             {

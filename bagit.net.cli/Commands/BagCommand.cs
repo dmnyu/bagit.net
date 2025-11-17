@@ -10,8 +10,8 @@ class BagCommand : Command<BagCommand.Settings>
 {
     public class Settings : CommandSettings
     {
-        
-        [CommandOption("--md5")] 
+
+        [CommandOption("--md5")]
         public bool Md5 { get; set; }
 
         [CommandOption("--sha1")]
@@ -35,7 +35,7 @@ class BagCommand : Command<BagCommand.Settings>
     public override int Execute(CommandContext context, Settings settings, CancellationToken cancellationToken)
     {
         var bagPath = Path.GetFullPath(settings.Directory);
-        AnsiConsole.MarkupLine($"[yellow]Creating bag for directory[/] {bagPath}");
+        //AnsiConsole.MarkupLine($"[yellow]Creating bag for directory[/] {bagPath}");
         var algorithms = new List<ChecksumAlgorithm>();
         if (settings.Md5) algorithms.Add(ChecksumAlgorithm.MD5);
         if (settings.Sha1) algorithms.Add(ChecksumAlgorithm.SHA1);

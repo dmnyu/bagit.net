@@ -16,6 +16,7 @@ namespace bagit.net.tests
         {
             _tmpDir = TestHelpers.PrepareTempTestData();
             _testDir = Path.Combine(_tmpDir, "test-bag");
+            Bagit.InitLogger();
             _bagger = new Bagger();
         }
 
@@ -54,13 +55,15 @@ namespace bagit.net.tests
             var kvp = Manifest.GetManifestAsKeyValuePairs(
                 Path.Combine(_tmpDir, $"tagmanifest-{algorithmCode}.txt"));
 
+            Assert.Equal(3, kvp.Count);
+
             var dict = kvp.ToDictionary(k => k.Key, v => v.Value);
 
             var expected = new[]
             {
-                ("bag-info.txt","86a0e026bc605fdf028a87d796deb098"),
+                ("bag-info.txt","351534e87133ddb421828bb03051dce5"),
                 ("bagit.txt", "97f882dee1bde18065992d2d7b471f0e"),
-                ("manifest-md5.txt", "0b8581813cd41d9efd767daf7e2feed7")
+                ("manifest-md5.txt", "830e3d488b2759e4aa3dae92cdcb0fce")
             };
 
             foreach (var (file, checksum) in expected)

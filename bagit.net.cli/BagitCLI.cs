@@ -1,6 +1,7 @@
-﻿using Spectre.Console;
+﻿using bagit.net.cli.Commands;
+using Microsoft.Extensions.Logging;
+using Spectre.Console;
 using Spectre.Console.Cli;
-using bagit.net.cli.Commands;
 
 namespace bagit.net.cli;
 
@@ -8,6 +9,9 @@ class BagitCLI
 {
     static int Main(string[] args)
     {
+        Bagit.InitLogger();
+        Bagit.Logger.LogInformation("Using bagit.net v{Version}", Bagit.VERSION);
+
         var app = new CommandApp();
         app.SetDefaultCommand<BagCommand>();
 

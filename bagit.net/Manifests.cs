@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Microsoft.Extensions.Logging;
+using System;
 using System.Collections.Generic;
 using System.IO;
 using System.IO.Enumeration;
@@ -14,12 +15,12 @@ namespace bagit.net
         public static void CreatePayloadManifest(string bagRoot, ChecksumAlgorithm algorithm)
         {
             var algorithmCode = Checksum.GetAlgorithmCode(algorithm);
-            Console.WriteLine($"Using 1 process to generate manifests:{algorithmCode}");
+            Bagit.Logger.LogInformation($"Using 1 process to generate manifests:{algorithmCode}");
             var manifestContent = new StringBuilder();
             var fileEntries = GetPayloadFiles(bagRoot);
             foreach (var entry in fileEntries)
             {
-                Console.WriteLine($"Generating manifest lines for file {entry}");
+                Bagit.Logger.LogInformation($"Generating manifest lines for file {entry}");
                 var checksum = Checksum.CalculateChecksum(Path.Combine(bagRoot, entry), algorithm);
                 manifestContent.AppendLine($"{checksum} {entry}");
             }
@@ -32,7 +33,7 @@ namespace bagit.net
         {
             var algorithmCode = Checksum.GetAlgorithmCode(algorithm);
             var manifestFilename = Path.Combine(bagRoot, $"tagmanifest-{algorithmCode}.txt");
-            Console.WriteLine($"Creating {manifestFilename}");
+            Bagit.Logger.LogInformation($"Creating {manifestFilename}");
             
             StringBuilder sb  = new StringBuilder();
             var fileEntries = GetRootFiles(bagRoot);

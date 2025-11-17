@@ -1,9 +1,10 @@
-﻿using System;
+﻿using Microsoft.Extensions.Logging;
+using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-using System.IO;
 
 namespace bagit.net
 {
@@ -12,7 +13,7 @@ namespace bagit.net
 
         public static void CreateBagInfo(string bagDir)
         {
-            Console.WriteLine("Creating bag-info.txt");
+            Bagit.Logger.LogInformation("Creating bag-info.txt");
             var oxum = GetOxum(bagDir);
             var sb = new StringBuilder();
 

@@ -9,13 +9,14 @@ namespace bagit.net.tests
     {
         private readonly string _tmpDir;
         private readonly string _testDir;
-        private readonly Bagger bagger;
+        private readonly Bagger _bagger;
 
         public TestCreateBag()
         {
             _tmpDir = TestHelpers.PrepareTempTestData();
             _testDir = Path.Combine(_tmpDir, "test-bag");
-            bagger = new Bagger();
+            Bagit.InitLogger();
+            _bagger = new Bagger();
         }
 
         public void Dispose()
@@ -35,8 +36,8 @@ namespace bagit.net.tests
         [Fact]
         public void CreateBag_Throws_On_Invalid_Directories()
         {
-            Assert.Throws<ArgumentNullException>(() => bagger.CreateBag(null, ChecksumAlgorithm.MD5));
-            Assert.Throws<DirectoryNotFoundException>(() => bagger.CreateBag(Path.Combine(_tmpDir, "Foo"), ChecksumAlgorithm.MD5));
+            Assert.Throws<ArgumentNullException>(() => _bagger.CreateBag(null, ChecksumAlgorithm.MD5));
+            Assert.Throws<DirectoryNotFoundException>(() => _bagger.CreateBag(Path.Combine(_tmpDir, "Foo"), ChecksumAlgorithm.MD5));
         }
 
         [Fact]
@@ -44,7 +45,7 @@ namespace bagit.net.tests
         {
 
             var dataDir = Path.Combine(_testDir, "data");
-            var ex = Record.Exception(() => bagger.CreateBag(_testDir, ChecksumAlgorithm.MD5));
+            var ex = Record.Exception(() => _bagger.CreateBag(_testDir, ChecksumAlgorithm.MD5));
             Assert.Null(ex);
             Assert.True(Directory.Exists(_testDir));
             Assert.True(Directory.Exists(dataDir));
@@ -59,7 +60,7 @@ namespace bagit.net.tests
         public void Test_Bag_Has_Valid_BagitTxt_File()
         {
 
-            bagger.CreateBag(_testDir, ChecksumAlgorithm.MD5);
+            _bagger.CreateBag(_testDir, ChecksumAlgorithm.MD5);
             var bagitTxt = Path.Combine(_testDir, "bagit.txt");
             Assert.True(File.Exists(bagitTxt));
 

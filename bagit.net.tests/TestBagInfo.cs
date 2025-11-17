@@ -10,11 +10,13 @@ namespace bagit.net.tests
     {
         private readonly string _tmpDir;
         private readonly Bagger _bagger;
+        
 
         public TestBagInfo()
         {
             _tmpDir = TestHelpers.PrepareTempTestData();
             _bagger = new Bagger();
+            Bagit.InitLogger();
         }
 
         public void Dispose()
