@@ -9,9 +9,6 @@ class BagitCLI
 {
     static int Main(string[] args)
     {
-        Bagit.InitLogger();
-        Bagit.Logger.LogInformation("Using bagit.net v{Version}", Bagit.VERSION);
-
         var app = new CommandApp();
         app.SetDefaultCommand<BagCommand>();
 

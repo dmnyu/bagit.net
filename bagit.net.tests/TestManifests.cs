@@ -14,7 +14,7 @@ namespace bagit.net.tests
         public TestManifests() {
             _tmpDir = TestHelpers.PrepareTempTestData();
             _testDir = Path.Combine(_tmpDir, "test-bag");
-            Bagit.InitLogger();
+            Bagit.InitLogger(null);
             _bagger = new Bagger();
         }
 

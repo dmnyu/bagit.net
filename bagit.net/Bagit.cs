@@ -1,5 +1,9 @@
 ﻿using Microsoft.Extensions.Logging;
-using Microsoft.Extensions.Logging.Console;
+using Serilog;
+using Serilog.Events;
+using Serilog.Formatting;
+using Serilog.Formatting.Display;
+using ILogger = Microsoft.Extensions.Logging.ILogger;
 
 namespace bagit.net
 {
@@ -8,23 +12,64 @@ namespace bagit.net
         public const string VERSION = "0.1.0";
         public const string BAGIT_VERSION = "1.0";
 
+        public static ILogger Logger { get; private set; } = null!;
 
-        public static ILogger Logger { get; set; } = null!;
-        public static void InitLogger()
+        public static void InitLogger(string logFileLocation)
         {
-            var loggerFactory = LoggerFactory.Create(builder =>
+            ITextFormatter formatter = new ShortLevelFormatter();
+
+            var loggerConfig = new LoggerConfiguration().MinimumLevel.Debug();
+
+            if (!string.IsNullOrWhiteSpace(logFileLocation))
             {
-                builder
-                    .AddSimpleConsole(options =>
-                    {
-                        options.SingleLine = true;
-                        options.TimestampFormat = "yyyy-MM-dd HH:mm:ss ";
-                    })
-                    .SetMinimumLevel(LogLevel.Debug);
+                if (File.Exists(logFileLocation)) {
+                    File.Delete(logFileLocation);
+                }
+                loggerConfig = loggerConfig.WriteTo.File(
+                    formatter,
+                    logFileLocation
+                );
+            } else
+            {
+                loggerConfig.WriteTo.Console(formatter);
+            }
+
+                Log.Logger = loggerConfig.CreateLogger();
+
+            // Bridge Serilog → ILogger
+            var factory = LoggerFactory.Create(builder =>
+            {
+                builder.AddSerilog(Log.Logger, dispose: true);
             });
 
-            Logger = loggerFactory.CreateLogger(typeof(Bagit).FullName);
+            Logger = factory.CreateLogger(typeof(Bagit).FullName);
         }
 
+        public class ShortLevelFormatter : ITextFormatter
+        {
+            private static readonly Dictionary<LogEventLevel, string> LevelMap = new()
+            {
+                [LogEventLevel.Verbose] = "trace",
+                [LogEventLevel.Debug] = "debug",
+                [LogEventLevel.Information] = "info",
+                [LogEventLevel.Warning] = "warn",
+                [LogEventLevel.Error] = "error",
+                [LogEventLevel.Fatal] = "fatal"
+            };
+
+            public void Format(LogEvent logEvent, TextWriter output)
+            {
+                var timestamp = logEvent.Timestamp.ToString("yyyy-MM-dd HH:mm:ss");
+                var level = LevelMap[logEvent.Level];
+                var message = logEvent.RenderMessage();
+
+                output.WriteLine($"{timestamp} [{level}] {message}");
+
+                if (logEvent.Exception != null)
+                {
+                    output.WriteLine(logEvent.Exception);
+                }
+            }
+        }
     }
 }
