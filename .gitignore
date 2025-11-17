@@ -2,5 +2,5 @@
 */bin/*
 */obj/*
 /*/Properties/launchSettings.json
+*.csproj.user
 bagit.net/docs/*.md
-

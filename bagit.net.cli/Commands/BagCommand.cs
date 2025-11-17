@@ -4,6 +4,7 @@ using Spectre.Console.Cli;
 using System.ComponentModel;
 using System.IO;
 using System.Threading;
+using bagit.net.cli;
 
 namespace bagit.net.cli.Commands;
 
@@ -28,17 +29,33 @@ class BagCommand : Command<BagCommand.Settings>
         public bool Sha512 { get; set; }
 
         [CommandOption("--log")]
-        public string logFile { get; set; }
+        public string? logFile { get; set; }
 
-        [CommandArgument(0, "<directory>")]
+        [CommandArgument(0, "[directory]")]
         [Description("Path to the directory to bag.")]
-        public string Directory { get; set; } = null!;
+        public string? Directory { get; set; }
 
     }
 
     public override int Execute(CommandContext context, Settings settings, CancellationToken cancellationToken)
     {
+
+        if (string.IsNullOrWhiteSpace(settings.Directory))
+        {
+            AnsiConsole.MarkupLine("[red][bold]ERROR:[/][/]");
+            AnsiConsole.MarkupLine("[red]a directory to bag must be specified when creating a bag[/]\n");
+            BagitCLI.app.Run(new string[]{ "help" }, cancellationToken);
+            return 1;
+        }
+
         var bagPath = Path.GetFullPath(settings.Directory);
+        if (!Directory.Exists(bagPath)) {
+            AnsiConsole.MarkupLine("[red][bold]ERROR:[/][/]");
+            AnsiConsole.MarkupLine($"[red]the directory {bagPath} does not exist[/]\n");
+            BagitCLI.app.Run(new string[] { "help" }, cancellationToken);
+            return 1;
+        }
+
         //AnsiConsole.MarkupLine($"[yellow]Creating bag for directory[/] {bagPath}");
         var algorithms = new List<ChecksumAlgorithm>();
         if (settings.Md5) algorithms.Add(ChecksumAlgorithm.MD5);
@@ -51,6 +68,11 @@ class BagCommand : Command<BagCommand.Settings>
             algorithms.Add(ChecksumAlgorithm.SHA256);
         }
 
+        if (!string.IsNullOrWhiteSpace(settings.logFile))
+        {
+            AnsiConsole.MarkupLine($"bagit.net.cli v{Bagit.VERSION}");
+            AnsiConsole.MarkupLine($"Logging to {settings.logFile}");
+        }
         Bagit.InitLogger(settings.logFile);
         Bagit.Logger.LogInformation($"Using bagit.net v{Bagit.VERSION}");
         var bagger = new Bagger();
