@@ -6,7 +6,7 @@ namespace bagit.net.cli.Commands;
 class HelpCommand : Command<HelpCommand.Settings>
 {
     public class Settings : CommandSettings { }
-    public override int Execute(CommandContext context, Settings settings, CancellationToken cancellationToken)
+    public override int Execute(CommandContext? context, Settings settings, CancellationToken cancellationToken)
     {
         // Header
         AnsiConsole.MarkupLine($"bagit.net.cli v{Bagit.VERSION}");
