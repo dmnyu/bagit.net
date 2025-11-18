@@ -14,7 +14,7 @@ namespace bagit.net
 
         public static ILogger Logger { get; private set; } = null!;
 
-        public static void InitLogger(string logFileLocation)
+        public static void InitLogger(string? logFileLocation = null)
         {
             ITextFormatter formatter = new ShortLevelFormatter();
 
@@ -41,7 +41,7 @@ namespace bagit.net
                 builder.AddSerilog(Log.Logger, dispose: true);
             });
 
-            Logger = factory.CreateLogger(typeof(Bagit).FullName);
+            Logger = factory.CreateLogger(typeof(Bagit).FullName ?? "bagit.net");
         }
 
         public static Dictionary<string, ChecksumAlgorithm> Algorithms = new Dictionary<string, ChecksumAlgorithm>()
