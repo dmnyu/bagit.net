@@ -6,7 +6,7 @@ namespace bagit.net.cli;
 
 class BagitCLI
 {
-    public static CommandApp app;
+    public static CommandApp? app;
     static int Main(string[] args)
     {
         app = new CommandApp();
