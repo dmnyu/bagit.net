@@ -6,10 +6,15 @@ namespace bagit.net.cli;
 
 class BagitCLI
 {
-    public static CommandApp? app;
+    public static CommandApp app;
+
+    static BagitCLI() {
+        app = new CommandApp();
+    }
+
     static int Main(string[] args)
     {
-        app = new CommandApp();
+        
         app.SetDefaultCommand<BagCommand>();
 
         if (args == null || args.Length == 0)
