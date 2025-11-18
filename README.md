@@ -15,7 +15,7 @@
 ### Linux
 
 ```bash
-wget https://github.com/dmnyu/bagit.net/releases/v0.1.0-alpha.1/bagit.net.cli-linux-v0.1.0-alpha.1.tgz
+wget https://github.com/dmnyu/bagit.net/releases/download/v0.1.0-alpha.1/bagit.net.cli-linux-v0.1.0-alpha.1.tgz
 tar xvzf bagit.net.cli-linux-v0.1.0-alpha.1.tgz
 cd bagit.net.cli
 sudo ./install.sh
@@ -26,7 +26,7 @@ bagit.net --help
 ### Windows
 
 ```powershell
-Invoke-WebRequest -Uri https://github.com/dmnyu/bagit.net/releases/v0.1.0-alpha.1/bagit.net.cli-win-v0.1.0-alpha.1.zip -OutFile bagit.net.cli-win-v0.1.0-alpha.1.zip
+Invoke-WebRequest -Uri https://github.com/dmnyu/bagit.net/releases/download/v0.1.0-alpha.1/bagit.net.cli-win-v0.1.0-alpha.1.zip -OutFile bagit.net.cli-win-v0.1.0-alpha.1.zip
 Expand-Archive bagit.net.cli-win-v0.1.0-alpha.1.zip -DestinationPath .
 cd .\bagit.net.cli
 "C:\Program Files\BagIt.NET\bagit.net.exe" --help
