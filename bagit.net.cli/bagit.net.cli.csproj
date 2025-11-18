@@ -8,7 +8,7 @@
 	<PublishSingleFile>true</PublishSingleFile>
 	<PublishReadyToRun>true</PublishReadyToRun>
 	<IncludeAllContentForSelfExtract>true</IncludeAllContentForSelfExtract>
-	<AssemblyName>bagit.net-cli</AssemblyName>
+	<AssemblyName>bagit.net.cli</AssemblyName>
 	<Nullable>enable</Nullable>
 	<ImplicitUsings>enable</ImplicitUsings>
   </PropertyGroup>

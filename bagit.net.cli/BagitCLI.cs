@@ -1,5 +1,4 @@
 ﻿using bagit.net.cli.Commands;
-using Microsoft.Extensions.Logging;
 using Spectre.Console;
 using Spectre.Console.Cli;
 
@@ -13,16 +12,22 @@ class BagitCLI
         app = new CommandApp();
         app.SetDefaultCommand<BagCommand>();
 
-
-        
-        if (args.Length > 0 && (args[0] == "--help" || args[0] == "-h"))
+        if (args == null || args.Length == 0)
         {
             return new HelpCommand().Execute(null, new HelpCommand.Settings(), new CancellationToken());
         }
-        
+
+        foreach (string arg in args) { 
+            if(arg == "--help" || arg == "-h")
+            {
+                return new HelpCommand().Execute(null, new HelpCommand.Settings(), new CancellationToken());
+
+            }
+        }
+
         if (args[0] == "--version")
         {
-            AnsiConsole.MarkupLine($"[green]bagit.net {Bagit.VERSION}[/]");
+            AnsiConsole.MarkupLine($"bagit.net {Bagit.VERSION}");
             return 0;
         }
 
