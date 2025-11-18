@@ -13,20 +13,8 @@ class BagCommand : Command<BagCommand.Settings>
     public class Settings : CommandSettings
     {
 
-        [CommandOption("--md5")]
-        public bool Md5 { get; set; }
-
-        [CommandOption("--sha1")]
-        public bool Sha1 { get; set; }
-
-        [CommandOption("--sha256")]
-        public bool Sha256 { get; set; }
-
-        [CommandOption("--sha384")]
-        public bool Sha384 { get; set; }
-
-        [CommandOption("--sha512")]
-        public bool Sha512 { get; set; }
+        [CommandOption("--algorithm")]
+        public string? Algorithm { get; set; }
 
         [CommandOption("--log")]
         public string? logFile { get; set; }
@@ -44,7 +32,7 @@ class BagCommand : Command<BagCommand.Settings>
         {
             AnsiConsole.MarkupLine("[red][bold]ERROR:[/][/]");
             AnsiConsole.MarkupLine("[red]a directory to bag must be specified when creating a bag[/]\n");
-            BagitCLI.app.Run(new string[]{ "help" }, cancellationToken);
+            BagitCLI.app.Run(new string[] { "help" }, cancellationToken);
             return 1;
         }
 
@@ -56,18 +44,23 @@ class BagCommand : Command<BagCommand.Settings>
             return 1;
         }
 
-        //AnsiConsole.MarkupLine($"[yellow]Creating bag for directory[/] {bagPath}");
-        var algorithms = new List<ChecksumAlgorithm>();
-        if (settings.Md5) algorithms.Add(ChecksumAlgorithm.MD5);
-        if (settings.Sha1) algorithms.Add(ChecksumAlgorithm.SHA1);
-        if (settings.Sha256) algorithms.Add(ChecksumAlgorithm.SHA256);
-        if (settings.Sha384) algorithms.Add(ChecksumAlgorithm.SHA384);
-        if (settings.Sha512) algorithms.Add(ChecksumAlgorithm.SHA512);
-        if (algorithms.Count == 0)
+        //get the algorithm
+        ChecksumAlgorithm algorithm;
+        if (string.IsNullOrWhiteSpace(settings.Algorithm))
         {
-            algorithms.Add(ChecksumAlgorithm.SHA256);
+            algorithm = ChecksumAlgorithm.SHA256;
+        } else if(Bagit.Algorithms.ContainsKey(settings.Algorithm))
+        {
+            algorithm = Bagit.Algorithms[settings.Algorithm];
+        } else
+        {
+            AnsiConsole.MarkupLine("[red][bold]ERROR:[/][/]");
+            AnsiConsole.MarkupLine($"[red]checksum algorithm {settings.Algorithm} is not supported[/]\n");
+            BagitCLI.app.Run(new string[] { "help" }, cancellationToken);
+            return 1;
         }
 
+        //get logging option
         if (!string.IsNullOrWhiteSpace(settings.logFile))
         {
             AnsiConsole.MarkupLine($"bagit.net.cli v{Bagit.VERSION}");
@@ -75,8 +68,10 @@ class BagCommand : Command<BagCommand.Settings>
         }
         Bagit.InitLogger(settings.logFile);
         Bagit.Logger.LogInformation($"Using bagit.net v{Bagit.VERSION}");
+
+        //start the bagger
         var bagger = new Bagger();
-        bagger.CreateBag(bagPath, algorithms[0]);
+        bagger.CreateBag(bagPath, algorithm);
         return 0;
     }
 }

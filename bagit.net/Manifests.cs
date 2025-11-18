@@ -15,7 +15,7 @@ namespace bagit.net
         public static void CreatePayloadManifest(string bagRoot, ChecksumAlgorithm algorithm)
         {
             var algorithmCode = Checksum.GetAlgorithmCode(algorithm);
-            Bagit.Logger.LogInformation($"Using 1 process to generate manifests:{algorithmCode}");
+            Bagit.Logger.LogInformation($"Generating manifests using {algorithmCode}");
             var manifestContent = new StringBuilder();
             var fileEntries = GetPayloadFiles(bagRoot);
             foreach (var entry in fileEntries)
