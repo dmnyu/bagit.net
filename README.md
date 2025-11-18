@@ -4,7 +4,7 @@
 
 [![Release](https://img.shields.io/badge/release-v0.1.0--alpha.1-blue)](https://github.com/dmnyu/bagit.net/releases/v0.1.0-alpha.1)
 
-> ⚠️ **Note:** This project is in early development and currently supports only the creation of bagit bags functionality.
+> ⚠️ **Note:** This project is in early development and currently supports only the creation of bagit bags.
 
 
 
