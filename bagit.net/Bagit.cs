@@ -53,6 +53,8 @@ namespace bagit.net
             {"sha512", ChecksumAlgorithm.SHA512}
         };
 
+        public const string checksumPattern = @"-(md5|sha1|sha256|sha384|sha512)\b";
+
         public class ShortLevelFormatter : ITextFormatter
         {
             private static readonly Dictionary<LogEventLevel, string> LevelMap = new()

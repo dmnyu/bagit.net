@@ -1,6 +1,7 @@
 ﻿using Microsoft.Extensions.Logging;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics.Metrics;
 using System.IO;
 using System.Linq;
 using System.Security.AccessControl;
@@ -17,6 +18,7 @@ namespace bagit.net
             {
                 Has_Valid_BagitTXT(bagPath);
                 Has_Valid_BaginfoTXT(bagPath);
+                ValidateManifests(bagPath);
             } catch (Exception ex) {
                 Bagit.Logger.LogCritical(ex, "Failed to validate bag at {Path}", bagPath);
                 throw new InvalidOperationException($"Failed to validate bag at {bagPath}", ex);
@@ -65,6 +67,25 @@ namespace bagit.net
                 {
                     throw new InvalidDataException("File-Oxum in bag-info.txt does not match.");
                 }
+            }
+        }
+
+        internal void ValidateManifests(string bagPath)
+        {
+            var validatedManifestCounter = 0;
+            foreach (var f in Directory.EnumerateFiles(bagPath))
+            {
+                
+                if (System.Text.RegularExpressions.Regex.IsMatch(Path.GetFileName(f), @"^(manifest|tagmanifest)-(md5|sha1|sha256|sha384|sha512)\.txt$")) 
+                {
+                    validatedManifestCounter++;
+                    Manifest.ValidateManifestFile(f);
+                }
+            }
+
+            if(validatedManifestCounter == 0)
+            {
+                throw new InvalidDataException($"{bagPath} did not contain any manifest files.");
             }
         }
     }

@@ -1,12 +1,7 @@
 ﻿using Microsoft.Extensions.Logging;
-using System;
-using System.Collections.Generic;
-using System.IO;
-using System.IO.Enumeration;
-using System.Linq;
-using System.Security.Cryptography;
+using System.Runtime.InteropServices;
 using System.Text;
-using System.Threading.Tasks;
+using System.Text.RegularExpressions;
 
 namespace bagit.net
 {
@@ -84,5 +79,54 @@ namespace bagit.net
                 })
                 .ToList();
         }
+
+        internal static void ValidateManifestFile(string manifestFile)
+        {
+            string dir = Path.GetDirectoryName(manifestFile)
+                ?? throw new InvalidDataException("Could not determine manifest directory.");
+            string fn = Path.GetFileName(manifestFile);
+            
+
+            //get the checksum algorithm
+            Match match = Regex.Match(fn, Bagit.checksumPattern, RegexOptions.IgnoreCase);
+            if (!match.Success)
+                throw new InvalidDataException($"Cannot determine checksum algorithm from manifest filename '{fn}'.");
+
+            ChecksumAlgorithm algorithm = Bagit.Algorithms[match.Groups[1].Value.ToLowerInvariant()];
+            Bagit.Logger.LogInformation(algorithm.ToString());
+
+
+            //validate manifest
+            foreach (var line in File.ReadLines(manifestFile))
+            {
+                if (string.IsNullOrWhiteSpace(line))
+                    continue; // skip blank lines (allowed by BagIt)
+
+                
+                var parts = line.Split(' ', 2, StringSplitOptions.RemoveEmptyEntries);
+                if (parts.Length != 2)
+                    throw new InvalidDataException($"Invalid manifest line format: '{line}'.");
+
+                string checksum = parts[0];
+                string payloadFile = parts[1].Trim();
+                if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
+                {
+                    payloadFile = payloadFile
+                        .Replace('/', Path.DirectorySeparatorChar)
+                        .Replace('\\', Path.DirectorySeparatorChar);
+                }
+                string fullPath = Path.Combine(dir, payloadFile);
+
+                // Verify checksum
+                bool result = Checksum.CompareChecksum(fullPath, checksum, algorithm);
+                if (!result)
+                {
+                    throw new InvalidDataException(
+                        $"Checksum mismatch for '{payloadFile}' in manifest '{fn}'. Expected: {checksum}"
+                    );
+                }
+            }
+        }
+
     }
 }
