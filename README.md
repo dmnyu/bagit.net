@@ -22,6 +22,10 @@ sudo ./install.sh
 bagit.net --help
 ```
 
+**Linux / SELinux Notes**
+
+bagit.net single-file self-contained binaries require the ability to create and execute temporary files. On RHEL/CentOS systems with SELinux or noexec restrictions on /tmp, these binaries will not run.
+
 
 ### Windows
 
