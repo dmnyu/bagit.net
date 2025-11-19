@@ -18,6 +18,7 @@ namespace bagit.net.tests
             _tmpDir = TestHelpers.PrepareTempTestData();
             _bagDir = Path.Combine(_tmpDir, "bagged-dir");
             _validator = new Validator();
+            Bagit.InitLogger();
         }
 
         public void Dispose()
@@ -36,6 +37,13 @@ namespace bagit.net.tests
         public void Test_Has_Valid_BagitTXT()
         {
             var ex = Record.Exception(() => _validator.Has_Valid_BagitTXT(_bagDir));
+            Assert.Null(ex);
+        }
+
+        [Fact]
+        public void Test_Has_Valid_BaginfoTXT()
+        {
+            var ex = Record.Exception(() => _validator.Has_Valid_BaginfoTXT(_bagDir));
             Assert.Null(ex);
         }
 
