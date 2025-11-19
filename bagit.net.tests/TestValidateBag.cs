@@ -47,6 +47,14 @@ namespace bagit.net.tests
             Assert.Null(ex);
         }
 
+        [Fact]
+        public void Test_Validate_Bag()
+        {
+            var ex = Record.Exception(() => _validator.ValidateBag(_bagDir));
+            Assert.Null(ex);
+        }
+
+
 
     }
 }

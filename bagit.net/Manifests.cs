@@ -12,7 +12,7 @@ namespace bagit.net
 {
     public static class Manifest
     {
-        public static void CreatePayloadManifest(string bagRoot, ChecksumAlgorithm algorithm)
+        internal static void CreatePayloadManifest(string bagRoot, ChecksumAlgorithm algorithm)
         {
             var algorithmCode = Checksum.GetAlgorithmCode(algorithm);
             Bagit.Logger.LogInformation($"Generating manifests using {algorithmCode}");
@@ -29,7 +29,7 @@ namespace bagit.net
             File.WriteAllText(manifestFilename, manifestContent.ToString(), new UTF8Encoding(encoderShouldEmitUTF8Identifier: false));
         }
 
-        public static void CreateTagManifestFile(string bagRoot, ChecksumAlgorithm algorithm)
+        internal static void CreateTagManifestFile(string bagRoot, ChecksumAlgorithm algorithm)
         {
             var algorithmCode = Checksum.GetAlgorithmCode(algorithm);
             var manifestFilename = Path.Combine(bagRoot, $"tagmanifest-{algorithmCode}.txt");

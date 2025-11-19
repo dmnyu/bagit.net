@@ -1,6 +1,7 @@
 ﻿using Microsoft.Extensions.Logging;
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Security.AccessControl;
 using System.Text;
@@ -10,6 +11,17 @@ namespace bagit.net
 {
     public class Validator
     {
+        public void ValidateBag(string bagPath)
+        {
+            try
+            {
+                Has_Valid_BagitTXT(bagPath);
+                Has_Valid_BaginfoTXT(bagPath);
+            } catch (Exception ex) {
+                Bagit.Logger.LogCritical(ex, "Failed to validate bag at {Path}", bagPath);
+                throw new InvalidOperationException($"Failed to validate bag at {bagPath}", ex);
+            }
+        }
 
         internal void Has_Valid_BagitTXT(string path)
         {
