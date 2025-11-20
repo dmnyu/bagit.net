@@ -12,13 +12,20 @@ namespace bagit.net
 {
     public class Validator
     {
-        public void ValidateBag(string bagPath)
+        public void ValidateBag(string bagPath, bool fast)
         {
             try
-            {
+            {   
+                if(fast)
+                {
+                    Has_Valid_BaginfoTXT(bagPath);
+                    Bagit.Logger.LogInformation($"{bagPath} is valid according to Payload-Oxum");
+                    return;
+                }
                 Has_Valid_BagitTXT(bagPath);
                 Has_Valid_BaginfoTXT(bagPath);
                 ValidateManifests(bagPath);
+                Bagit.Logger.LogInformation($"{bagPath} is valid");
             } catch (Exception ex) {
                 Bagit.Logger.LogCritical(ex, "Failed to validate bag at {Path}", bagPath);
                 throw new InvalidOperationException($"Failed to validate bag at {bagPath}", ex);
@@ -55,17 +62,20 @@ namespace bagit.net
                 return;
             }
 
-            var tags = TagFile.GetTagFileAsDict(bagInfoFile);
-            if (!tags.TryGetValue("File-Oxum", out var version))
+            var tags = TagFile.GetTagFileAsDict(bagInfoFile);  
+            if (!tags.TryGetValue("Payload-Oxum", out var version))
             {
-                Bagit.Logger.LogWarning("bag-info.txt does not contain a File-Oxum, skipping validation");
+                Bagit.Logger.LogWarning("bag-info.txt does not contain a Payload-Oxum, skipping validation");
             }
             else
             {
                 var oxum = BagInfo.GetOxum(path);
-                if (oxum != tags["File-Oxum"])
+                var payloadOxum = tags["Payload-Oxum"];
+                if (oxum != payloadOxum)
                 {
-                    throw new InvalidDataException("File-Oxum in bag-info.txt does not match.");
+
+                    Bagit.Logger.LogCritical($"was expecting {payloadOxum} returned {oxum}");
+                    throw new InvalidDataException("Payload-Oxum in bag-info.txt does not match.");
                 }
             }
         }
@@ -78,6 +88,7 @@ namespace bagit.net
                 
                 if (System.Text.RegularExpressions.Regex.IsMatch(Path.GetFileName(f), @"^(manifest|tagmanifest)-(md5|sha1|sha256|sha384|sha512)\.txt$")) 
                 {
+                    //Bagit.Logger.LogInformation($"Validating: {f}");
                     validatedManifestCounter++;
                     Manifest.ValidateManifestFile(f);
                 }

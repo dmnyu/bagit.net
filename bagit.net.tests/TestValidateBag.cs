@@ -65,10 +65,17 @@
         [Fact]
         public void Test_Validate_Bag()
         {
-            var ex = Record.Exception(() => _validator.ValidateBag(_validBag));
+            var ex = Record.Exception(() => _validator.ValidateBag(_validBag, false));
             Assert.Null(ex);
         }
-  
+
+        [Fact]
+        public void Test_Validate_Bag_Fast()
+        {
+            var ex = Record.Exception(() => _validator.ValidateBag(_validBag, true));
+            Assert.Null(ex);
+        }
+
 
 
     }

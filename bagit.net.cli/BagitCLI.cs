@@ -42,7 +42,9 @@ class BagitCLI
             config.AddCommand<BagCommand>("create")
                  .WithDescription("Create a BagIt bag from a directory");
             config.AddCommand<HelpCommand>("help")
-                .WithDescription("display the help page");
+                .WithDescription("Display the help page");
+            config.AddCommand<ValidateCommand>("validate")
+                .WithDescription("Validate a BagIt bag");
         });
 
         return app.Run(args);

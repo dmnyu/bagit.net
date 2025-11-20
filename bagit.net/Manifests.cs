@@ -93,8 +93,6 @@ namespace bagit.net
                 throw new InvalidDataException($"Cannot determine checksum algorithm from manifest filename '{fn}'.");
 
             ChecksumAlgorithm algorithm = Bagit.Algorithms[match.Groups[1].Value.ToLowerInvariant()];
-            Bagit.Logger.LogInformation(algorithm.ToString());
-
 
             //validate manifest
             foreach (var line in File.ReadLines(manifestFile))
@@ -118,6 +116,7 @@ namespace bagit.net
                 string fullPath = Path.Combine(dir, payloadFile);
 
                 // Verify checksum
+                Bagit.Logger.LogInformation($"Verifying checksum for file {fullPath}");
                 bool result = Checksum.CompareChecksum(fullPath, checksum, algorithm);
                 if (!result)
                 {
