@@ -1,9 +1,9 @@
 ﻿using Microsoft.Extensions.Logging;
+using ILogger = Microsoft.Extensions.Logging.ILogger;
 using Serilog;
 using Serilog.Events;
 using Serilog.Formatting;
-using Serilog.Formatting.Display;
-using ILogger = Microsoft.Extensions.Logging.ILogger;
+using System.Text.RegularExpressions;
 
 namespace bagit.net
 {
@@ -54,6 +54,8 @@ namespace bagit.net
         };
 
         public const string checksumPattern = @"-(md5|sha1|sha256|sha384|sha512)\b";
+        public const string ManifestPattern = @"manifest-(md5|sha1|sha256|sha384|sha512).txt";
+        public const string TagmanifestPattern = @"tagmanifest-(md5|sha1|sha256|sha384|sha512).txt";
 
         public class ShortLevelFormatter : ITextFormatter
         {

@@ -6,6 +6,7 @@ using System.IO;
 using System.Linq;
 using System.Security.AccessControl;
 using System.Text;
+using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 
 namespace bagit.net
@@ -17,18 +18,63 @@ namespace bagit.net
             try
             {   
                 if(fast)
-                {
-                    Has_Valid_BaginfoTXT(bagPath);
+                {  
+                    Has_Valid_BaginfoTXT(bagPath, fast);
                     Bagit.Logger.LogInformation($"{bagPath} is valid according to Payload-Oxum");
                     return;
                 }
+                Has_Required_Files(bagPath);
                 Has_Valid_BagitTXT(bagPath);
-                Has_Valid_BaginfoTXT(bagPath);
+                Has_Valid_BaginfoTXT(bagPath, fast);
                 ValidateManifests(bagPath);
                 Bagit.Logger.LogInformation($"{bagPath} is valid");
             } catch (Exception ex) {
                 Bagit.Logger.LogCritical(ex, "Failed to validate bag at {Path}", bagPath);
                 throw new InvalidOperationException($"Failed to validate bag at {bagPath}", ex);
+            }
+        }
+
+        internal void Has_Required_Files(string bagPath)
+        {
+            var files = Directory.EnumerateFiles(bagPath);
+            
+            if (!files.Contains(Path.Combine(bagPath, "bagit.txt")))
+                throw new FileNotFoundException("bagit.txt is missing from the bag root.", bagPath);
+            if (!Directory.Exists(Path.Combine(bagPath, "data")))
+                throw new DirectoryNotFoundException("data directory missing from bag root");
+            var bagInfoPath = Path.Combine(bagPath, "bag-info.txt");
+            if (!File.Exists(bagInfoPath))
+                Bagit.Logger.LogWarning("bag-info.txt is missing from bag root");
+
+            var manifestRegex = new Regex(Bagit.ManifestPattern);
+            var tagmanifestRegex = new Regex(Bagit.TagmanifestPattern);
+            var manifests = new List<string>{ };
+            var tagmanifests = new List<string>{ };
+
+            foreach (var file in files)
+            {
+                if (manifestRegex.IsMatch(file))
+                    manifests.Add(file);
+                if (tagmanifestRegex.IsMatch(file))
+                    tagmanifests.Add(file);
+            }
+
+            if (manifests.Count < 1)
+                throw new FileNotFoundException("bag does not contain a manifest file.", bagPath);
+
+            var allowedFiles = new List<string>();
+            allowedFiles.AddRange(manifests);
+            allowedFiles.AddRange(tagmanifests);
+            allowedFiles.Add(Path.Combine(bagPath, "bagit.txt"));
+            allowedFiles.Add(Path.Combine(bagPath, "bag-info.txt"));
+
+            foreach (var file in files)
+            {
+                if(!allowedFiles.Contains(file))
+                {
+                    var fn = Path.GetFileName(file);
+                    Bagit.Logger.LogWarning($"bag contains extra file in root {fn}");
+                }
             }
         }
 
@@ -53,16 +99,33 @@ namespace bagit.net
                 throw new FormatException($"Unsupported Tag-File-Character-Encoding: {encoding}");
         }
 
-        internal void Has_Valid_BaginfoTXT(string path)
+        internal void Has_Valid_BaginfoTXT(string path, bool fast)
         {
+            
             var bagInfoFile = Path.Combine(path, "bag-info.txt");
-            if (!Path.Exists(bagInfoFile))
+            if (!Path.Exists(bagInfoFile) && !fast)
             {
-                Bagit.Logger.LogWarning("{d} does not contain a bag-info.txt file.", Path.GetDirectoryName(path));
+                //just return we already have logged that there is no bag-info
                 return;
             }
 
-            var tags = TagFile.GetTagFileAsDict(bagInfoFile);  
+            if (!Path.Exists(bagInfoFile) && fast)
+            {
+                var bag = Path.GetDirectoryName(path);
+                Bagit.Logger.LogCritical("{b} does not contain a bag-info.txt file, required for fast validation.", bag );
+                throw new InvalidDataException("bag-info.txt is required for fast validation");
+            }
+
+
+
+            var tags = TagFile.GetTagFileAsDict(bagInfoFile);
+            if(!tags.ContainsKey("Payload-Oxum") && fast)
+            {
+                Bagit.Logger.LogCritical("bag-info.txt does not contain a Payload-Oxum tag, required for fast validation.");
+                throw new InvalidDataException("Payload-Oxum is required for fast validation");
+            }
+
+
             if (!tags.TryGetValue("Payload-Oxum", out var version))
             {
                 Bagit.Logger.LogWarning("bag-info.txt does not contain a Payload-Oxum, skipping validation");

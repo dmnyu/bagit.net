@@ -38,7 +38,7 @@
         [Fact]
         public void Test_Has_Valid_BaginfoTXT()
         {
-            var ex = Record.Exception(() => _validator.Has_Valid_BaginfoTXT(_validBag));
+            var ex = Record.Exception(() => _validator.Has_Valid_BaginfoTXT(_validBag, false));
             Assert.Null(ex);
         }
 
