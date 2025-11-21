@@ -49,7 +49,7 @@ namespace bagit.net
             var manifestRegex = new Regex(Bagit.ManifestPattern);
             var tagmanifestRegex = new Regex(Bagit.TagmanifestPattern);
             var manifests = new List<string>{ };
-            var tagmanifests = new List<string>{ };
+            var tagmanifests = new List<string>();
 
             foreach (var file in files)
             {
