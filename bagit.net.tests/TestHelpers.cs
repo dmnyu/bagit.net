@@ -1,4 +1,6 @@
-﻿using System;
+﻿using Microsoft.Extensions.Logging;
+using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -28,5 +30,6 @@ namespace bagit.net.tests
             foreach (var dir in Directory.EnumerateDirectories(sourceDir))
                 CopyDirectory(dir, Path.Combine(destDir, Path.GetFileName(dir)));
         }
+
     }
 }
