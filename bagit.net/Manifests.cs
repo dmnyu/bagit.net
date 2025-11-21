@@ -116,7 +116,7 @@ namespace bagit.net
         // Validate a single line
         internal static void ValidateManifestLine(string line, string manifestDir, string manifestFileName, ChecksumAlgorithm algorithm)
         {
-            var parts = line.Split(' ', 2, StringSplitOptions.RemoveEmptyEntries);
+            var parts = line.Split(' ', 2, StringSplitOptions.None);
             if (parts.Length != 2)
                 throw new InvalidDataException($"Invalid manifest line format: '{line}'.");
 
