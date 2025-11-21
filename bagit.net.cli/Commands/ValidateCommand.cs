@@ -16,7 +16,7 @@ namespace bagit.net.cli.Commands
             public bool Fast { get; set; }
 
             [CommandArgument(0, "[directory]")]
-            [Description("Path to the directory to bag.")]
+            [Description("Path to the bag directory to validate.")]
             public string? Directory { get; set; }
         }
 
