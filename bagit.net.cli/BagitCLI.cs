@@ -32,7 +32,7 @@ class BagitCLI
 
         if (args[0] == "--version")
         {
-            AnsiConsole.MarkupLine($"bagit.net {Bagit.VERSION}");
+            AnsiConsole.MarkupLine($"bagit.net v{Bagit.VERSION}");
             return 0;
         }
 

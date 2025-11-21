@@ -62,7 +62,6 @@ bagit.net --help
 ```
 
 **Linux / SELinux Notes**
-
 bagit.net single-file self-contained binaries require the ability to create and execute temporary files. On RHEL/CentOS systems with SELinux or noexec restrictions on /tmp, these binaries will not run.
 
 #### Windows
@@ -70,8 +69,9 @@ bagit.net single-file self-contained binaries require the ability to create and 
 Invoke-WebRequest -Uri https://github.com/dmnyu/bagit.net/releases/download/v0.2.0-alpha.1/bagit.net.cli-win-v0.2.0-alpha.1.zip -OutFile bagit.net.cli-win-v0.2.0-alpha.1.zip
 Expand-Archive bagit.net.cli-win-v0.2.0-alpha.1.zip -DestinationPath .
 cd .\bagit.net.cli
-"C:\Program Files\BagIt.NET\bagit.net.exe" --help
+.\bagit.net.exe" --help
 .\install.ps1
+%LOCALAPPDATA%\bagit.net\bagit.net --version 
 ```
 > **Tip:** After installing on Windows, you can run `bagit.net` from any directory by adding `%LOCALAPPDATA%\bagit.net` to your user PATH in System Properties.
 
