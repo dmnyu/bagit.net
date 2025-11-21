@@ -1,0 +1,2 @@
+This file has a non–NFC-normalized filename. The ‘é’ is decomposed (e +
+◌́).

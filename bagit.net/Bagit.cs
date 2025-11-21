@@ -3,7 +3,6 @@ using ILogger = Microsoft.Extensions.Logging.ILogger;
 using Serilog;
 using Serilog.Events;
 using Serilog.Formatting;
-using System.Text.RegularExpressions;
 
 namespace bagit.net
 {

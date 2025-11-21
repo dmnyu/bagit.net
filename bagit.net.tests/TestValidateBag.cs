@@ -13,7 +13,6 @@
             _validBag = Path.Combine(_tmpDir, "bagged-dir");
             _unsupportedBag = Path.Combine(_tmpDir, "unsupported-algorithm");
             _validator = new Validator();
-            Bagit.InitLogger();
         }
 
         public void Dispose()
@@ -61,7 +60,14 @@
         {
             Assert.Throws<InvalidDataException>(() => _validator.ValidateManifests(_unsupportedBag));
         }
-        
+
+        [Fact]
+        public void Test_Invalid_Oxum()
+        {
+            var invalidOxum = Path.Combine(_tmpDir, "bag-invalid-oxum");
+            Assert.Throws<InvalidDataException>(() => _validator.ValidateBag(invalidOxum, false));
+        }
+
         [Fact]
         public void Test_Validate_Bag()
         {

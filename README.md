@@ -11,8 +11,8 @@
 ### create
 Create a Bagit Formatted Bag from a directory.
 #### options
-- --algorithm:specify the checksum algorithm to use: md5, sha1, sha256 (default), sha384, and sha512
-- --log: specify the location to write logging to (default stdout).
+- **--algorithm**: specify the checksum algorithm to use: md5, sha1, sha256 (default), sha384, and sha512
+- **--log**: specify the location to write logging to (default stdout).
 #### usage
 ```bash
 # Create a bag with default SHA-256 checksums
@@ -28,8 +28,8 @@ bagit.net create --log bagit.net.log /path/to/directory
 ### validate
 Validate a Bagit Formatted Bag
 #### options
-- --fast: specify to validate a bag based on payload-oxum only 
-- --log: specify the location to write logging to (default stdout).
+- **--fast**: specify to validate a bag based on payload-oxum only 
+- **--log**: specify the location to write logging to (default stdout).
 #### usage
 ```bash
 # Validate a bag

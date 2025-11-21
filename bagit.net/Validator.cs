@@ -30,7 +30,7 @@ namespace bagit.net
                 Bagit.Logger.LogInformation($"{bagPath} is valid");
             } catch (Exception ex) {
                 Bagit.Logger.LogCritical(ex, "Failed to validate bag at {Path}", bagPath);
-                throw new InvalidOperationException($"Failed to validate bag at {bagPath}", ex);
+                throw;
             }
         }
 
@@ -136,7 +136,6 @@ namespace bagit.net
                 var payloadOxum = tags["Payload-Oxum"];
                 if (oxum != payloadOxum)
                 {
-
                     Bagit.Logger.LogCritical($"was expecting {payloadOxum} returned {oxum}");
                     throw new InvalidDataException("Payload-Oxum in bag-info.txt does not match.");
                 }

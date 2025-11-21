@@ -2,7 +2,6 @@
 using System.Runtime.InteropServices;
 using System.Text;
 using System.Text.RegularExpressions;
-using static System.Net.Mime.MediaTypeNames;
 
 namespace bagit.net
 {
@@ -105,7 +104,7 @@ namespace bagit.net
         }
 
         // Extract checksum algorithm from filename
-        private static ChecksumAlgorithm GetManifestAlgorithm(string manifestFilename)
+        internal static ChecksumAlgorithm GetManifestAlgorithm(string manifestFilename)
         {
             Match match = Regex.Match(manifestFilename, Bagit.checksumPattern, RegexOptions.IgnoreCase);
             if (!match.Success)
@@ -115,7 +114,7 @@ namespace bagit.net
         }
 
         // Validate a single line
-        private static void ValidateManifestLine(string line, string manifestDir, string manifestFileName, ChecksumAlgorithm algorithm)
+        internal static void ValidateManifestLine(string line, string manifestDir, string manifestFileName, ChecksumAlgorithm algorithm)
         {
             var parts = line.Split(' ', 2, StringSplitOptions.RemoveEmptyEntries);
             if (parts.Length != 2)
@@ -151,21 +150,21 @@ namespace bagit.net
         }
 
         // Line length check
-        private static void ValidateLineLength(string line, int maxLength = 200)
+        internal static void ValidateLineLength(string line, int maxLength = 200)
         {
             if (line.Length > maxLength)
                 Bagit.Logger.LogWarning($"Manifest line exceeds {maxLength} characters, may be too long for some file systems: {line}");
         }
 
         // UTF-8 check
-        private static void ValidateFilenameUtf8(string filename)
+        internal static void ValidateFilenameUtf8(string filename)
         {
             if (!IsValidUtf8(filename))
                 Bagit.Logger.LogWarning($"{filename} contains non-unicode characters");
         }
 
         // NFC normalization check
-        private static void ValidateFilenameNormalization(string filename, string fullPath)
+        internal static void ValidateFilenameNormalization(string filename, string fullPath)
         {
             if (!filename.IsNormalized(NormalizationForm.FormC))
                 Bagit.Logger.LogWarning($"{fullPath} is not NFC-Normalized");
