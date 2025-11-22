@@ -1,35 +1,39 @@
-﻿using Microsoft.Extensions.Logging;
-using System;
-using System.Collections.Generic;
-using System.Diagnostics.Metrics;
-using System.IO;
-using System.Linq;
-using System.Security.AccessControl;
-using System.Text;
+﻿using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
 using System.Text.RegularExpressions;
-using System.Threading.Tasks;
+
 
 namespace bagit.net
 {
     public class Validator
     {
+        private readonly ILogger _logger;
+        private readonly IManifestService _manifestService;
+        private readonly IBagInfoService _bagInfoService;
+        public Validator(ILogger<Validator> logger, IServiceProvider provider)
+        {
+            _logger = logger;
+            _manifestService = provider.GetRequiredService<IManifestService>();
+            _bagInfoService = provider.GetRequiredService<IBagInfoService>();
+        }
         public void ValidateBag(string bagPath, bool fast)
         {
+            _logger.LogInformation($"Using bagit.net v{Bagit.VERSION}");
             try
             {   
                 if(fast)
                 {  
                     Has_Valid_BaginfoTXT(bagPath, fast);
-                    Bagit.Logger.LogInformation($"{bagPath} is valid according to Payload-Oxum");
+                    _logger.LogInformation($"{bagPath} is valid according to Payload-Oxum");
                     return;
                 }
                 Has_Required_Files(bagPath);
                 Has_Valid_BagitTXT(bagPath);
                 Has_Valid_BaginfoTXT(bagPath, fast);
                 ValidateManifests(bagPath);
-                Bagit.Logger.LogInformation($"{bagPath} is valid");
+                _logger.LogInformation($"{bagPath} is valid");
             } catch (Exception ex) {
-                Bagit.Logger.LogCritical(ex, "Failed to validate bag at {Path}", bagPath);
+                _logger.LogCritical(ex, "Failed to validate bag at {Path}", bagPath);
                 throw;
             }
         }
@@ -44,7 +48,7 @@ namespace bagit.net
                 throw new DirectoryNotFoundException("data directory missing from bag root");
             var bagInfoPath = Path.Combine(bagPath, "bag-info.txt");
             if (!File.Exists(bagInfoPath))
-                Bagit.Logger.LogWarning("bag-info.txt is missing from bag root");
+                _logger.LogWarning("bag-info.txt is missing from bag root");
 
             var manifestRegex = new Regex(Bagit.ManifestPattern);
             var tagmanifestRegex = new Regex(Bagit.TagmanifestPattern);
@@ -73,7 +77,7 @@ namespace bagit.net
                 if(!allowedFiles.Contains(file))
                 {
                     var fn = Path.GetFileName(file);
-                    Bagit.Logger.LogWarning($"bag contains extra file in root {fn}");
+                    _logger.LogWarning($"bag contains extra file in root {fn}");
                 }
             }
         }
@@ -112,7 +116,7 @@ namespace bagit.net
             if (!Path.Exists(bagInfoFile) && fast)
             {
                 var bag = Path.GetDirectoryName(path);
-                Bagit.Logger.LogCritical("{b} does not contain a bag-info.txt file, required for fast validation.", bag );
+                _logger.LogCritical("{b} does not contain a bag-info.txt file, required for fast validation.", bag );
                 throw new InvalidDataException("bag-info.txt is required for fast validation");
             }
 
@@ -121,22 +125,22 @@ namespace bagit.net
             var tags = TagFile.GetTagFileAsDict(bagInfoFile);
             if(!tags.ContainsKey("Payload-Oxum") && fast)
             {
-                Bagit.Logger.LogCritical("bag-info.txt does not contain a Payload-Oxum tag, required for fast validation.");
+                _logger.LogCritical("bag-info.txt does not contain a Payload-Oxum tag, required for fast validation.");
                 throw new InvalidDataException("Payload-Oxum is required for fast validation");
             }
 
 
             if (!tags.TryGetValue("Payload-Oxum", out var version))
             {
-                Bagit.Logger.LogWarning("bag-info.txt does not contain a Payload-Oxum, skipping validation");
+                _logger.LogWarning("bag-info.txt does not contain a Payload-Oxum, skipping validation");
             }
             else
             {
-                var oxum = BagInfo.GetOxum(path);
+                var oxum = _bagInfoService.GetOxum(path);
                 var payloadOxum = tags["Payload-Oxum"];
                 if (oxum != payloadOxum)
                 {
-                    Bagit.Logger.LogCritical($"was expecting {payloadOxum} returned {oxum}");
+                    _logger.LogCritical($"was expecting {payloadOxum} returned {oxum}");
                     throw new InvalidDataException("Payload-Oxum in bag-info.txt does not match.");
                 }
             }
@@ -150,9 +154,9 @@ namespace bagit.net
                 
                 if (System.Text.RegularExpressions.Regex.IsMatch(Path.GetFileName(f), @"^(manifest|tagmanifest)-(md5|sha1|sha256|sha384|sha512)\.txt$")) 
                 {
-                    //Bagit.Logger.LogInformation($"Validating: {f}");
+                    //_logger.LogInformation($"Validating: {f}");
                     validatedManifestCounter++;
-                    Manifest.ValidateManifestFile(f);
+                    _manifestService.ValidateManifestFile(f);
                 }
             }
 

@@ -5,17 +5,32 @@ using System.Text.RegularExpressions;
 
 namespace bagit.net
 {
-    public static class Manifest
+    public interface IManifestService
     {
-        internal static void CreatePayloadManifest(string bagRoot, ChecksumAlgorithm algorithm)
+        void CreatePayloadManifest(string bagRoot, ChecksumAlgorithm algorithm);
+        void CreateTagManifestFile(string bagRoot, ChecksumAlgorithm algorithm);
+        List<KeyValuePair<string, string>> GetManifestAsKeyValuePairs(string manifestPath);
+        void ValidateManifestFile(string manifestFile);
+    }
+
+    public class ManifestService : IManifestService
+    {
+        private readonly ILogger<ManifestService> _logger;
+
+        public ManifestService(ILogger<ManifestService> logger)
+        {
+            _logger = logger;
+        }
+
+        public void CreatePayloadManifest(string bagRoot, ChecksumAlgorithm algorithm)
         {
             var algorithmCode = Checksum.GetAlgorithmCode(algorithm);
-            Bagit.Logger.LogInformation($"Generating manifests using {algorithmCode}");
+            _logger.LogInformation($"Generating manifests using {algorithmCode}");
             var manifestContent = new StringBuilder();
             var fileEntries = GetPayloadFiles(bagRoot);
             foreach (var entry in fileEntries)
             {
-                Bagit.Logger.LogInformation($"Generating manifest lines for file {entry}");
+                _logger.LogInformation($"Generating manifest lines for file {entry}");
                 var checksum = Checksum.CalculateChecksum(Path.Combine(bagRoot, entry), algorithm);
                 manifestContent.AppendLine($"{checksum} {entry}");
             }
@@ -24,11 +39,11 @@ namespace bagit.net
             File.WriteAllText(manifestFilename, manifestContent.ToString(), new UTF8Encoding(encoderShouldEmitUTF8Identifier: false));
         }
 
-        internal static void CreateTagManifestFile(string bagRoot, ChecksumAlgorithm algorithm)
+        public void CreateTagManifestFile(string bagRoot, ChecksumAlgorithm algorithm)
         {
             var algorithmCode = Checksum.GetAlgorithmCode(algorithm);
             var manifestFilename = Path.Combine(bagRoot, $"tagmanifest-{algorithmCode}.txt");
-            Bagit.Logger.LogInformation($"Creating {manifestFilename}");
+            _logger.LogInformation($"Creating {manifestFilename}");
             
             StringBuilder sb  = new StringBuilder();
             var fileEntries = GetRootFiles(bagRoot);
@@ -41,7 +56,7 @@ namespace bagit.net
             File.WriteAllText(manifestFilename, sb.ToString(), new UTF8Encoding(encoderShouldEmitUTF8Identifier: false));
         }
 
-        internal static IEnumerable<string> GetPayloadFiles(string bagRoot)
+        internal IEnumerable<string> GetPayloadFiles(string bagRoot)
         {
             string dataDir = Path.Combine(bagRoot, "data");
 
@@ -56,7 +71,7 @@ namespace bagit.net
             }
         }
 
-        internal static IEnumerable<string> GetRootFiles(string bagRoot)
+        internal IEnumerable<string> GetRootFiles(string bagRoot)
         {
             foreach (var file in Directory.EnumerateFiles(bagRoot, "*", SearchOption.TopDirectoryOnly))
             {
@@ -66,7 +81,7 @@ namespace bagit.net
             }
         }
 
-        public static List<KeyValuePair<string, string>> GetManifestAsKeyValuePairs(string manifestPath)
+        public List<KeyValuePair<string, string>> GetManifestAsKeyValuePairs(string manifestPath)
         {
             return File.ReadAllLines(manifestPath)
                 .Where(line => !string.IsNullOrWhiteSpace(line))
@@ -80,7 +95,7 @@ namespace bagit.net
                 .ToList();
         }
 
-        internal static void ValidateManifestFile(string manifestFile)
+        public void ValidateManifestFile(string manifestFile)
         {
             string dir = Path.GetDirectoryName(manifestFile)
                 ?? throw new InvalidDataException("Could not determine manifest directory.");
@@ -104,7 +119,7 @@ namespace bagit.net
         }
 
         // Extract checksum algorithm from filename
-        internal static ChecksumAlgorithm GetManifestAlgorithm(string manifestFilename)
+        internal ChecksumAlgorithm GetManifestAlgorithm(string manifestFilename)
         {
             Match match = Regex.Match(manifestFilename, Bagit.checksumPattern, RegexOptions.IgnoreCase);
             if (!match.Success)
@@ -114,7 +129,7 @@ namespace bagit.net
         }
 
         // Validate a single line
-        internal static void ValidateManifestLine(string line, string manifestDir, string manifestFileName, ChecksumAlgorithm algorithm)
+        internal void ValidateManifestLine(string line, string manifestDir, string manifestFileName, ChecksumAlgorithm algorithm)
         {
             var parts = line.Split(' ', 2, StringSplitOptions.None);
             if (parts.Length != 2)
@@ -140,7 +155,7 @@ namespace bagit.net
             ValidateFilenameNormalization(filename, payloadFile);
 
             // Verify checksum
-            Bagit.Logger.LogInformation($"Verifying checksum for file {fullPath}");
+            _logger.LogInformation($"Verifying checksum for file {fullPath}");
             if (!Checksum.CompareChecksum(fullPath, checksum, algorithm))
             {
                 throw new InvalidDataException(
@@ -150,28 +165,28 @@ namespace bagit.net
         }
 
         // Line length check
-        internal static void ValidateLineLength(string line, int maxLength = 200)
+        internal void ValidateLineLength(string line, int maxLength = 200)
         {
             if (line.Length > maxLength)
-                Bagit.Logger.LogWarning($"Manifest line exceeds {maxLength} characters, may be too long for some file systems: {line}");
+                _logger.LogWarning($"Manifest line exceeds {maxLength} characters, may be too long for some file systems: {line}");
         }
 
         // UTF-8 check
-        internal static void ValidateFilenameUtf8(string filename)
+        internal void ValidateFilenameUtf8(string filename)
         {
             if (!IsValidUtf8(filename))
-                Bagit.Logger.LogWarning($"{filename} contains non-unicode characters");
+                _logger.LogWarning($"{filename} contains non-unicode characters");
         }
 
         // NFC normalization check
-        internal static void ValidateFilenameNormalization(string filename, string fullPath)
+        internal void ValidateFilenameNormalization(string filename, string fullPath)
         {
             if (!filename.IsNormalized(NormalizationForm.FormC))
-                Bagit.Logger.LogWarning($"{fullPath} is not NFC-Normalized");
+                _logger.LogWarning($"{fullPath} is not NFC-Normalized");
         }
 
 
-        internal static void ValidateManifestLineEndings(string manifestFile)
+        internal void ValidateManifestLineEndings(string manifestFile)
         {
             string content = File.ReadAllText(manifestFile, System.Text.Encoding.UTF8);
 
@@ -181,25 +196,25 @@ namespace bagit.net
 
             if (matches.Count == 0)
             {
-                Bagit.Logger.LogWarning($"{Path.GetFileName(manifestFile)} contains no line endings");
+                _logger.LogWarning($"{Path.GetFileName(manifestFile)} contains no line endings");
                 return;
             }
 
             // Check for any CR-only line endings (\r not followed by \n)
             if (Regex.IsMatch(content, @"\r(?!\n)"))
             {
-                Bagit.Logger.LogWarning($"{Path.GetFileName(manifestFile)} contains CR-only line endings");
+                _logger.LogWarning($"{Path.GetFileName(manifestFile)} contains CR-only line endings");
             }
 
             // Check if last line ends with a newline
             if (!content.EndsWith("\n") && !content.EndsWith("\r"))
             {
-                Bagit.Logger.LogWarning($"{Path.GetFileName(manifestFile)} does not end with a newline");
+                _logger.LogWarning($"{Path.GetFileName(manifestFile)} does not end with a newline");
             }
         }
 
 
-        internal static bool IsValidUtf8(string filename)
+        internal bool IsValidUtf8(string filename)
         {
             try
             {

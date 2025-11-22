@@ -1,19 +1,29 @@
 ﻿using Microsoft.Extensions.Logging;
-using System;
-using System.Collections.Generic;
-using System.IO;
-using System.Linq;
 using System.Text;
-using System.Threading.Tasks;
 
 namespace bagit.net
 {
-    public static class BagInfo
+    public interface IBagInfoService
     {
+        void CreateBagInfo(string bagDir);
+        string GetOxum(string bagRoot);
 
-        public static void CreateBagInfo(string bagDir)
+        List<KeyValuePair<string, string>> GetBagInfoAsKeyValuePairs(string baginfoPath);
+
+    }
+    public class BagInfoService : IBagInfoService
+    {
+        
+        private readonly ILogger _logger;
+
+        public BagInfoService(ILogger<BagInfoService> logger)
         {
-            Bagit.Logger.LogInformation("Creating bag-info.txt");
+            _logger = logger;
+        }
+
+        public void CreateBagInfo(string bagDir)
+        {
+            _logger.LogInformation("Creating bag-info.txt");
             var oxum = GetOxum(bagDir);
             var sb = new StringBuilder();
 
@@ -26,7 +36,7 @@ namespace bagit.net
             File.WriteAllText(bagInfoFile, sb.ToString(), new UTF8Encoding(encoderShouldEmitUTF8Identifier: false));
         }
 
-        internal static string GetOxum(string bagRoot)
+        public string GetOxum(string bagRoot)
         {
             string dataDir = Path.Combine(bagRoot, "data");
             int count = 0;
@@ -45,7 +55,7 @@ namespace bagit.net
             return $"{numBytes}.{count}";
         }
 
-        public static List<KeyValuePair<string, string>> GetBagInfoAsKeyValuePairs(string baginfoPath)
+        public List<KeyValuePair<string, string>> GetBagInfoAsKeyValuePairs(string baginfoPath)
         {
             return File.ReadAllLines(baginfoPath)
                 .Where(line => !string.IsNullOrWhiteSpace(line))

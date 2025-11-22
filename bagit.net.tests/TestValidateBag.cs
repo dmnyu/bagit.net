@@ -1,4 +1,6 @@
-﻿namespace bagit.net.tests
+﻿using Microsoft.Extensions.Logging;
+
+namespace bagit.net.tests
 {
     public class TestValidateBag : IDisposable
     {
@@ -80,6 +82,13 @@
         {
             var ex = Record.Exception(() => _validator.ValidateBag(_validBag, true));
             Assert.Null(ex);
+        }
+
+        [Fact]
+        public void Test_Test_Logger()
+        {
+            TestLogger.InitLogger();
+            TestLogger.Logger.LogInformation("Hello");
         }
 
 

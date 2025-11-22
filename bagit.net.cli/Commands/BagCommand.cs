@@ -1,10 +1,10 @@
-﻿using Microsoft.Extensions.Logging;
+﻿using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
+using Serilog;
 using Spectre.Console;
 using Spectre.Console.Cli;
 using System.ComponentModel;
-using System.IO;
-using System.Threading;
-using bagit.net.cli;
+
 
 namespace bagit.net.cli.Commands;
 
@@ -66,11 +66,25 @@ class BagCommand : Command<BagCommand.Settings>
             AnsiConsole.MarkupLine($"bagit.net.cli v{Bagit.VERSION}");
             AnsiConsole.MarkupLine($"Logging to {settings.logFile}");
         }
-        Bagit.InitLogger(settings.logFile);
-        Bagit.Logger.LogInformation($"Using bagit.net v{Bagit.VERSION}");
 
-        //start the bagger
-        var bagger = new Bagger();
+
+        
+        var services = new ServiceCollection();
+        // Logging (Serilog bridge)
+        Log.Logger = new LoggerConfiguration()
+            .MinimumLevel.Debug()
+            .WriteTo.Console(new ShortLevelFormatter()) // your custom formatter
+            .CreateLogger();
+
+        services.AddLogging(builder => builder.AddSerilog(Log.Logger, dispose: true));
+
+
+        services.AddSingleton<IManifestService,ManifestService>();
+        services.AddSingleton<IBagInfoService, BagInfoService>();
+        services.AddTransient<Bagger>();
+        var serviceProvider = services.BuildServiceProvider();
+
+        var bagger = serviceProvider.GetRequiredService<Bagger>();
         bagger.CreateBag(bagPath, algorithm);
         return 0;
     }

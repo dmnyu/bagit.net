@@ -1,4 +1,5 @@
-﻿using Microsoft.Extensions.Logging;
+﻿using Microsoft.Extensions.DependencyInjection;
+using Serilog;
 using Spectre.Console;
 using Spectre.Console.Cli;
 using System.ComponentModel;
@@ -44,12 +45,25 @@ namespace bagit.net.cli.Commands
                 AnsiConsole.MarkupLine($"bagit.net.cli v{Bagit.VERSION}");
                 AnsiConsole.MarkupLine($"Logging to {settings.logFile}");
             }
-            Bagit.InitLogger(settings.logFile);
-            Bagit.Logger.LogInformation($"Using bagit.net v{Bagit.VERSION}");
+            var services = new ServiceCollection();
 
-            //start the validation
-            var validator = new Validator();
+            // Logging (Serilog bridge)
+            Log.Logger = new LoggerConfiguration()
+                .MinimumLevel.Debug()
+                .WriteTo.Console(new ShortLevelFormatter()) // your custom formatter
+                .CreateLogger();
+            
+            services.AddLogging(builder => builder.AddSerilog(Log.Logger, dispose: true));
+
+            // Your services
+            services.AddSingleton<IManifestService, ManifestService>();
+            services.AddSingleton<IBagInfoService, BagInfoService>();
+            services.AddTransient<Validator>();
+            var serviceProvider = services.BuildServiceProvider();
+
+            var validator = serviceProvider.GetRequiredService<Validator>();
             validator.ValidateBag(bagPath, settings.Fast);
+
             return 0;
         }
     }
