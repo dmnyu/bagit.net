@@ -10,19 +10,20 @@ namespace bagit.net
         private string dataDir = string.Empty;
         private string tempDataDir = string.Empty;
         private string nl = Environment.NewLine;
-        private readonly ILogger<Bagger> _logger;
+        private readonly ILogger _logger;
         private readonly IManifestService _manifestService;
         private readonly IBagInfoService _bagInfoService;
             
-        public Bagger(ILogger<Bagger> logger, IServiceProvider provider)
+        public Bagger(ILogger<Validator> logger, IManifestService manifestService, IBagInfoService bagInfoService)
         {
             _logger = logger;
-            _manifestService = provider.GetRequiredService<IManifestService>();
-            _bagInfoService = provider.GetRequiredService<IBagInfoService>();
+            _manifestService = manifestService;
+            _bagInfoService = bagInfoService;
         }
 
         public void CreateBag(string? path, ChecksumAlgorithm algorithm)
         {
+            _logger.LogInformation($"Using bagit.net v{Bagit.VERSION}");
             if (path == null)
             {
                 _logger.LogCritical("The path to a directory cannot be null");

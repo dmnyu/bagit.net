@@ -10,11 +10,11 @@ namespace bagit.net
         private readonly ILogger _logger;
         private readonly IManifestService _manifestService;
         private readonly IBagInfoService _bagInfoService;
-        public Validator(ILogger<Validator> logger, IServiceProvider provider)
+        public Validator(ILogger<Validator> logger, IManifestService manifestService, IBagInfoService bagInfoService)
         {
             _logger = logger;
-            _manifestService = provider.GetRequiredService<IManifestService>();
-            _bagInfoService = provider.GetRequiredService<IBagInfoService>();
+            _manifestService = manifestService;
+            _bagInfoService = bagInfoService;
         }
         public void ValidateBag(string bagPath, bool fast)
         {
