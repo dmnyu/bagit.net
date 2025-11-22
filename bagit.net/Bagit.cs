@@ -1,14 +1,8 @@
-﻿using Microsoft.Extensions.Logging;
-using ILogger = Microsoft.Extensions.Logging.ILogger;
-using Serilog;
-using Serilog.Events;
-using Serilog.Formatting;
-
-namespace bagit.net
+﻿namespace bagit.net
 {
     public static class Bagit
     {
-        public const string VERSION = "0.2.0-alpha.1"; 
+        public const string VERSION = "0.2.1-alpha"; 
         public const string BAGIT_VERSION = "1.0";
 
         public static Dictionary<string, ChecksumAlgorithm> Algorithms = new Dictionary<string, ChecksumAlgorithm>()

@@ -2,7 +2,7 @@
 <Project ToolsVersion="Current" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <PropertyGroup>
     <_LastSelectedProfileId>C:\Users\don\source\repos\bagit.net\bagit.net.cli\Properties\PublishProfiles\FolderProfile.pubxml</_LastSelectedProfileId>
-    <ActiveDebugProfile>bagit.net.cli create with log</ActiveDebugProfile>
+    <ActiveDebugProfile>bagit.net.cli validate</ActiveDebugProfile>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
     <DebuggerFlavor>ProjectDebugger</DebuggerFlavor>
