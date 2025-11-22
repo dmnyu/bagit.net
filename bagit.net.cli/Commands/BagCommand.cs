@@ -67,23 +67,7 @@ class BagCommand : Command<BagCommand.Settings>
             AnsiConsole.MarkupLine($"Logging to {settings.logFile}");
         }
 
-
-        
-        var services = new ServiceCollection();
-        // Logging (Serilog bridge)
-        Log.Logger = new LoggerConfiguration()
-            .MinimumLevel.Debug()
-            .WriteTo.Console(new ShortLevelFormatter()) // your custom formatter
-            .CreateLogger();
-
-        services.AddLogging(builder => builder.AddSerilog(Log.Logger, dispose: true));
-
-
-        services.AddSingleton<IManifestService,ManifestService>();
-        services.AddSingleton<IBagInfoService, BagInfoService>();
-        services.AddTransient<Bagger>();
-        var serviceProvider = services.BuildServiceProvider();
-
+        var serviceProvider = ServiceConfigurator.BuildServiceProvider<Bagger>();
         var bagger = serviceProvider.GetRequiredService<Bagger>();
         bagger.CreateBag(bagPath, algorithm);
         return 0;

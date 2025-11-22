@@ -45,22 +45,8 @@ namespace bagit.net.cli.Commands
                 AnsiConsole.MarkupLine($"bagit.net.cli v{Bagit.VERSION}");
                 AnsiConsole.MarkupLine($"Logging to {settings.logFile}");
             }
-            var services = new ServiceCollection();
 
-            // Logging (Serilog bridge)
-            Log.Logger = new LoggerConfiguration()
-                .MinimumLevel.Debug()
-                .WriteTo.Console(new ShortLevelFormatter()) // your custom formatter
-                .CreateLogger();
-            
-            services.AddLogging(builder => builder.AddSerilog(Log.Logger, dispose: true));
-
-            // Your services
-            services.AddSingleton<IManifestService, ManifestService>();
-            services.AddSingleton<IBagInfoService, BagInfoService>();
-            services.AddTransient<Validator>();
-            var serviceProvider = services.BuildServiceProvider();
-
+            var serviceProvider = ServiceConfigurator.BuildServiceProvider<Validator>();
             var validator = serviceProvider.GetRequiredService<Validator>();
             validator.ValidateBag(bagPath, settings.Fast);
 
