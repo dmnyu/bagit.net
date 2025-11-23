@@ -1,4 +1,5 @@
 ﻿using bagit.net.services;
+using bagit.net.interfaces;
 using Microsoft.Extensions.Logging;
 using System.Text;
 

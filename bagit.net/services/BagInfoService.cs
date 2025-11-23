@@ -1,16 +1,10 @@
 ﻿using Microsoft.Extensions.Logging;
 using System.Text;
+using bagit.net.interfaces;
 
 namespace bagit.net.services
 {
-    public interface IBagInfoService
-    {
-        void CreateBagInfo(string bagDir);
-        string GetOxum(string bagRoot);
 
-        List<KeyValuePair<string, string>> GetBagInfoAsKeyValuePairs(string baginfoPath);
-
-    }
     public class BagInfoService : IBagInfoService
     {
         

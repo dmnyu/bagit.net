@@ -2,17 +2,10 @@
 using System.Runtime.InteropServices;
 using System.Text;
 using System.Text.RegularExpressions;
+using bagit.net.interfaces;
 
 namespace bagit.net.services
 {
-    public interface IManifestService
-    {
-        void CreatePayloadManifest(string bagRoot, ChecksumAlgorithm algorithm);
-        void CreateTagManifestFile(string bagRoot, ChecksumAlgorithm algorithm);
-        List<KeyValuePair<string, string>> GetManifestAsKeyValuePairs(string manifestPath);
-        void ValidateManifestFile(string manifestFile);
-    }
-
     public class ManifestService : IManifestService
     {
         private readonly ILogger<ManifestService> _logger;
