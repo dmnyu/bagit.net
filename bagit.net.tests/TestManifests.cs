@@ -1,8 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿using Microsoft.Extensions.DependencyInjection;
 
 namespace bagit.net.tests
 {
@@ -10,12 +6,13 @@ namespace bagit.net.tests
     {
         private readonly string _tmpDir;
         private readonly string _testDir;
+        private readonly ServiceProvider _serviceProvider;
         private readonly Bagger _bagger;
         public TestManifests() {
             _tmpDir = TestHelpers.PrepareTempTestData();
             _testDir = Path.Combine(_tmpDir, "test-bag");
-            Bagit.InitLogger(null);
-            _bagger = new Bagger();
+            _serviceProvider = ServiceConfigurator.BuildServiceProvider<Bagger>();
+            _bagger = _serviceProvider.GetRequiredService<Bagger>();
         }
 
         public void Dispose()
@@ -33,9 +30,8 @@ namespace bagit.net.tests
         public void Test_Manifest_Exists(ChecksumAlgorithm algorithm)
         {
             var tmpDir = TestHelpers.PrepareTempTestData();
-            var bagger = new Bagger();
             var algorithmCode = Checksum.GetAlgorithmCode(algorithm);
-            bagger.CreateBag(tmpDir, algorithm);
+            _bagger.CreateBag(tmpDir, algorithm);
             Assert.True(File.Exists(Path.Combine(tmpDir, $"manifest-{algorithmCode}.txt")));
         }
 
@@ -44,7 +40,8 @@ namespace bagit.net.tests
             var algorithm = ChecksumAlgorithm.MD5;
             var algorithmCode = Checksum.GetAlgorithmCode(ChecksumAlgorithm.MD5);
             _bagger.CreateBag(_tmpDir, algorithm);
-            var kvp = Manifest.GetManifestAsKeyValuePairs(Path.Combine(_tmpDir, $"manifest-{algorithmCode}.txt"));
+            var manifestService = _serviceProvider.GetRequiredService<IManifestService>();
+            var kvp = manifestService.GetManifestAsKeyValuePairs(Path.Combine(_tmpDir, $"manifest-{algorithmCode}.txt"));
             Assert.Equal(2, kvp.Count);
 
             var expected = new[]

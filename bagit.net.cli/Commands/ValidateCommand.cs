@@ -1,5 +1,4 @@
 ﻿using Microsoft.Extensions.DependencyInjection;
-using Serilog;
 using Spectre.Console;
 using Spectre.Console.Cli;
 using System.ComponentModel;

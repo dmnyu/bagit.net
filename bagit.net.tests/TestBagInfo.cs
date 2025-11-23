@@ -1,8 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿using Microsoft.Extensions.DependencyInjection;
 
 namespace bagit.net.tests
 {
@@ -10,13 +6,14 @@ namespace bagit.net.tests
     {
         private readonly string _tmpDir;
         private readonly Bagger _bagger;
+        private readonly ServiceProvider _serviceProvider;
         
 
         public TestBagInfo()
         {
             _tmpDir = TestHelpers.PrepareTempTestData();
-            Bagit.InitLogger(null);
-            _bagger = new Bagger();
+            _serviceProvider = ServiceConfigurator.BuildServiceProvider<Bagger>();
+            _bagger = _serviceProvider.GetRequiredService<Bagger>();
         }
 
         public void Dispose()
@@ -33,10 +30,7 @@ namespace bagit.net.tests
             Assert.True(File.Exists(bagInfoFile));
         }
 
-
-
         [Fact]
-
         public void Test_BagInfo_Content()
         {
             _bagger.CreateBag(_tmpDir, ChecksumAlgorithm.MD5);
@@ -49,8 +43,8 @@ namespace bagit.net.tests
                 ["BagIt-Version"] = v => !string.IsNullOrWhiteSpace(v)
             };
 
-
-            var kvp = BagInfo.GetBagInfoAsKeyValuePairs(Path.Combine(_tmpDir, "bag-info.txt"));
+            var bagInfoService = _serviceProvider.GetRequiredService<IBagInfoService>();
+            var kvp = bagInfoService.GetBagInfoAsKeyValuePairs(Path.Combine(_tmpDir, "bag-info.txt"));
 
             foreach (var (key, validator) in expected)
             {

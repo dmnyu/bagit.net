@@ -1,7 +1,5 @@
-﻿using System;
-using System.IO;
+﻿using Microsoft.Extensions.DependencyInjection;
 using System.Text;
-using Xunit;
 
 namespace bagit.net.tests
 {
@@ -9,14 +7,15 @@ namespace bagit.net.tests
     {
         private readonly string _tmpDir;
         private readonly string _testDir;
+        private readonly ServiceProvider _serviceProvider;
         private readonly Bagger _bagger;
 
         public TestCreateBag()
         {
             _tmpDir = TestHelpers.PrepareTempTestData();
             _testDir = Path.Combine(_tmpDir, "test-bag");
-            Bagit.InitLogger(null);
-            _bagger = new Bagger();
+            _serviceProvider = ServiceConfigurator.BuildServiceProvider<Bagger>();
+            _bagger = _serviceProvider.GetRequiredService<Bagger>();
         }
 
         public void Dispose()

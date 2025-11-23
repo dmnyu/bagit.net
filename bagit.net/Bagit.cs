@@ -1,4 +1,7 @@
-﻿namespace bagit.net
+﻿using Microsoft.Extensions.DependencyInjection;
+using Serilog;
+
+namespace bagit.net
 {
     public static class Bagit
     {
@@ -18,5 +21,35 @@
         public const string ManifestPattern = @"manifest-(md5|sha1|sha256|sha384|sha512).txt";
         public const string TagmanifestPattern = @"tagmanifest-(md5|sha1|sha256|sha384|sha512).txt";
 
+    }
+
+    public static class ServiceConfigurator
+    {
+        public static ServiceProvider BuildServiceProvider<TWorker>(string logFile = "")
+            where TWorker : class
+        {
+
+
+            var loggerConfig = new LoggerConfiguration()
+                .MinimumLevel.Debug();
+
+            if (string.IsNullOrEmpty(logFile))
+            {
+                loggerConfig = loggerConfig.WriteTo.Console(new ShortLevelFormatter());
+            }
+            else
+            {
+                loggerConfig = loggerConfig.WriteTo.File(logFile);
+            }
+
+            Log.Logger = loggerConfig.CreateLogger();
+
+            var services = new ServiceCollection();
+            services.AddLogging(builder => builder.AddSerilog(Log.Logger, dispose: true));
+            services.AddSingleton<IManifestService, ManifestService>();
+            services.AddSingleton<IBagInfoService, BagInfoService>();
+            services.AddTransient<TWorker>();
+            return services.BuildServiceProvider();
+        }
     }
 }

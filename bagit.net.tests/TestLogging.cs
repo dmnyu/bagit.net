@@ -1,4 +1,6 @@
-﻿namespace bagit.net.tests
+﻿using Microsoft.Extensions.DependencyInjection;
+
+namespace bagit.net.tests
 {
     public class TestLogging : IDisposable
     {
@@ -6,6 +8,7 @@
         private readonly string _testDir;
         private readonly string _logFile;
         private readonly Bagger _bagger;
+        private readonly ServiceProvider _serviceProvider; 
 
         public TestLogging()
         {
@@ -13,8 +16,8 @@
             _testDir = Path.Combine(_tmpDir, "test-data");
             _logFile = Path.Combine(_tmpDir, "bagit.net.log");
             Directory.CreateDirectory(_testDir);
-            Bagit.InitLogger(_logFile);
-            _bagger = new Bagger();
+            _serviceProvider = ServiceConfigurator.BuildServiceProvider<Bagger>(_logFile);
+            _bagger = _serviceProvider.GetRequiredService<Bagger>();
         }
 
         public void Dispose() {

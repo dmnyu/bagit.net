@@ -1,9 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Security.Cryptography;
-using System.Text;
-using System.Threading.Tasks;
+﻿using Microsoft.Extensions.DependencyInjection;
 
 namespace bagit.net.tests
 {
@@ -11,13 +6,17 @@ namespace bagit.net.tests
     {
         private readonly string _tmpDir;
         private readonly string _testDir;
+        private readonly ServiceProvider _serviceProvider;
         private readonly Bagger _bagger;
+        private readonly IManifestService _manifestService;
+
         public TestTagManifest()
         {
             _tmpDir = TestHelpers.PrepareTempTestData();
             _testDir = Path.Combine(_tmpDir, "test-bag");
-            Bagit.InitLogger(null);
-            _bagger = new Bagger();
+            _serviceProvider = ServiceConfigurator.BuildServiceProvider<Bagger>();
+            _bagger = _serviceProvider.GetRequiredService<Bagger>();
+            _manifestService = _serviceProvider.GetRequiredService<IManifestService>();
         }
 
         public void Dispose()
@@ -39,7 +38,7 @@ namespace bagit.net.tests
         {
             _bagger.CreateBag(_testDir, ChecksumAlgorithm.MD5);
             var tagManifestFile = Path.Combine(_testDir, "tagmanifest-md5.txt");
-            var kvp = Manifest.GetManifestAsKeyValuePairs(tagManifestFile);
+            var kvp = _manifestService.GetManifestAsKeyValuePairs(tagManifestFile);
             Assert.DoesNotContain(kvp, pair =>
                 pair.Value.Equals("tagmanifest-md5.txt", StringComparison.OrdinalIgnoreCase)
             );
@@ -52,7 +51,7 @@ namespace bagit.net.tests
             var algorithmCode = Checksum.GetAlgorithmCode(algorithm);
             _bagger.CreateBag(_tmpDir, algorithm);
 
-            var kvp = Manifest.GetManifestAsKeyValuePairs(
+            var kvp = _manifestService.GetManifestAsKeyValuePairs(
                 Path.Combine(_tmpDir, $"tagmanifest-{algorithmCode}.txt"));
 
             Assert.Equal(3, kvp.Count);

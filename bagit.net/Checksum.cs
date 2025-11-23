@@ -1,13 +1,6 @@
-﻿using Microsoft.Extensions.Logging;
-using System;
-using System.Collections.Generic;
-using System.IO;
-using System.IO.Enumeration;
-using System.Linq;
-using System.Security.Cryptography;
-using System.Text;
+﻿using System.Security.Cryptography;
 using System.Text.RegularExpressions;
-using System.Threading.Tasks;
+
 
 namespace bagit.net
 {

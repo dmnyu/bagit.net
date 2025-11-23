@@ -1,4 +1,4 @@
-﻿using Microsoft.Extensions.Logging;
+﻿using Microsoft.Extensions.DependencyInjection;
 
 namespace bagit.net.tests
 {
@@ -7,6 +7,7 @@ namespace bagit.net.tests
         private readonly string _tmpDir;
         private readonly string _validBag;
         private readonly string _unsupportedBag;
+        private readonly ServiceProvider _serviceProvider;
         private readonly Validator _validator;
         
         public TestValidateBag()
@@ -14,7 +15,8 @@ namespace bagit.net.tests
             _tmpDir = TestHelpers.PrepareTempTestData();
             _validBag = Path.Combine(_tmpDir, "bagged-dir");
             _unsupportedBag = Path.Combine(_tmpDir, "unsupported-algorithm");
-            _validator = new Validator();
+            _serviceProvider = ServiceConfigurator.BuildServiceProvider<Validator>();
+            _validator = _serviceProvider.GetRequiredService<Validator>();
         }
 
         public void Dispose()
@@ -53,8 +55,9 @@ namespace bagit.net.tests
         [Fact]
         public void Test_Unsupported_Algorithm()
         {
+            var manifestService = _serviceProvider.GetRequiredService<IManifestService>();
             string unsupportedAlgorithmManifest =  Path.Combine(_unsupportedBag, "manifest-blake2s.txt");
-            Assert.Throws<InvalidDataException>(() => Manifest.ValidateManifestFile(unsupportedAlgorithmManifest));
+            Assert.Throws<InvalidDataException>(() => manifestService.ValidateManifestFile(unsupportedAlgorithmManifest));
         }
 
         [Fact]
@@ -83,15 +86,6 @@ namespace bagit.net.tests
             var ex = Record.Exception(() => _validator.ValidateBag(_validBag, true));
             Assert.Null(ex);
         }
-
-        [Fact]
-        public void Test_Test_Logger()
-        {
-            TestLogger.InitLogger();
-            TestLogger.Logger.LogInformation("Hello");
-        }
-
-
 
     }
 }

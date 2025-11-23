@@ -1,9 +1,5 @@
-﻿using bagit.net;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿using Microsoft.Extensions.DependencyInjection;
+
 
 namespace bagit.net.tests
 {
@@ -11,13 +7,16 @@ namespace bagit.net.tests
     {
         private readonly string _tmpDir;
         private readonly string _testDir;
+        private readonly Bagger _bagger;
+        private readonly ServiceProvider _serviceProvider;
 
 
         public TestChecksums()
         {
             _tmpDir = TestHelpers.PrepareTempTestData();
             _testDir = Path.Combine(_tmpDir, "test-bag");
-            Bagit.InitLogger(null);
+            _serviceProvider = ServiceConfigurator.BuildServiceProvider<Bagger>();
+            _bagger = _serviceProvider.GetRequiredService<Bagger>();
         }
 
         public void Dispose()
