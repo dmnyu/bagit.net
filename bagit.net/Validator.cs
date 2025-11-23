@@ -1,4 +1,5 @@
-﻿using Microsoft.Extensions.Logging;
+﻿using bagit.net.services;
+using Microsoft.Extensions.Logging;
 using System.Text.RegularExpressions;
 
 namespace bagit.net
@@ -48,8 +49,8 @@ namespace bagit.net
             if (!File.Exists(bagInfoPath))
                 _logger.LogWarning("bag-info.txt is missing from bag root");
 
-            var manifestRegex = new Regex(Bagit.ManifestPattern);
-            var tagmanifestRegex = new Regex(Bagit.TagmanifestPattern);
+            var manifestRegex = new Regex(Checksum.ManifestPattern);
+            var tagmanifestRegex = new Regex(Checksum.TagmanifestPattern);
             var manifests = new List<string>{ };
             var tagmanifests = new List<string>();
 

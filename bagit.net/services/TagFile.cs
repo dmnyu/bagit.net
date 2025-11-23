@@ -1,10 +1,10 @@
-﻿namespace bagit.net
+﻿namespace bagit.net.services
 {
     public static class TagFile
     {
-        public static Dictionary<String, String> GetTagFileAsDict(string tagFilePath)
+        public static Dictionary<string, string> GetTagFileAsDict(string tagFilePath)
         {
-            var tagDictionary = new Dictionary<String, String>();
+            var tagDictionary = new Dictionary<string, string>();
             foreach (var line in File.ReadAllLines(tagFilePath))
             {
                 if (string.IsNullOrWhiteSpace(line))

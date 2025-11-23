@@ -3,7 +3,7 @@ using System.Runtime.InteropServices;
 using System.Text;
 using System.Text.RegularExpressions;
 
-namespace bagit.net
+namespace bagit.net.services
 {
     public interface IManifestService
     {
@@ -121,11 +121,11 @@ namespace bagit.net
         // Extract checksum algorithm from filename
         internal ChecksumAlgorithm GetManifestAlgorithm(string manifestFilename)
         {
-            Match match = Regex.Match(manifestFilename, Bagit.checksumPattern, RegexOptions.IgnoreCase);
+            Match match = Regex.Match(manifestFilename, Checksum.checksumPattern, RegexOptions.IgnoreCase);
             if (!match.Success)
                 throw new InvalidDataException($"Cannot determine checksum algorithm from manifest filename '{manifestFilename}'.");
 
-            return Bagit.Algorithms[match.Groups[1].Value.ToLowerInvariant()];
+            return Checksum.Algorithms[match.Groups[1].Value.ToLowerInvariant()];
         }
 
         // Validate a single line
@@ -188,7 +188,7 @@ namespace bagit.net
 
         internal void ValidateManifestLineEndings(string manifestFile)
         {
-            string content = File.ReadAllText(manifestFile, System.Text.Encoding.UTF8);
+            string content = File.ReadAllText(manifestFile, Encoding.UTF8);
 
             // Match all line endings (either LF or CRLF)
             var lineEndingPattern = @"\r?\n";

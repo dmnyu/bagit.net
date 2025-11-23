@@ -1,7 +1,7 @@
 ﻿using Microsoft.Extensions.Logging;
 using System.Text;
 
-namespace bagit.net
+namespace bagit.net.services
 {
     public interface IBagInfoService
     {

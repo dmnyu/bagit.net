@@ -2,7 +2,7 @@
 using System.Text.RegularExpressions;
 
 
-namespace bagit.net
+namespace bagit.net.services
 {
     public enum ChecksumAlgorithm
     {
@@ -14,6 +14,18 @@ namespace bagit.net
     }
     public static class Checksum
     {
+        public static Dictionary<string, ChecksumAlgorithm> Algorithms = new Dictionary<string, ChecksumAlgorithm>()
+        {
+            {"md5", ChecksumAlgorithm.MD5},
+            {"sha1", ChecksumAlgorithm.SHA1},
+            {"sha256", ChecksumAlgorithm.SHA256},
+            {"sha384", ChecksumAlgorithm.SHA384},
+            {"sha512", ChecksumAlgorithm.SHA512}
+        };
+
+        public const string checksumPattern = @"-(md5|sha1|sha256|sha384|sha512)\b";
+        public const string ManifestPattern = @"manifest-(md5|sha1|sha256|sha384|sha512).txt";
+        public const string TagmanifestPattern = @"tagmanifest-(md5|sha1|sha256|sha384|sha512).txt";
         public static string CalculateChecksum(string? filePath, ChecksumAlgorithm algorithm)
         {
             ArgumentNullException.ThrowIfNull(filePath);
@@ -25,10 +37,10 @@ namespace bagit.net
 
             using var hashAlgorithm = algorithm switch
             {
-                ChecksumAlgorithm.MD5 => (HashAlgorithm)MD5.Create(),
-                ChecksumAlgorithm.SHA1 => (HashAlgorithm)SHA1.Create(),
-                ChecksumAlgorithm.SHA256 => (HashAlgorithm)SHA256.Create(),
-                ChecksumAlgorithm.SHA384 => (HashAlgorithm)SHA384.Create(),
+                ChecksumAlgorithm.MD5 => MD5.Create(),
+                ChecksumAlgorithm.SHA1 => SHA1.Create(),
+                ChecksumAlgorithm.SHA256 => SHA256.Create(),
+                ChecksumAlgorithm.SHA384 => SHA384.Create(),
                 ChecksumAlgorithm.SHA512 => (HashAlgorithm)SHA512.Create(),
                 _ => throw new NotSupportedException($"Algorithm {algorithm} not supported.")
             };

@@ -1,4 +1,5 @@
-﻿using Microsoft.Extensions.DependencyInjection;
+﻿using bagit.net.services;
+using Microsoft.Extensions.DependencyInjection;
 using System.Text;
 
 namespace bagit.net.tests
