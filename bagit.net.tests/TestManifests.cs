@@ -10,11 +10,13 @@ namespace bagit.net.tests
         private readonly string _testDir;
         private readonly ServiceProvider _serviceProvider;
         private readonly Bagger _bagger;
+        private readonly IChecksumService _checksumService;
         public TestManifests() {
             _tmpDir = TestHelpers.PrepareTempTestData();
             _testDir = Path.Combine(_tmpDir, "test-bag");
             _serviceProvider = ServiceConfigurator.BuildServiceProvider<Bagger>();
             _bagger = _serviceProvider.GetRequiredService<Bagger>();
+            _checksumService = _serviceProvider.GetRequiredService<IChecksumService>();
         }
 
         public void Dispose()
@@ -33,7 +35,7 @@ namespace bagit.net.tests
         public void Test_Manifest_Exists(ChecksumAlgorithm algorithm)
         {
             var tmpDir = TestHelpers.PrepareTempTestData();
-            var algorithmCode = Checksum.GetAlgorithmCode(algorithm);
+            var algorithmCode = _checksumService.GetAlgorithmCode(algorithm);
             _bagger.CreateBag(tmpDir, algorithm);
             Assert.True(File.Exists(Path.Combine(tmpDir, $"manifest-{algorithmCode}.txt")));
         }
@@ -41,7 +43,7 @@ namespace bagit.net.tests
         [Fact]
         public void Test_MD5Manifest_Content_Is_Valid() {
             var algorithm = ChecksumAlgorithm.MD5;
-            var algorithmCode = Checksum.GetAlgorithmCode(ChecksumAlgorithm.MD5);
+            var algorithmCode = _checksumService.GetAlgorithmCode(ChecksumAlgorithm.MD5);
             _bagger.CreateBag(_tmpDir, algorithm);
             var manifestService = _serviceProvider.GetRequiredService<IManifestService>();
             var kvp = manifestService.GetManifestAsKeyValuePairs(Path.Combine(_tmpDir, $"manifest-{algorithmCode}.txt"));
@@ -56,7 +58,6 @@ namespace bagit.net.tests
             foreach (var (file, checksum) in expected)
             {
                 var foundPair = kvp.FirstOrDefault(e => e.Key == checksum);
-                Assert.NotNull(foundPair);
                 Assert.Equal(file, foundPair.Value);
             }
         }

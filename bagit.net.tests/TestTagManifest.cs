@@ -11,6 +11,7 @@ namespace bagit.net.tests
         private readonly ServiceProvider _serviceProvider;
         private readonly Bagger _bagger;
         private readonly IManifestService _manifestService;
+        private readonly IChecksumService _checksumService;
 
         public TestTagManifest()
         {
@@ -19,6 +20,7 @@ namespace bagit.net.tests
             _serviceProvider = ServiceConfigurator.BuildServiceProvider<Bagger>();
             _bagger = _serviceProvider.GetRequiredService<Bagger>();
             _manifestService = _serviceProvider.GetRequiredService<IManifestService>();
+            _checksumService = _serviceProvider.GetRequiredService<IChecksumService>();
         }
 
         public void Dispose()
@@ -51,7 +53,7 @@ namespace bagit.net.tests
         public void Test_TagManifest_Content_Is_Valid()
         {
             var algorithm = ChecksumAlgorithm.MD5;
-            var algorithmCode = Checksum.GetAlgorithmCode(algorithm);
+            var algorithmCode = _checksumService.GetAlgorithmCode(algorithm);
             _bagger.CreateBag(_tmpDir, algorithm);
 
             var kvp = _manifestService.GetManifestAsKeyValuePairs(

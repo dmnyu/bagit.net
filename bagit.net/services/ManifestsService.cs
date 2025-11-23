@@ -8,23 +8,28 @@ namespace bagit.net.services
 {
     public class ManifestService : IManifestService
     {
-        private readonly ILogger<ManifestService> _logger;
+        public const string ManifestPattern = @"manifest-(md5|sha1|sha256|sha384|sha512).txt";
+        public const string TagmanifestPattern = @"tagmanifest-(md5|sha1|sha256|sha384|sha512).txt";
 
-        public ManifestService(ILogger<ManifestService> logger)
+        private readonly ILogger<ManifestService> _logger;
+        private readonly IChecksumService _checksumService;
+
+        public ManifestService(ILogger<ManifestService> logger, IChecksumService checksumService)
         {
+            _checksumService = checksumService;
             _logger = logger;
         }
 
         public void CreatePayloadManifest(string bagRoot, ChecksumAlgorithm algorithm)
         {
-            var algorithmCode = Checksum.GetAlgorithmCode(algorithm);
+            var algorithmCode = _checksumService.GetAlgorithmCode(algorithm);
             _logger.LogInformation($"Generating manifests using {algorithmCode}");
             var manifestContent = new StringBuilder();
             var fileEntries = GetPayloadFiles(bagRoot);
             foreach (var entry in fileEntries)
             {
                 _logger.LogInformation($"Generating manifest lines for file {entry}");
-                var checksum = Checksum.CalculateChecksum(Path.Combine(bagRoot, entry), algorithm);
+                var checksum = _checksumService.CalculateChecksum(Path.Combine(bagRoot, entry), algorithm);
                 manifestContent.AppendLine($"{checksum} {entry}");
             }
 
@@ -34,7 +39,7 @@ namespace bagit.net.services
 
         public void CreateTagManifestFile(string bagRoot, ChecksumAlgorithm algorithm)
         {
-            var algorithmCode = Checksum.GetAlgorithmCode(algorithm);
+            var algorithmCode = _checksumService.GetAlgorithmCode(algorithm);
             var manifestFilename = Path.Combine(bagRoot, $"tagmanifest-{algorithmCode}.txt");
             _logger.LogInformation($"Creating {manifestFilename}");
             
@@ -42,7 +47,7 @@ namespace bagit.net.services
             var fileEntries = GetRootFiles(bagRoot);
             foreach (var entry in fileEntries)
             {
-                var checksum = Checksum.CalculateChecksum(Path.Combine(bagRoot, entry), algorithm);
+                var checksum = _checksumService.CalculateChecksum(Path.Combine(bagRoot, entry), algorithm);
                 sb.AppendLine($"{checksum} {entry}");
             }
             
@@ -114,11 +119,11 @@ namespace bagit.net.services
         // Extract checksum algorithm from filename
         internal ChecksumAlgorithm GetManifestAlgorithm(string manifestFilename)
         {
-            Match match = Regex.Match(manifestFilename, Checksum.checksumPattern, RegexOptions.IgnoreCase);
+            Match match = Regex.Match(manifestFilename, ServiceHelpers.ChecksumPattern, RegexOptions.IgnoreCase);
             if (!match.Success)
                 throw new InvalidDataException($"Cannot determine checksum algorithm from manifest filename '{manifestFilename}'.");
 
-            return Checksum.Algorithms[match.Groups[1].Value.ToLowerInvariant()];
+            return ChecksumAlgorithmMap.Algorithms[match.Groups[1].Value.ToLowerInvariant()];
         }
 
         // Validate a single line
@@ -149,7 +154,7 @@ namespace bagit.net.services
 
             // Verify checksum
             _logger.LogInformation($"Verifying checksum for file {fullPath}");
-            if (!Checksum.CompareChecksum(fullPath, checksum, algorithm))
+            if (!_checksumService.CompareChecksum(fullPath, checksum, algorithm))
             {
                 throw new InvalidDataException(
                     $"Checksum mismatch for '{payloadFile}' in manifest '{manifestFileName}'. Expected: {checksum}"

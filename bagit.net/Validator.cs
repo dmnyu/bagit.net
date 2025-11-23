@@ -10,11 +10,13 @@ namespace bagit.net
         private readonly ILogger _logger;
         private readonly IManifestService _manifestService;
         private readonly IBagInfoService _bagInfoService;
-        public Validator(ILogger<Validator> logger, IManifestService manifestService, IBagInfoService bagInfoService)
+        private readonly ITagFileService _tagFileService;
+        public Validator(ILogger<Validator> logger, IManifestService manifestService, IBagInfoService bagInfoService, ITagFileService tagFileService)
         {
             _logger = logger;
             _manifestService = manifestService;
             _bagInfoService = bagInfoService;
+            _tagFileService = tagFileService;
         }
         public void ValidateBag(string bagPath, bool fast)
         {
@@ -50,8 +52,8 @@ namespace bagit.net
             if (!File.Exists(bagInfoPath))
                 _logger.LogWarning("bag-info.txt is missing from bag root");
 
-            var manifestRegex = new Regex(Checksum.ManifestPattern);
-            var tagmanifestRegex = new Regex(Checksum.TagmanifestPattern);
+            var manifestRegex = new Regex(ServiceHelpers.ManifestPattern);
+            var tagmanifestRegex = new Regex(ServiceHelpers.TagmanifestPattern);
             var manifests = new List<string>{ };
             var tagmanifests = new List<string>();
 
@@ -88,7 +90,7 @@ namespace bagit.net
             if (!File.Exists(bagitPath))
                 throw new FileNotFoundException("bagit.txt is missing from the bag root.", bagitPath);
 
-            var tags = TagFile.GetTagFileAsDict(bagitPath);
+            var tags = _tagFileService.GetTagFileAsDict(bagitPath);
 
             if (!tags.TryGetValue("BagIt-Version", out var version))
                 throw new FormatException("BagIt-Version key is missing in bagit.txt.");
@@ -122,7 +124,7 @@ namespace bagit.net
 
 
 
-            var tags = TagFile.GetTagFileAsDict(bagInfoFile);
+            var tags = _tagFileService.GetTagFileAsDict(bagInfoFile);
             if(!tags.ContainsKey("Payload-Oxum") && fast)
             {
                 _logger.LogCritical("bag-info.txt does not contain a Payload-Oxum tag, required for fast validation.");

@@ -1,4 +1,4 @@
-﻿using bagit.net.services;
+﻿using bagit.net.interfaces;
 using Microsoft.Extensions.DependencyInjection;
 using System.Text;
 

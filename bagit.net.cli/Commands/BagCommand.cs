@@ -1,4 +1,4 @@
-﻿using bagit.net.services;
+﻿using bagit.net.interfaces;
 using Microsoft.Extensions.DependencyInjection;
 using Spectre.Console;
 using Spectre.Console.Cli;
@@ -48,9 +48,9 @@ class BagCommand : Command<BagCommand.Settings>
         if (string.IsNullOrWhiteSpace(settings.Algorithm))
         {
             algorithm = ChecksumAlgorithm.SHA256;
-        } else if(Bagit.Algorithms.ContainsKey(settings.Algorithm))
+        } else if(ChecksumAlgorithmMap.Algorithms.ContainsKey(settings.Algorithm))
         {
-            algorithm = Bagit.Algorithms[settings.Algorithm];
+            algorithm = ChecksumAlgorithmMap.Algorithms[settings.Algorithm];
         } else
         {
             AnsiConsole.MarkupLine("[red][bold]ERROR:[/][/]");

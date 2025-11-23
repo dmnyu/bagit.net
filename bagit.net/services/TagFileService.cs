@@ -1,8 +1,10 @@
-﻿namespace bagit.net.services
+﻿using bagit.net.interfaces;
+
+namespace bagit.net.services
 {
-    public static class TagFile
+    public class TagFileService : ITagFileService
     {
-        public static Dictionary<string, string> GetTagFileAsDict(string tagFilePath)
+        public Dictionary<string, string> GetTagFileAsDict(string tagFilePath)
         {
             var tagDictionary = new Dictionary<string, string>();
             foreach (var line in File.ReadAllLines(tagFilePath))
@@ -22,4 +24,5 @@
             return tagDictionary;
         }
     }
+
 }
