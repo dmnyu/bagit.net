@@ -22,6 +22,7 @@ namespace bagit.net.tests
 
         public void Dispose() {
             Serilog.Log.CloseAndFlush();
+            _serviceProvider?.Dispose();
             if (Directory.Exists(_tmpDir))
                 Directory.Delete(_tmpDir, true);
             
