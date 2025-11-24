@@ -13,13 +13,13 @@ namespace bagit.net
         private string nl = Environment.NewLine;
         private readonly ILogger _logger;
         private readonly IManifestService _manifestService;
-        private readonly IBagInfoService _bagInfoService;
+        private readonly ITagFileService _tagFileService;
             
-        public Bagger(ILogger<Validator> logger, IManifestService manifestService, IBagInfoService bagInfoService)
+        public Bagger(ILogger<Validator> logger, IManifestService manifestService, ITagFileService tagFileService)
         {
             _logger = logger;
             _manifestService = manifestService;
-            _bagInfoService = bagInfoService;
+            _tagFileService = tagFileService;
         }
 
         public void CreateBag(string? path, ChecksumAlgorithm algorithm)
@@ -46,7 +46,7 @@ namespace bagit.net
                 MoveTempToDataDir();
                 _manifestService.CreatePayloadManifest(bagLocation, algorithm);
                 CreateBagitTXT();
-               _bagInfoService.CreateBagInfo(bagLocation);
+                _tagFileService.CreateBagInfo(bagLocation);
                 _manifestService.CreateTagManifestFile(bagLocation, algorithm);
             }
             catch (IOException ex)

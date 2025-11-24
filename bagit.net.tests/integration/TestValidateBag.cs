@@ -1,7 +1,7 @@
 ﻿using bagit.net.interfaces;
 using Microsoft.Extensions.DependencyInjection;
 
-namespace bagit.net.tests
+namespace bagit.net.tests.integration
 {
     public class TestValidateBag : IDisposable
     {
@@ -14,7 +14,7 @@ namespace bagit.net.tests
         public TestValidateBag()
         {
             _tmpDir = TestHelpers.PrepareTempTestData();
-            _validBag = Path.Combine(_tmpDir, "bagged-dir");
+            _validBag = Path.Combine(_tmpDir, "valid-bag");
             _unsupportedBag = Path.Combine(_tmpDir, "unsupported-algorithm");
             _serviceProvider = ServiceConfigurator.BuildServiceProvider<Validator>();
             _validator = _serviceProvider.GetRequiredService<Validator>();

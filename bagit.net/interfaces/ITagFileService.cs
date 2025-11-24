@@ -2,6 +2,13 @@
 {
     public interface ITagFileService
     {
-        public Dictionary<string, string> GetTagFileAsDict(string tagFilePath);
+        Dictionary<string, string> GetTagFileAsDict(string tagFilePath);
+
+        void CreateBagInfo(string bagDir);
+        string GetOxum(string bagRoot);
+
+        List<KeyValuePair<string, string>> GetTagFileAsList(string baginfoPath);
+
     }
 }
+

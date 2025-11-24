@@ -36,7 +36,6 @@ namespace bagit.net
             var services = new ServiceCollection();
             services.AddLogging(builder => builder.AddSerilog(Log.Logger, dispose: true));
             services.AddSingleton<IManifestService, ManifestService>();
-            services.AddSingleton<IBagInfoService, BagInfoService>();
             services.AddSingleton<IChecksumService, ChecksumService>();
             services.AddSingleton<ITagFileService, TagFileService>();
             services.AddTransient<TWorker>();

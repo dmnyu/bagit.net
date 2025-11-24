@@ -9,13 +9,11 @@ namespace bagit.net
     {
         private readonly ILogger _logger;
         private readonly IManifestService _manifestService;
-        private readonly IBagInfoService _bagInfoService;
         private readonly ITagFileService _tagFileService;
-        public Validator(ILogger<Validator> logger, IManifestService manifestService, IBagInfoService bagInfoService, ITagFileService tagFileService)
+        public Validator(ILogger<Validator> logger, IManifestService manifestService, ITagFileService tagFileService)
         {
             _logger = logger;
             _manifestService = manifestService;
-            _bagInfoService = bagInfoService;
             _tagFileService = tagFileService;
         }
         public void ValidateBag(string bagPath, bool fast)
@@ -138,7 +136,7 @@ namespace bagit.net
             }
             else
             {
-                var oxum = _bagInfoService.GetOxum(path);
+                var oxum = _tagFileService.GetOxum(path);
                 var payloadOxum = tags["Payload-Oxum"];
                 if (oxum != payloadOxum)
                 {

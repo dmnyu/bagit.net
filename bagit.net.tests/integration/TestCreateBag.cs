@@ -2,7 +2,7 @@
 using Microsoft.Extensions.DependencyInjection;
 using System.Text;
 
-namespace bagit.net.tests
+namespace bagit.net.tests.integration
 {
     public class TestCreateBag : IDisposable
     {
