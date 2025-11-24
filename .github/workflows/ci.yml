@@ -12,7 +12,7 @@ jobs:
 
     strategy:
       matrix:
-        os: [ubuntu-latest, windows-latest, macos-latest]
+        os: [ubuntu-latest, windows-latest, macos-14]
         dotnet-version: [9.0.x]
 
     steps:
@@ -41,3 +41,22 @@ jobs:
       # Step 6: Run integration tests
       - name: Run Integration Tests
         run: dotnet test bagit.net.tests/bagit.net.tests.csproj --no-build --configuration Release --filter "Category=Integration"
+
+       # Step 7: Publish macOS ARM64 binary
+      - name: Publish macOS ARM64
+        if: runner.os == 'macOS'
+        run: |
+          dotnet publish bagit.net.cli/bagit.net.cli.csproj \
+            -c Release \
+            -r osx-arm64 \
+            --self-contained true \
+            -o ./publish/macos-arm64
+
+      # Step 8: Upload macOS ARM64 build as artifact
+      - name: Upload macOS ARM64 build
+        if: runner.os == 'macOS'
+        uses: actions/upload-artifact@v4
+        with:
+          name: bagit.net-macos-arm64
+          path: ./publish/macos-arm64
+
