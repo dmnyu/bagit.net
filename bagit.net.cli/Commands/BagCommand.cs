@@ -1,10 +1,9 @@
-﻿using Microsoft.Extensions.Logging;
+﻿using bagit.net.interfaces;
+using Microsoft.Extensions.DependencyInjection;
 using Spectre.Console;
 using Spectre.Console.Cli;
 using System.ComponentModel;
-using System.IO;
-using System.Threading;
-using bagit.net.cli;
+
 
 namespace bagit.net.cli.Commands;
 
@@ -49,9 +48,9 @@ class BagCommand : Command<BagCommand.Settings>
         if (string.IsNullOrWhiteSpace(settings.Algorithm))
         {
             algorithm = ChecksumAlgorithm.SHA256;
-        } else if(Bagit.Algorithms.ContainsKey(settings.Algorithm))
+        } else if(ChecksumAlgorithmMap.Algorithms.ContainsKey(settings.Algorithm))
         {
-            algorithm = Bagit.Algorithms[settings.Algorithm];
+            algorithm = ChecksumAlgorithmMap.Algorithms[settings.Algorithm];
         } else
         {
             AnsiConsole.MarkupLine("[red][bold]ERROR:[/][/]");
@@ -66,11 +65,9 @@ class BagCommand : Command<BagCommand.Settings>
             AnsiConsole.MarkupLine($"bagit.net.cli v{Bagit.VERSION}");
             AnsiConsole.MarkupLine($"Logging to {settings.logFile}");
         }
-        Bagit.InitLogger(settings.logFile);
-        Bagit.Logger.LogInformation($"Using bagit.net v{Bagit.VERSION}");
 
-        //start the bagger
-        var bagger = new Bagger();
+        var serviceProvider = ServiceConfigurator.BuildServiceProvider<Bagger>();
+        var bagger = serviceProvider.GetRequiredService<Bagger>();
         bagger.CreateBag(bagPath, algorithm);
         return 0;
     }

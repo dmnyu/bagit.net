@@ -1,19 +1,39 @@
-﻿using Microsoft.Extensions.Logging;
-using System;
-using System.Collections.Generic;
-using System.IO;
-using System.Linq;
+﻿using bagit.net.interfaces;
+using Microsoft.Extensions.Logging;
 using System.Text;
-using System.Threading.Tasks;
 
-namespace bagit.net
+namespace bagit.net.services
 {
-    public static class BagInfo
+    public class TagFileService : ITagFileService
     {
-
-        public static void CreateBagInfo(string bagDir)
+        private readonly ILogger _logger;
+        public TagFileService(ILogger<TagFileService> logger)
         {
-            Bagit.Logger.LogInformation("Creating bag-info.txt");
+            _logger = logger;
+        }
+        public Dictionary<string, string> GetTagFileAsDict(string tagFilePath)
+        {
+            var tagDictionary = new Dictionary<string, string>();
+            foreach (var line in File.ReadAllLines(tagFilePath))
+            {
+                if (string.IsNullOrWhiteSpace(line))
+                    continue;
+
+                var parts = line.Split(": ", 2, StringSplitOptions.None);
+
+                if (parts.Length != 2)
+                    throw new FormatException($"Invalid tag file line: {line}");
+                if (tagDictionary.ContainsKey(parts[0]))
+                    throw new FormatException($"tag file contains duplicate key {parts[0]}");
+                tagDictionary.Add(parts[0], parts[1]);
+            }
+
+            return tagDictionary;
+        }
+
+        public void CreateBagInfo(string bagDir)
+        {
+            _logger.LogInformation("Creating bag-info.txt");
             var oxum = GetOxum(bagDir);
             var sb = new StringBuilder();
 
@@ -26,12 +46,12 @@ namespace bagit.net
             File.WriteAllText(bagInfoFile, sb.ToString(), new UTF8Encoding(encoderShouldEmitUTF8Identifier: false));
         }
 
-        internal static string GetOxum(string bagRoot)
+        public string GetOxum(string bagRoot)
         {
             string dataDir = Path.Combine(bagRoot, "data");
             int count = 0;
             long numBytes = 0;
-            
+
             if (!Directory.Exists(dataDir))
                 throw new ArgumentException($"Data directory does not exist: {dataDir}");
 
@@ -40,12 +60,12 @@ namespace bagit.net
                 var info = new FileInfo(file);
                 numBytes += info.Length;
                 count++;
-            }   
+            }
 
             return $"{numBytes}.{count}";
         }
 
-        public static List<KeyValuePair<string, string>> GetBagInfoAsKeyValuePairs(string baginfoPath)
+        public List<KeyValuePair<string, string>> GetTagFileAsList(string baginfoPath)
         {
             return File.ReadAllLines(baginfoPath)
                 .Where(line => !string.IsNullOrWhiteSpace(line))
@@ -58,5 +78,6 @@ namespace bagit.net
                 })
                 .ToList();
         }
+
     }
 }

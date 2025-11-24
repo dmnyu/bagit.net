@@ -1,27 +1,14 @@
-﻿using Microsoft.Extensions.Logging;
-using System;
-using System.Collections.Generic;
-using System.IO;
-using System.IO.Enumeration;
-using System.Linq;
+﻿using bagit.net.interfaces;
 using System.Security.Cryptography;
-using System.Text;
 using System.Text.RegularExpressions;
-using System.Threading.Tasks;
 
-namespace bagit.net
+
+namespace bagit.net.services
 {
-    public enum ChecksumAlgorithm
+
+    public class ChecksumService : IChecksumService
     {
-        MD5,
-        SHA1,
-        SHA256,
-        SHA384,
-        SHA512
-    }
-    public static class Checksum
-    {
-        public static string CalculateChecksum(string? filePath, ChecksumAlgorithm algorithm)
+        public string CalculateChecksum(string? filePath, ChecksumAlgorithm algorithm)
         {
             ArgumentNullException.ThrowIfNull(filePath);
             if (!File.Exists(filePath))
@@ -45,7 +32,7 @@ namespace bagit.net
             return Convert.ToHexString(hashBytes).ToLowerInvariant();
         }
 
-        public static bool CompareChecksum(string? path, string checksum, ChecksumAlgorithm algorithm)
+        public bool CompareChecksum(string? path, string checksum, ChecksumAlgorithm algorithm)
         {
             var cleanedChecksum = CleanChecksum(checksum, algorithm);
             if (cleanedChecksum is null)
@@ -56,7 +43,20 @@ namespace bagit.net
             return calculatedMD5.Equals(cleanedChecksum, StringComparison.OrdinalIgnoreCase);
         }
 
-        private static string CleanChecksum(string checksum, ChecksumAlgorithm algorithm)
+        public string GetAlgorithmCode(ChecksumAlgorithm algorithm)
+        {
+            return algorithm switch
+            {
+                ChecksumAlgorithm.MD5 => "md5",
+                ChecksumAlgorithm.SHA1 => "sha1",
+                ChecksumAlgorithm.SHA256 => "sha256",
+                ChecksumAlgorithm.SHA384 => "sha384",
+                ChecksumAlgorithm.SHA512 => "sha512",
+                _ => throw new ArgumentOutOfRangeException(nameof(algorithm), $"Unsupported algorithm: {algorithm}")
+            };
+        }
+
+        private string CleanChecksum(string checksum, ChecksumAlgorithm algorithm)
         {
             if (string.IsNullOrWhiteSpace(checksum))
                 throw new ArgumentNullException("the checksum passed is blank or null");
@@ -81,19 +81,6 @@ namespace bagit.net
                 throw new ArgumentException($"the specified algorithm size for {algorithm} and the checksum size do not match.");
 
             return checksum;
-        }
-
-        internal static string GetAlgorithmCode(ChecksumAlgorithm algorithm)
-        {
-            switch (algorithm)
-            {
-                case ChecksumAlgorithm.MD5: return "md5";
-                case ChecksumAlgorithm.SHA1: return "sha1";
-                case ChecksumAlgorithm.SHA256: return "sha256";
-                case ChecksumAlgorithm.SHA384: return "sha384";
-                case ChecksumAlgorithm.SHA512: return "sha512";
-                default: throw new ArgumentException($"checksum algorithm: {algorithm} is not supported");
-            }
         }
     }
 

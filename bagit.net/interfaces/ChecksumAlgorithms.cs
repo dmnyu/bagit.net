@@ -1,0 +1,11 @@
+﻿namespace bagit.net.interfaces
+{
+    public enum ChecksumAlgorithm
+    {
+        MD5,
+        SHA1,
+        SHA256,
+        SHA384,
+        SHA512
+    }
+}

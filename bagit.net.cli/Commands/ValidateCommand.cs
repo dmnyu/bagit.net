@@ -1,4 +1,4 @@
-﻿using Microsoft.Extensions.Logging;
+﻿using Microsoft.Extensions.DependencyInjection;
 using Spectre.Console;
 using Spectre.Console.Cli;
 using System.ComponentModel;
@@ -44,12 +44,11 @@ namespace bagit.net.cli.Commands
                 AnsiConsole.MarkupLine($"bagit.net.cli v{Bagit.VERSION}");
                 AnsiConsole.MarkupLine($"Logging to {settings.logFile}");
             }
-            Bagit.InitLogger(settings.logFile);
-            Bagit.Logger.LogInformation($"Using bagit.net v{Bagit.VERSION}");
 
-            //start the validation
-            var validator = new Validator();
+            var serviceProvider = ServiceConfigurator.BuildServiceProvider<Validator>();
+            var validator = serviceProvider.GetRequiredService<Validator>();
             validator.ValidateBag(bagPath, settings.Fast);
+
             return 0;
         }
     }

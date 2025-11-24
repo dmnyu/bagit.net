@@ -4,19 +4,8 @@ This roadmap outlines the planned feature development and release milestones for
 
 ---
 
-## **0.2.0 — Validation**
-**Objective:** Implement full BagIt validation capabilities.
-
-**Features:**
-- Validate `bagit.txt` (version, encoding, formatting).
-- Validate payload manifests (checksum verification).
-- Validate tag manifests, when present.
-- Detect missing or extra payload/tag files.
-- Structured error reporting (machine-readable + human-readable).
-- CLI: Introduce `validate` command with correct exit codes.
-
-**Notes:**
-This is the foundational step enabling BagIt.NET to interact safely with existing bags and sets the stage for advanced features.
+## **0.2.2 — FileManager**
+**Objective:** Move all functions in the Bagger class that moves, creates, deletes files or directories to file management service
 
 ---
 
@@ -59,6 +48,29 @@ These are ideas for after the 0.4.x line:
 - Support for bag serialization (ZIP, TAR).
 - Plug‑in architecture for custom checksum algorithms.
 - .NET Aspire or MAUI GUI frontend.
+
+---
+
+## Previous updates: ##
+
+## **0.2.1 -- Service-Oriented-Architecture**
+**Objective:** Convert all static classes to services / dependency injection
+
+---
+
+## **0.2.0 — Validation**
+**Objective:** Implement full BagIt validation capabilities.
+
+**Features:**
+- Validate `bagit.txt` (version, encoding, formatting).
+- Validate payload manifests (checksum verification).
+- Validate tag manifests, when present.
+- Detect missing or extra payload/tag files.
+- Structured error reporting (machine-readable + human-readable).
+- CLI: Introduce `validate` command with correct exit codes.
+
+**Notes:**
+This is the foundational step enabling BagIt.NET to interact safely with existing bags and sets the stage for advanced features.
 
 ---
 

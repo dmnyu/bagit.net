@@ -1,31 +1,33 @@
-﻿using System;
-using System.IO;
+﻿using bagit.net.interfaces;
+using Microsoft.Extensions.DependencyInjection;
 using System.Text;
-using Xunit;
 
-namespace bagit.net.tests
+namespace bagit.net.tests.integration
 {
     public class TestCreateBag : IDisposable
     {
         private readonly string _tmpDir;
         private readonly string _testDir;
+        private readonly ServiceProvider _serviceProvider;
         private readonly Bagger _bagger;
 
         public TestCreateBag()
         {
             _tmpDir = TestHelpers.PrepareTempTestData();
             _testDir = Path.Combine(_tmpDir, "test-bag");
-            Bagit.InitLogger(null);
-            _bagger = new Bagger();
+            _serviceProvider = ServiceConfigurator.BuildServiceProvider<Bagger>();
+            _bagger = _serviceProvider.GetRequiredService<Bagger>();
         }
 
         public void Dispose()
         {
+            _serviceProvider?.Dispose();
             if (Directory.Exists(_tmpDir))
                 Directory.Delete(_tmpDir, true);
         }
 
         [Fact]
+        [Trait("Category", "Integration")]
         public void Get_Version()
         {
             Assert.NotEmpty(Bagit.VERSION);
@@ -34,6 +36,7 @@ namespace bagit.net.tests
 
 
         [Fact]
+        [Trait("Category", "Integration")]
         public void CreateBag_Throws_On_Invalid_Directories()
         {
             Assert.Throws<ArgumentNullException>(() => _bagger.CreateBag(null, ChecksumAlgorithm.MD5));
@@ -41,6 +44,7 @@ namespace bagit.net.tests
         }
 
         [Fact]
+        [Trait("Category", "Integration")]
         public void Test_Bag_Exists()
         {
 
@@ -57,6 +61,7 @@ namespace bagit.net.tests
 
 
         [Fact]
+        [Trait("Category", "Integration")]
         public void Test_Bag_Has_Valid_BagitTxt_File()
         {
 
