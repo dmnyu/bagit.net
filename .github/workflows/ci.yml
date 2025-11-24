@@ -1,119 +1,44 @@
 name: BagIt.NET CI
 
-# Trigger on push/pull request to main and on tags for releases
+# Trigger on push or pull request to main
 on:
   push:
     branches: [ main ]
-    tags:
-      - 'v*'
   pull_request:
     branches: [ main ]
 
 jobs:
   build-and-test:
-    runs-on: ${{ matrix.os }}
+    runs-on: ubuntu-latest
+
     strategy:
       matrix:
         os: [ubuntu-latest, windows-latest, macos-latest]
         dotnet-version: [9.0.x]
 
     steps:
+      # Step 1: Check out the repo
       - name: Checkout code
         uses: actions/checkout@v3
 
+      # Step 2: Setup .NET
       - name: Setup .NET SDK
         uses: actions/setup-dotnet@v3
         with:
           dotnet-version: ${{ matrix.dotnet-version }}
 
-      - name: Restore CLI dependencies
-        run: dotnet restore bagit.net.cli/bagit.net.cli.csproj
+      # Step 3: Restore dependencies
+      - name: Restore dependencies
+        run: dotnet restore bagit.net.sln
 
-      - name: Build CLI
-        run: dotnet build bagit.net.cli/bagit.net.cli.csproj --configuration Release
+      # Step 4: Build solution
+      - name: Build
+        run: dotnet build bagit.net.sln --no-restore --configuration Release
 
-      - name: Run CLI Unit Tests
+      # Step 5: Run unit tests
+      - name: Run Unit Tests
         run: dotnet test bagit.net.tests/bagit.net.tests.csproj --no-build --configuration Release --filter "Category=Unit"
 
-      - name: Run CLI Integration Tests
+      # Step 6: Run integration tests
+      - name: Run Integration Tests
         run: dotnet test bagit.net.tests/bagit.net.tests.csproj --no-build --configuration Release --filter "Category=Integration"
-
-      # Publish self-contained binaries
-      - name: Publish CLI binary
-        run: |
-          if [[ "${{ runner.os }}" == "Linux" ]]; then
-            dotnet publish bagit.net.cli/bagit.net.cli.csproj -c Release -r linux-x64 --self-contained true -o ./publish/linux
-          elif [[ "${{ runner.os }}" == "Windows" ]]; then
-            dotnet publish bagit.net.cli/bagit.net.cli.csproj -c Release -r win-x64 --self-contained true -o ./publish/windows
-          elif [[ "${{ runner.os }}" == "macOS" ]]; then
-            dotnet publish bagit.net.cli/bagit.net.cli.csproj -c Release -r osx-x64 --self-contained true -o ./publish/macos-x64
-            dotnet publish bagit.net.cli/bagit.net.cli.csproj -c Release -r osx-arm64 --self-contained true -o ./publish/macos-arm64
-          fi
-
-      # Upload artifacts for inspection/testing
-      - name: Upload artifacts
-        uses: actions/upload-artifact@v4
-        with:
-          name: BagIt.NET-${{ runner.os }}
-          path: ./publish/
-
-  release:
-    needs: build-and-test
-    runs-on: ubuntu-latest
-    if: startsWith(github.ref, 'refs/tags/v')
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v3
-
-      - name: Create GitHub Release
-        id: create_release
-        uses: actions/create-release@v1
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        with:
-          tag_name: ${{ github.ref_name }}
-          release_name: Release ${{ github.ref_name }}
-          draft: false
-          prerelease: false
-
-      # Upload macOS binaries
-      - name: Upload macOS-x64
-        uses: actions/upload-release-asset@v1
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        with:
-          upload_url: ${{ steps.create_release.outputs.upload_url }}
-          asset_path: ./publish/macos-x64/BagIt.NET
-          asset_name: BagIt.NET-macos-x64
-          asset_content_type: application/octet-stream
-
-      - name: Upload macOS-arm64
-        uses: actions/upload-release-asset@v1
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        with:
-          upload_url: ${{ steps.create_release.outputs.upload_url }}
-          asset_path: ./publish/macos-arm64/BagIt.NET
-          asset_name: BagIt.NET-macos-arm64
-          asset_content_type: application/octet-stream
-
-      # Upload Windows and Linux binaries
-      - name: Upload Windows
-        uses: actions/upload-release-asset@v1
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        with:
-          upload_url: ${{ steps.create_release.outputs.upload_url }}
-          asset_path: ./publish/windows/BagIt.NET.exe
-          asset_name: BagIt.NET-windows.exe
-          asset_content_type: application/octet-stream
-
-      - name: Upload Linux
-        uses: actions/upload-release-asset@v1
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        with:
-          upload_url: ${{ steps.create_release.outputs.upload_url }}
-          asset_path: ./publish/linux/BagIt.NET
-          asset_name: BagIt.NET-linux
-          asset_content_type: application/octet-stream
