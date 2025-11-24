@@ -19,7 +19,7 @@ namespace bagit.net.tests.unit
 
         public void Dispose() {
             _serviceProvider.Dispose();
-            if (_tmpDir != null)
+            if (Directory.Exists(_tmpDir))
             {
                 Directory.Delete(_tmpDir, true);
             }
