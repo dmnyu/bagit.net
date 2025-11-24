@@ -61,7 +61,7 @@ jobs:
       # Step 8: Upload macOS ARM64 build as artifact
       - name: Upload macOS ARM64 build
         if: runner.os == 'macOS'
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: bagit-macos-arm64
           path: ./publish/macos-arm64
