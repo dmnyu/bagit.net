@@ -2,7 +2,7 @@
 
 **bagit.net** is a C# implementation of the [BagIt specification (RFC 8493)](https://datatracker.ietf.org/doc/html/rfc8493).  
 It allows you to create **BagIt bags**—structured file collections with checksums for reliable storage and transfer of digital content.  
-It currently consists of a core library (`bagit.net`) and a CLI application (`bagit.net.cli`) for Linux, macOS, and Windows.
+It currently consists of a core library (`bagit.net`) and a CLI application (`bagit.net.cli`) for Linux and Windows.
 
 [![Release](https://img.shields.io/badge/release-v0.2.1--alpha-blue)](https://github.com/dmnyu/bagit.net/releases/v0.2.1-alpha)
 ![BagIt.NET CI](https://github.com/dmnyu/bagit.net/actions/workflows/ci.yml/badge.svg)
@@ -97,17 +97,6 @@ cd .\bagit.net.cli
 %LOCALAPPDATA%\bagit.net\bagit.net --version
 ```
 > **Tip:** After installation on Windows, you can run `bagit.net` from any directory by adding `%LOCALAPPDATA%\bagit.net` to your user `PATH`.
-
----
-
-### macOS
-```bash
-wget https://github.com/dmnyu/bagit.net/releases/download/v0.2.1-alpha/bagit.net.cli-v0.2.1-alpha-macos-arm64.tgz
-tar xvzf bagit.net.cli-v0.2.1-alpha-macos-arm64.tgz
-cd bagit.net.cli
-sudo ./install.sh
-bagit.net --help
-```
 
 ---
 
