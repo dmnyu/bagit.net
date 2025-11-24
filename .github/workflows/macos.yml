@@ -4,11 +4,6 @@ on:
   push:
     tags:
       - "v*"
-  workflow_dispatch:
-    inputs:
-      version:
-        description: "Optional version tag (ex: v0.2.1.alpha)"
-        required: false
 
 jobs:
   publish-macos-arm64:
