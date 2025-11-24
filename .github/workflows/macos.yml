@@ -1,0 +1,45 @@
+name: Publish macOS ARM64 Bagit.Net CLI
+
+on:
+  push:
+    tags:
+      - "v*"
+
+jobs:
+  publish-macos-arm64:
+    runs-on: macos-14   # Apple Silicon runner
+    steps:
+      - name: Checkout
+      - uses: actions/checkout@v4
+
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: "9.0.x"
+
+      # Restore, build & pack
+      - name: Restore
+        run: dotnet restore src/Bagit.Net.Cli/Bagit.Net.Cli.csproj
+
+      - name: Build macOS ARM64
+        run: |
+          dotnet build src/Bagit.Net.Cli/Bagit.Net.Cli.csproj \
+            -c Release \
+            -r osx-arm64 \
+            --self-contained true
+
+      - name: Pack CLI
+        run: |
+          dotnet pack src/Bagit.Net.Cli/Bagit.Net.Cli.csproj \
+            -c Release \
+            -p:RuntimeIdentifier=osx-arm64 \
+            -p:SelfContained=true \
+            -p:IncludeNativeLibrariesForSelfExtract=true \
+            -o artifacts
+
+      - name: Publish to NuGet
+        run: |
+          dotnet nuget push "artifacts/*.nupkg" \
+            --api-key ${{ secrets.NUGET_API_KEY }} \
+            --source https://api.nuget.org/v3/index.json \
+            --skip-duplicate
