@@ -1,28 +1,22 @@
 name: BagIt.NET CI
 
-# Trigger on push or pull request to any branch
 on:
   push:
     branches: ["*"]
   pull_request:
-    branches: ["main"]
+    branches: [ main ]
 
 jobs:
   build-and-test:
-    runs-on: ${{ matrix.os }}
+    runs-on: ubuntu-latest
 
     strategy:
       matrix:
-        include:
-          - os: ubuntu-latest
-            dotnet-version: 9.0.x
-          - os: windows-latest
-            dotnet-version: 9.0.x
-          - os: macos-14
-            dotnet-version: 9.0.x
+        os: [ubuntu-latest, windows-latest, macos-latest]
+        dotnet-version: [9.0.x]
 
     steps:
-      # Step 1: Checkout the repo
+      # Step 1: Check out the repo
       - name: Checkout code
         uses: actions/checkout@v3
 
@@ -47,21 +41,3 @@ jobs:
       # Step 6: Run integration tests
       - name: Run Integration Tests
         run: dotnet test bagit.net.tests/bagit.net.tests.csproj --no-build --configuration Release --filter "Category=Integration"
-
-      # Step 7: Publish macOS ARM64 binary
-      - name: Publish macOS ARM64
-        if: runner.os == 'macOS'
-        run: |
-          dotnet publish bagit.net.cli/bagit.net.cli.csproj \
-            -c Release \
-            -r osx-arm64 \
-            --self-contained true \
-            -o ./publish/macos-arm64
-
-      # Step 8: Upload macOS ARM64 build as artifact
-      - name: Upload macOS ARM64 build
-        if: runner.os == 'macOS'
-        uses: actions/upload-artifact@v4
-        with:
-          name: bagit-macos-arm64
-          path: ./publish/macos-arm64
