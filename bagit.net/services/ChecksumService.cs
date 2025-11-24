@@ -19,10 +19,10 @@ namespace bagit.net.services
 
             using var hashAlgorithm = algorithm switch
             {
-                ChecksumAlgorithm.MD5 => MD5.Create(),
-                ChecksumAlgorithm.SHA1 => SHA1.Create(),
-                ChecksumAlgorithm.SHA256 => SHA256.Create(),
-                ChecksumAlgorithm.SHA384 => SHA384.Create(),
+                ChecksumAlgorithm.MD5 => (HashAlgorithm)MD5.Create(),
+                ChecksumAlgorithm.SHA1 => (HashAlgorithm)SHA1.Create(),
+                ChecksumAlgorithm.SHA256 => (HashAlgorithm)SHA256.Create(),
+                ChecksumAlgorithm.SHA384 => (HashAlgorithm)SHA384.Create(),
                 ChecksumAlgorithm.SHA512 => (HashAlgorithm)SHA512.Create(),
                 _ => throw new NotSupportedException($"Algorithm {algorithm} not supported.")
             };

@@ -8,8 +8,6 @@ namespace bagit.net.services
 {
     public class ManifestService : IManifestService
     {
-        public const string ManifestPattern = @"manifest-(md5|sha1|sha256|sha384|sha512).txt";
-        public const string TagmanifestPattern = @"tagmanifest-(md5|sha1|sha256|sha384|sha512).txt";
 
         private readonly ILogger<ManifestService> _logger;
         private readonly IChecksumService _checksumService;
