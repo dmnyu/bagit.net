@@ -27,6 +27,7 @@ namespace bagit.net.tests.integration
         }
 
         [Fact]
+        [Trait("Category", "Integration")]
         public void Get_Version()
         {
             Assert.NotEmpty(Bagit.VERSION);
@@ -35,6 +36,7 @@ namespace bagit.net.tests.integration
 
 
         [Fact]
+        [Trait("Category", "Integration")]
         public void CreateBag_Throws_On_Invalid_Directories()
         {
             Assert.Throws<ArgumentNullException>(() => _bagger.CreateBag(null, ChecksumAlgorithm.MD5));
@@ -42,6 +44,7 @@ namespace bagit.net.tests.integration
         }
 
         [Fact]
+        [Trait("Category", "Integration")]
         public void Test_Bag_Exists()
         {
 
@@ -58,6 +61,7 @@ namespace bagit.net.tests.integration
 
 
         [Fact]
+        [Trait("Category", "Integration")]
         public void Test_Bag_Has_Valid_BagitTxt_File()
         {
 

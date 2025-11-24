@@ -23,6 +23,7 @@ namespace bagit.net.tests.unit
         }
 
         [Fact]
+        [Trait("Category", "Unit")]
         public void Test_Get_Tag_File_Dictionary()
         {
             var bagInfo = Path.Combine(_tmpDir, "valid-bag", "bag-info.txt");
@@ -31,6 +32,7 @@ namespace bagit.net.tests.unit
         }
 
         [Fact]
+        [Trait("Category", "Unit")]
         public void Test_Get_Tag_File_List()
         {
             var bagInfo = Path.Combine(_tmpDir, "valid-bag", "bag-info.txt");
@@ -39,6 +41,7 @@ namespace bagit.net.tests.unit
         }
 
         [Fact]
+        [Trait("Category", "Unit")]
         public void Test_Create_Bag_Info()
         {
             var dataOnly = Path.Combine(_tmpDir, "data-only");
@@ -51,6 +54,7 @@ namespace bagit.net.tests.unit
         }
 
         [Fact]
+        [Trait("Category", "Unit")]
         public void Test_Get_Oxum()
         {
             var validBag = Path.Combine(_tmpDir, "valid-bag");
@@ -61,8 +65,3 @@ namespace bagit.net.tests.unit
         }
     }
 }
-
-/* Interface
-void CreateBagInfo(string bagDir);
-string GetOxum(string bagRoot);
- */

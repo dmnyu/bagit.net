@@ -26,6 +26,7 @@ namespace bagit.net.tests.unit
         }
 
         [Fact]
+        [Trait("Category", "Unit")]
         public void Test_Calculate_Checksum()
         {
             var goldenFile = Path.Combine(_tmpDir, "golden-files", "golden-file.txt");
@@ -34,6 +35,7 @@ namespace bagit.net.tests.unit
         }
 
         [Theory]
+        [Trait("Category", "Unit")]
         [InlineData(ChecksumAlgorithm.MD5, "d41d8cd98f00b204e9800998ecf8427e")]
         [InlineData(ChecksumAlgorithm.SHA1, "da39a3ee5e6b4b0d3255bfef95601890afd80709")]
         [InlineData(ChecksumAlgorithm.SHA256, "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855")]
@@ -48,6 +50,7 @@ namespace bagit.net.tests.unit
         }
         
         [Theory]
+        [Trait("Category", "Unit")]
         [InlineData(ChecksumAlgorithm.MD5, "82715cc04f1900c87118d8780fc0b04a")]
         [InlineData(ChecksumAlgorithm.SHA1, "f8c5bf7a5917d0ba6ab65732df5341475bbe6291")]
         [InlineData(ChecksumAlgorithm.SHA256, "8c219e899115cdfb4ec7c2f03353a55a54a3e48a952439f1f55d57d3a2146e69")]
@@ -60,6 +63,7 @@ namespace bagit.net.tests.unit
         }
 
         [Theory]
+        [Trait("Category", "Unit")]
         [InlineData(ChecksumAlgorithm.MD5, "md5")]
         [InlineData(ChecksumAlgorithm.SHA1, "sha1")]
         [InlineData(ChecksumAlgorithm.SHA256, "sha256")]

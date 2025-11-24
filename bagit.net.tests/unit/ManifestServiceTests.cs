@@ -24,6 +24,7 @@ namespace bagit.net.tests.unit
         }
 
         [Theory]
+        [Trait("Category", "Unit")]
         [InlineData(ChecksumAlgorithm.MD5, "manifest-md5.txt")]
         [InlineData(ChecksumAlgorithm.SHA1, "manifest-sha1.txt")]
         [InlineData(ChecksumAlgorithm.SHA256, "manifest-sha256.txt")]
@@ -37,6 +38,7 @@ namespace bagit.net.tests.unit
         }
 
         [Theory]
+        [Trait("Category", "Unit")]
         [InlineData(ChecksumAlgorithm.MD5, "tagmanifest-md5.txt")]
         [InlineData(ChecksumAlgorithm.SHA1, "tagmanifest-sha1.txt")]
         [InlineData(ChecksumAlgorithm.SHA256, "tagmanifest-sha256.txt")]
@@ -50,6 +52,7 @@ namespace bagit.net.tests.unit
         }
 
         [Fact]
+        [Trait("Category", "Unit")]
         public void Test_Validate_Manifests() {
             var validBag = Path.Combine(_tmpDir, "valid-bag");
             var manifests = new List<string>() { "manifest-sha256.txt", "tagmanifest-sha256.txt"};
@@ -62,6 +65,7 @@ namespace bagit.net.tests.unit
         }
 
         [Fact]
+        [Trait("Category", "Unit")]
         public void Test_Get_Manifest_KVP()
         {
             var validBag = Path.Combine(_tmpDir, "valid-bag");

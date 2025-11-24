@@ -28,12 +28,14 @@ namespace bagit.net.tests.integration
         }
 
         [Fact]
+        [Trait("Category", "Integration")]
         public void Test_Bag_Exists() 
         {
             Assert.True(Directory.Exists(_validBag));
         }
 
         [Fact]
+        [Trait("Category", "Integration")]
         public void Test_Has_Valid_BagitTXT()
         {
             var ex = Record.Exception(() => _validator.Has_Valid_BagitTXT(_validBag));
@@ -41,6 +43,7 @@ namespace bagit.net.tests.integration
         }
 
         [Fact]
+        [Trait("Category", "Integration")]
         public void Test_Has_Valid_BaginfoTXT()
         {
             var ex = Record.Exception(() => _validator.Has_Valid_BaginfoTXT(_validBag, false));
@@ -48,6 +51,7 @@ namespace bagit.net.tests.integration
         }
 
         [Fact]
+        [Trait("Category", "Integration")]
         public void Test_Validate_Manifest_Files()
         {
             var ex = Record.Exception(() => _validator.ValidateManifests(_validBag));
@@ -55,6 +59,7 @@ namespace bagit.net.tests.integration
         }
 
         [Fact]
+        [Trait("Category", "Integration")]
         public void Test_Unsupported_Algorithm()
         {
             var manifestService = _serviceProvider.GetRequiredService<IManifestService>();
@@ -63,12 +68,14 @@ namespace bagit.net.tests.integration
         }
 
         [Fact]
+        [Trait("Category", "Integration")]
         public void Test_Unsupported_Algorithm_Bag()
         {
             Assert.Throws<InvalidDataException>(() => _validator.ValidateManifests(_unsupportedBag));
         }
 
         [Fact]
+        [Trait("Category", "Integration")]
         public void Test_Invalid_Oxum()
         {
             var invalidOxum = Path.Combine(_tmpDir, "bag-invalid-oxum");
@@ -76,6 +83,7 @@ namespace bagit.net.tests.integration
         }
 
         [Fact]
+        [Trait("Category", "Integration")]
         public void Test_Validate_Bag()
         {
             var ex = Record.Exception(() => _validator.ValidateBag(_validBag, false));
@@ -83,6 +91,7 @@ namespace bagit.net.tests.integration
         }
 
         [Fact]
+        [Trait("Category", "Integration")]
         public void Test_Validate_Bag_Fast()
         {
             var ex = Record.Exception(() => _validator.ValidateBag(_validBag, true));
