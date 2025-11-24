@@ -37,6 +37,7 @@ jobs:
             -c Release \
             -r osx-arm64 \
             --self-contained true \
+            --publish-trimmed true \
             -o ./publish/macos-arm64
 
       - name: Upload macOS ARM64 build
