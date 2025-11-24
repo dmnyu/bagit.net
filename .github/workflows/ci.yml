@@ -1,0 +1,43 @@
+name: BagIt.NET CI
+
+# Trigger on push or pull request to main
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  build-and-test:
+    runs-on: ubuntu-latest
+
+    strategy:
+      matrix:
+        dotnet-version: [9.0.x]
+
+    steps:
+      # Step 1: Check out the repo
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      # Step 2: Setup .NET
+      - name: Setup .NET SDK
+        uses: actions/setup-dotnet@v3
+        with:
+          dotnet-version: ${{ matrix.dotnet-version }}
+
+      # Step 3: Restore dependencies
+      - name: Restore dependencies
+        run: dotnet restore bagit.net.sln
+
+      # Step 4: Build solution
+      - name: Build
+        run: dotnet build bagit.net.sln --no-restore --configuration Release
+
+      # Step 5: Run unit tests
+      - name: Run Unit Tests
+        run: dotnet test bagit.net.tests/bagit.net.tests.csproj --no-build --configuration Release --filter "Category=Unit"
+
+      # Step 6: Run integration tests
+      - name: Run Integration Tests
+        run: dotnet test bagit.net.tests/bagit.net.tests.csproj --no-build --configuration Release --filter "Category=Integration"
