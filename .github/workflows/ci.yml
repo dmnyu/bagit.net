@@ -8,55 +8,46 @@ on:
 
 jobs:
   build-and-test:
-    runs-on: ubuntu-latest
-
+    runs-on: ${{ matrix.os }}
     strategy:
       matrix:
         os: [ubuntu-latest, windows-latest, macos-latest]
         dotnet-version: [9.0.x]
-
     steps:
-      # Step 1: Check out the repo
       - name: Checkout code
         uses: actions/checkout@v3
-
-      # Step 2: Setup .NET
-      - name: Setup .NET SDK
+      - name: Setup .NET
         uses: actions/setup-dotnet@v3
         with:
           dotnet-version: ${{ matrix.dotnet-version }}
-
-      # Step 3: Restore dependencies
       - name: Restore dependencies
         run: dotnet restore bagit.net.sln
-
-      # Step 4: Build solution
       - name: Build
         run: dotnet build bagit.net.sln --no-restore --configuration Release
-
-      # Step 5: Run unit tests
       - name: Run Unit Tests
         run: dotnet test bagit.net.tests/bagit.net.tests.csproj --no-build --configuration Release --filter "Category=Unit"
-
-      # Step 6: Run integration tests
       - name: Run Integration Tests
         run: dotnet test bagit.net.tests/bagit.net.tests.csproj --no-build --configuration Release --filter "Category=Integration"
 
-       # Step 7: Publish macOS ARM64 binary
+  publish-macos-arm64:
+    runs-on: macos-latest
+    needs: build-and-test
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v3
+        with:
+          dotnet-version: 9.0.x
       - name: Publish macOS ARM64
-        if: runner.os == 'macOS'
         run: |
           dotnet publish bagit.net.cli/bagit.net.cli.csproj \
             -c Release \
             -r osx-arm64 \
             --self-contained true \
             -o ./publish/macos-arm64
-
-      # Step 8: Upload macOS ARM64 build as artifact
       - name: Upload macOS ARM64 build
-        if: runner.os == 'macOS'
         uses: actions/upload-artifact@v4
         with:
           name: bagit.net-macos-arm64
           path: ./publish/macos-arm64
-
