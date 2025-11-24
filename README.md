@@ -2,7 +2,7 @@
 
 **bagit.net** is a C# implementation of the [BagIt specification (RFC 8493)](https://datatracker.ietf.org/doc/html/rfc8493). It allows you to create BagIt bags—structured file collections with checksums for reliable storage and transfer of digital content. It currently consists of a core library `bagit.net` and CLI application `bagit.net.cli` for Linux and Windows
 
-[![Release](https://img.shields.io/badge/release-v0.2.0--alpha.1-blue)](https://github.com/dmnyu/bagit.net/releases/v0.2.0-alpha.1)
+[![Release](https://img.shields.io/badge/release-v0.2.1--alpha-blue)](https://github.com/dmnyu/bagit.net/releases/v0.2.1-alpha)
 
 > ⚠️ **Note:** This project is in early development and currently support the creation and validation of BagIt formatted bags.
 
@@ -54,8 +54,8 @@ bagit.net help
 
 #### Linux
 ```bash
-wget https://github.com/dmnyu/bagit.net/releases/download/v0.2.0-alpha.1/bagit.net.cli-linux-v0.2.0-alpha.1.tgz
-tar xvzf bagit.net.cli-linux-v0.2.0-alpha.1.tgz
+wget https://github.com/dmnyu/bagit.net/releases/download/v0.2.1-alpha/bagit.net.cli-linux-v0.2.1-alpha.tgz
+tar xvzf bagit.net.cli-linux-v0.2.1-alpha.tgz
 cd bagit.net.cli
 sudo ./install.sh
 bagit.net --help
@@ -66,17 +66,14 @@ bagit.net single-file self-contained binaries require the ability to create and 
 
 #### Windows
 ```powershell
-Invoke-WebRequest -Uri https://github.com/dmnyu/bagit.net/releases/download/v0.2.0-alpha.1/bagit.net.cli-win-v0.2.0-alpha.1.zip -OutFile bagit.net.cli-win-v0.2.0-alpha.1.zip
-Expand-Archive bagit.net.cli-win-v0.2.0-alpha.1.zip -DestinationPath .
+Invoke-WebRequest -Uri https://github.com/dmnyu/bagit.net/releases/download/v0.2.1-alpha/bagit.net.cli-win-v0.2.1-alpha.zip -OutFile bagit.net.cli-win-v0.2.1-alpha.zip
+Expand-Archive bagit.net.cli-win-v0.2.1-alpha.zip -DestinationPath .
 cd .\bagit.net.cli
 .\bagit.net.exe" --help
 .\install.ps1
 %LOCALAPPDATA%\bagit.net\bagit.net --version 
 ```
 > **Tip:** After installing on Windows, you can run `bagit.net` from any directory by adding `%LOCALAPPDATA%\bagit.net` to your user PATH in System Properties.
-
-
-
 
 ## Additional Notes
 
