@@ -48,7 +48,7 @@ namespace bagit.net.services
             if (!Enum.IsDefined(typeof(ChecksumAlgorithm), algorithm))
                 throw new ArgumentOutOfRangeException(nameof(algorithm), $"Unsupported algorithm: {algorithm}");
 
-             return algorithm switch
+            return algorithm switch
             {
                 ChecksumAlgorithm.MD5 => "md5",
                 ChecksumAlgorithm.SHA1 => "sha1",
