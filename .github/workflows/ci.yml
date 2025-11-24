@@ -35,10 +35,11 @@ jobs:
         run: |
           dotnet publish bagit.net.cli/bagit.net.cli.csproj \
             -c Release \
-            -r osx-arm64 \
+            -r osx-x64 \ # or osx-arm64 for Apple Silicon
             --self-contained true \
-            --publish-trimmed true \
-            -o ./publish/macos-arm64
+            /p:PublishTrimmed=true \
+            /p:PublishSingleFile=true \
+            -o ./publish-macos
 
       - name: Upload macOS ARM64 build
         uses: actions/upload-artifact@v4
