@@ -15,7 +15,7 @@ namespace bagit.net
         private readonly IManifestService _manifestService;
         private readonly ITagFileService _tagFileService;
             
-        public Bagger(ILogger<Validator> logger, IManifestService manifestService, ITagFileService tagFileService)
+        public Bagger(ILogger<Bagger> logger, IManifestService manifestService, ITagFileService tagFileService)
         {
             _logger = logger;
             _manifestService = manifestService;
