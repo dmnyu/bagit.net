@@ -2,7 +2,8 @@
 */bin/*
 */obj/*
 /*/Properties/launchSettings.json
-bagit.net.cli/bagit.net.cli.csproj.user
+**/*.csproj.user
 bagit.net/docs/*.md
-*/dist/*
+bagit.net.cli/dist/previous/*
+bagit.net.cli/dist/v*
 */Properties/*
