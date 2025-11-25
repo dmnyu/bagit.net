@@ -7,7 +7,7 @@ namespace bagit.net
 {
     public static class Bagit
     {
-        public const string VERSION = "0.2.1-alpha"; 
+        public const string VERSION = "0.2.2-alpha"; 
         public const string BAGIT_VERSION = "1.0";
 
     }
