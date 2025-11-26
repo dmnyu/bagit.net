@@ -1,6 +1,5 @@
 ﻿using bagit.net.interfaces;
 using Microsoft.Extensions.DependencyInjection;
-using System.ComponentModel.DataAnnotations;
 
 namespace bagit.net.tests.unit
 {
@@ -14,8 +13,8 @@ namespace bagit.net.tests.unit
             _tmpDir = TestHelpers.PrepareTempTestData();
             _serviceProvider = ManifestServiceConfigurator.BuildServiceProvider();
             _manifestService = _serviceProvider.GetRequiredService<IManifestService>();
-
         }
+
         public void Dispose()
         {
             _serviceProvider.Dispose();

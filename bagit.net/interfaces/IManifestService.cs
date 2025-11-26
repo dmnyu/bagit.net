@@ -1,6 +1,4 @@
-﻿using bagit.net.services;
-
-namespace bagit.net.interfaces
+﻿namespace bagit.net.interfaces
 {
     public interface IManifestService
     {

@@ -98,13 +98,11 @@ namespace bagit.net.services
 
             string fn = Path.GetFileName(manifestFile);
 
-            // Determine checksum algorithm
             ChecksumAlgorithm algorithm = GetManifestAlgorithm(fn);
 
-            // Check line endings
             ValidateManifestLineEndings(manifestFile);
 
-            // Validate each line
+            
             foreach (var line in File.ReadLines(manifestFile))
             {
                 if (string.IsNullOrWhiteSpace(line))
@@ -114,7 +112,6 @@ namespace bagit.net.services
             }
         }
 
-        // Extract checksum algorithm from filename
         internal ChecksumAlgorithm GetManifestAlgorithm(string manifestFilename)
         {
             Match match = Regex.Match(manifestFilename, ServiceHelpers.ChecksumPattern, RegexOptions.IgnoreCase);
@@ -124,7 +121,6 @@ namespace bagit.net.services
             return ChecksumAlgorithmMap.Algorithms[match.Groups[1].Value.ToLowerInvariant()];
         }
 
-        // Validate a single line
         internal void ValidateManifestLine(string line, string manifestDir, string manifestFileName, ChecksumAlgorithm algorithm)
         {
             var parts = line.Split(' ', 2, StringSplitOptions.None);
@@ -145,12 +141,11 @@ namespace bagit.net.services
             string fullPath = Path.Combine(manifestDir, payloadFile);
             string filename = Path.GetFileName(payloadFile);
 
-            // Checks
+           
             ValidateLineLength(line);
             ValidateFilenameUtf8(payloadFile);
             ValidateFilenameNormalization(filename, payloadFile);
 
-            // Verify checksum
             _logger.LogInformation($"Verifying checksum for file {fullPath}");
             if (!_checksumService.CompareChecksum(fullPath, checksum, algorithm))
             {
@@ -160,21 +155,18 @@ namespace bagit.net.services
             }
         }
 
-        // Line length check
         internal void ValidateLineLength(string line, int maxLength = 200)
         {
             if (line.Length > maxLength)
                 _logger.LogWarning($"Manifest line exceeds {maxLength} characters, may be too long for some file systems: {line}");
         }
 
-        // UTF-8 check
         internal void ValidateFilenameUtf8(string filename)
         {
             if (!IsValidUtf8(filename))
                 _logger.LogWarning($"{filename} contains non-unicode characters");
         }
 
-        // NFC normalization check
         internal void ValidateFilenameNormalization(string filename, string fullPath)
         {
             if (!filename.IsNormalized(NormalizationForm.FormC))
@@ -214,18 +206,13 @@ namespace bagit.net.services
         {
             try
             {
-                // Encode string to UTF-8 bytes
                 byte[] bytes = Encoding.UTF8.GetBytes(filename);
-
-                // Decode back to string
                 string decoded = Encoding.UTF8.GetString(bytes);
-
-                // Compare
                 return filename == decoded;
             }
             catch
             {
-                return false; // invalid Unicode
+                return false;
             }
         }
 

@@ -1,11 +1,23 @@
 # BagIt.NET Roadmap
 
-This roadmap outlines the planned feature development and release milestones for **BagIt.NET**, a C# implementation of the BagIt specification (RFC 8493). It covers versions **0.2.0** through **0.4.0**, with clear goals and scope for each.
+This roadmap outlines the planned feature development and release milestones for **bagit.net**, a C# implementation of the BagIt specification (RFC 8493). It covers versions **0.2.0** through **0.4.0**, with clear goals and scope for each.
 
 ---
 
 ## **0.2.2 — FileManager**
 **Objective:** Move all functions in the Bagger class that moves, creates, deletes files or directories to file management service
+
+---
+
+## **0.2.3 - Error Handling**
+
+---
+
+## **0.2.4 - Completeness Only Validation**
+
+---
+
+## **0.2.5 - Multiple Checksum Support**
 
 ---
 
@@ -22,7 +34,7 @@ This roadmap outlines the planned feature development and release milestones for
   - `--add "Field=Value"`
 
 **Notes:**
-This unlocks BagIt.NET as a metadata authoring and bag‑inspection tool.
+This unlocks bagit.net as a metadata authoring and bag‑inspection tool.
 
 ---
 
