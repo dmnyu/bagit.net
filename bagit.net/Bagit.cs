@@ -1,5 +1,4 @@
 ﻿using bagit.net.interfaces;
-using bagit.net.service;
 using bagit.net.services;
 using Microsoft.Extensions.DependencyInjection;
 using Serilog;

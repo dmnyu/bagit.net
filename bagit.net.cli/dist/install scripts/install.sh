@@ -2,7 +2,7 @@
 # Simple installer for BagIt.NET CLI
 # Usage: sudo ./install.sh
 
-BINARY_NAME="bagit.net.cli"
+BINARY_NAME="bagit.net"
 TARGET_DIR="/usr/local/bin"
 TARGET_PATH="$TARGET_DIR/bagit.net"
 

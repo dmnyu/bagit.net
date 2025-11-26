@@ -34,7 +34,6 @@ namespace bagit.net.services
 
         public void CreateBagInfo(string bagDir)
         {
-            _logger.LogInformation("Creating bag-info.txt");
             var oxum = GetOxum(bagDir);
             var sb = new StringBuilder();
 
@@ -49,7 +48,6 @@ namespace bagit.net.services
 
         public void CreateBagItTXT(string bagRoot) 
         {
-            _logger.LogInformation("Creating bagit.txt");
             var bagitTxt = Path.Combine(bagRoot, "bagit.txt");
             if (!System.Text.RegularExpressions.Regex.IsMatch(Bagit.BAGIT_VERSION, @"^\d+\.\d+$"))
             {

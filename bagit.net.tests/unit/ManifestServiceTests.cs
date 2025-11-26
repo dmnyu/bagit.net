@@ -13,8 +13,8 @@ namespace bagit.net.tests.unit
             _tmpDir = TestHelpers.PrepareTempTestData();
             _serviceProvider = ManifestServiceConfigurator.BuildServiceProvider();
             _manifestService = _serviceProvider.GetRequiredService<IManifestService>();
-
         }
+
         public void Dispose()
         {
             _serviceProvider.Dispose();

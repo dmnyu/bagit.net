@@ -1,7 +1,5 @@
-﻿using bagit.net.services;
-using bagit.net.interfaces;
+﻿using bagit.net.interfaces;
 using Microsoft.Extensions.Logging;
-using System.Text;
 
 namespace bagit.net
 {
@@ -42,13 +40,15 @@ namespace bagit.net
             dataDir = Path.Combine(bagLocation, "data");
             try
             {
-                _logger.LogInformation($"Creating {dataDir}");
+                _logger.LogInformation($"Creating data directory");
                 tempDataDir = _fileManagerService.CreateTempDirectory(bagLocation);
                 _fileManagerService.MoveContentsOfDirectory(bagLocation, tempDataDir);
                 _logger.LogInformation("Moving {tempDataDir} to data", tempDataDir);
                 _fileManagerService.MoveDirectory(tempDataDir, Path.Combine(bagLocation, "data"));
                 _manifestService.CreatePayloadManifest(bagLocation, algorithm);
+                _logger.LogInformation("Creating bag-info.txt"); 
                 _tagFileService.CreateBagItTXT(bagLocation);
+                _logger.LogInformation("Creating bagit.txt");
                 _tagFileService.CreateBagInfo(bagLocation);
                 _manifestService.CreateTagManifestFile(bagLocation, algorithm);
             }

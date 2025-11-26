@@ -1,14 +1,13 @@
 ﻿using bagit.net.interfaces;
-using bagit.net.services;
 using Microsoft.Extensions.Logging;
 
-namespace bagit.net.service
+namespace bagit.net.services
 {
     public class FileManagerService : IFileManagerService
     {
         private readonly ILogger _logger;
 
-        public FileManagerService(ILogger<TagFileService> logger)
+        public FileManagerService(ILogger<FileManagerService> logger)
         {
             _logger = logger;
         }
@@ -19,7 +18,7 @@ namespace bagit.net.service
 
         public void CreateFile(string path)
         {
-            throw new NotImplementedException();
+            File.Create(path);
         }
 
         public string CreateTempDirectory(string path)
