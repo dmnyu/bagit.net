@@ -7,6 +7,7 @@ namespace bagit.net.services
     public class TagFileService : ITagFileService
     {
         private readonly ILogger _logger;
+        private string nl = Environment.NewLine;
         public TagFileService(ILogger<TagFileService> logger)
         {
             _logger = logger;
@@ -44,6 +45,19 @@ namespace bagit.net.services
 
             var bagInfoFile = Path.Combine(bagDir, "bag-info.txt");
             File.WriteAllText(bagInfoFile, sb.ToString(), new UTF8Encoding(encoderShouldEmitUTF8Identifier: false));
+        }
+
+        public void CreateBagItTXT(string bagRoot) 
+        {
+            _logger.LogInformation("Creating bagit.txt");
+            var bagitTxt = Path.Combine(bagRoot, "bagit.txt");
+            if (!System.Text.RegularExpressions.Regex.IsMatch(Bagit.BAGIT_VERSION, @"^\d+\.\d+$"))
+            {
+                _logger.LogCritical("Invalid BagIt version: {b}. Must be in 'major.minor' format.", Bagit.BAGIT_VERSION);
+                throw new InvalidOperationException($"Invalid BagIt version: {Bagit.BAGIT_VERSION}. Must be in 'major.minor' format.");
+            }
+            var content = $"BagIt-Version: {Bagit.BAGIT_VERSION}{nl}Tag-File-Character-Encoding: UTF-8{nl}";
+            File.WriteAllText(bagitTxt, content, new UTF8Encoding(encoderShouldEmitUTF8Identifier: false));
         }
 
         public string GetOxum(string bagRoot)

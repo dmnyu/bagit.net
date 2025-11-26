@@ -1,4 +1,5 @@
 ﻿using bagit.net.interfaces;
+using bagit.net.service;
 using bagit.net.services;
 using Microsoft.Extensions.DependencyInjection;
 using Serilog;
@@ -38,6 +39,7 @@ namespace bagit.net
             services.AddSingleton<IManifestService, ManifestService>();
             services.AddSingleton<IChecksumService, ChecksumService>();
             services.AddSingleton<ITagFileService, TagFileService>();
+            services.AddSingleton<IFileManagerService, FileManagerService>();
             services.AddTransient<TWorker>();
             return services.BuildServiceProvider();
         }

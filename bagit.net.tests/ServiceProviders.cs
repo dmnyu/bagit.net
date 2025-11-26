@@ -1,4 +1,5 @@
 ﻿using bagit.net.interfaces;
+using bagit.net.service;
 using bagit.net.services;
 using Microsoft.Extensions.DependencyInjection;
 using Serilog;
@@ -40,6 +41,16 @@ namespace bagit.net.tests
             var logger = DefaultLogger.GetDefaultLogger();
             services.AddLogging(builder => builder.AddSerilog(logger, dispose: true));
             services.AddSingleton<ITagFileService, TagFileService>();
+            return services.BuildServiceProvider();
+        }
+    }
+
+    public static class FileManagerServiceConfigurator
+    {
+        public static ServiceProvider BuildServiceProvider()
+        {
+            var services = new ServiceCollection();
+            services.AddSingleton<IFileManagerService, FileManagerService>();
             return services.BuildServiceProvider();
         }
     }

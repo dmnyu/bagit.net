@@ -1,6 +1,5 @@
 ﻿using bagit.net.interfaces;
 using Microsoft.Extensions.DependencyInjection;
-using System.ComponentModel.DataAnnotations;
 
 namespace bagit.net.tests.unit
 {
