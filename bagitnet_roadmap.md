@@ -1,6 +1,6 @@
 # BagIt.NET Roadmap
 
-This roadmap outlines the planned feature development and release milestones for **bagit.netT**, a C# implementation of the BagIt specification (RFC 8493). It covers versions **0.2.0** through **0.4.0**, with clear goals and scope for each.
+This roadmap outlines the planned feature development and release milestones for **bagit.net**, a C# implementation of the BagIt specification (RFC 8493). It covers versions **0.2.0** through **0.4.0**, with clear goals and scope for each.
 
 ---
 
