@@ -22,6 +22,7 @@ namespace bagit.net.tests.unit
         }
 
         [Fact]
+        [Trait("Category", "Unit")]
         public void Test_Create_Temp_Directory()
         {
             var _dir = Path.Combine(_tmpDir, "dir");
@@ -30,6 +31,7 @@ namespace bagit.net.tests.unit
         }
 
         [Fact]
+        [Trait("Category", "Unit")]
         public void Test_Move_Contents_To_Temp_Directory()
         {
             var _dir = Path.Combine(_tmpDir, "dir");
@@ -42,6 +44,7 @@ namespace bagit.net.tests.unit
         }
 
         [Fact]
+        [Trait("Category", "Unit")]
         public void Test_Move_Temp_Dir_To_Data()
         {
             var _dir = Path.Combine(_tmpDir, "dir");
@@ -52,6 +55,15 @@ namespace bagit.net.tests.unit
             var _directories = Directory.GetDirectories(_dir);
             Assert.Single(_directories);
             Assert.Equal("data", Path.GetFileName(_directories[0]));
+        }
+
+        [Fact]
+        [Trait("Category", "Unit")]
+        public void Test_Valid_UTF8()
+        {
+            var _validDir = Path.Combine(_tmpDir, "valid-bag");
+            var _validFile = Path.Combine(_validDir, "bag-info.txt");
+            Assert.True(_fileManagerService.IsValidUTF8(_validFile));
         }
 
     }

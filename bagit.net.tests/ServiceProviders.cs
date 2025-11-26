@@ -41,6 +41,7 @@ namespace bagit.net.tests
             var logger = DefaultLogger.GetDefaultLogger();
             services.AddLogging(builder => builder.AddSerilog(logger, dispose: true));
             services.AddSingleton<ITagFileService, TagFileService>();
+            services.AddSingleton<IFileManagerService, FileManagerService>();
             return services.BuildServiceProvider();
         }
     }
@@ -53,6 +54,18 @@ namespace bagit.net.tests
             var logger = DefaultLogger.GetDefaultLogger();
             services.AddLogging(builder => builder.AddSerilog(logger, dispose: true));
             services.AddSingleton<IFileManagerService, FileManagerService>();
+            return services.BuildServiceProvider();
+        }
+    }
+
+    public static class ValidationServiceConfigurator
+    {
+        public static ServiceProvider BuildServiceProvider()
+        {
+            var services = new ServiceCollection();
+            var logger = DefaultLogger.GetDefaultLogger();
+            services.AddLogging(builder => builder.AddSerilog(logger, dispose: true));
+            services.AddSingleton<IValidationService, ValidationService>();
             return services.BuildServiceProvider();
         }
     }

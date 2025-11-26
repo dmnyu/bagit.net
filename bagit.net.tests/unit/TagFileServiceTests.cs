@@ -63,5 +63,32 @@ namespace bagit.net.tests.unit
             var tagDict = _tagFileService.GetTagFileAsDict(bagInfo);
             Assert.Equal(tagDict["Payload-Oxum"], calculatedOxum);
         }
+
+        [Fact]
+        [Trait("Category","Unit")]
+        public void Validate_BagitTXT()
+        {
+            var validBag = Path.Combine(_tmpDir, "valid-bag");
+            var ex = Record.Exception(() => _tagFileService.ValidateBagitTXT(validBag));
+            Assert.Null(ex);
+        }
+
+        [Fact]
+        [Trait("Category", "Unit")]
+        public void Has_BagInfo()
+        {
+            var validBag = Path.Combine(_tmpDir, "valid-bag");
+            Assert.True(_tagFileService.HasBagInfo(validBag));
+        }
+
+        [Fact]
+        [Trait("Category", "Unit")]
+        public void Has_Valid_BagInfo()
+        {
+            var validBag = Path.Combine(_tmpDir, "valid-bag");
+            Assert.True(_tagFileService.ValidateBagInfo(validBag));
+            
+        }
+
     }
 }
