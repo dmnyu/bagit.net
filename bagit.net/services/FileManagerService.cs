@@ -18,7 +18,7 @@ namespace bagit.net.services
 
         public void CreateFile(string path)
         {
-            File.Create(path);
+            File.Create(path).Dispose();
         }
 
         public string CreateTempDirectory(string path)
