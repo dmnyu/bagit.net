@@ -4,16 +4,14 @@ This roadmap outlines the planned feature development and release milestones for
 
 ---
 
-## **0.2.2 — FileManager**
-**Objective:** Move all functions in the Bagger class that moves, creates, deletes files or directories to file management service
+## **0.2.3 Validation Service
+**Objective:** 
+- remove all functions from the Validator class and move to a validation service
+- implement completeness only 
 
 ---
 
-## **0.2.3 - Error Handling**
-
----
-
-## **0.2.4 - Completeness Only Validation**
+## **0.2.4 - Error Handling**
 
 ---
 
@@ -64,6 +62,11 @@ These are ideas for after the 0.4.x line:
 ---
 
 ## Previous updates: ##
+
+## **0.2.2 — FileManager**
+**Objective:** Move all functions in the Bagger class that moves, creates, deletes files or directories to file management service
+
+---
 
 ## **0.2.1 -- Service-Oriented-Architecture**
 **Objective:** Convert all static classes to services / dependency injection
