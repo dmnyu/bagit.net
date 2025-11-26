@@ -7,8 +7,5 @@
         void MoveDirectory(string originalPath, string destinationPath);
         void MoveContentsOfDirectory(string originalPath, string destinationPath);
         void CreateFile(string path);
-
-
-
     }
 }
