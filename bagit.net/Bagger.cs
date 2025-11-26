@@ -46,9 +46,9 @@ namespace bagit.net
                 _logger.LogInformation("Moving {tempDataDir} to data", tempDataDir);
                 _fileManagerService.MoveDirectory(tempDataDir, Path.Combine(bagLocation, "data"));
                 _manifestService.CreatePayloadManifest(bagLocation, algorithm);
-                _logger.LogInformation("Creating bag-info.txt"); 
+                _logger.LogInformation("Creating bagit.txt"); 
                 _tagFileService.CreateBagItTXT(bagLocation);
-                _logger.LogInformation("Creating bagit.txt");
+                _logger.LogInformation("Creating bag-info.txt");
                 _tagFileService.CreateBagInfo(bagLocation);
                 _manifestService.CreateTagManifestFile(bagLocation, algorithm);
             }
