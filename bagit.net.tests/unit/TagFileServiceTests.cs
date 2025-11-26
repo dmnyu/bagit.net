@@ -66,7 +66,7 @@ namespace bagit.net.tests.unit
 
         [Fact]
         [Trait("Category","Unit")]
-        public void Validate_BagitTXT()
+        public void Test_Validate_BagitTXT()
         {
             var validBag = Path.Combine(_tmpDir, "valid-bag");
             var ex = Record.Exception(() => _tagFileService.ValidateBagitTXT(validBag));
@@ -75,7 +75,7 @@ namespace bagit.net.tests.unit
 
         [Fact]
         [Trait("Category", "Unit")]
-        public void Has_BagInfo()
+        public void Test_Has_BagInfo()
         {
             var validBag = Path.Combine(_tmpDir, "valid-bag");
             Assert.True(_tagFileService.HasBagInfo(validBag));
@@ -83,11 +83,22 @@ namespace bagit.net.tests.unit
 
         [Fact]
         [Trait("Category", "Unit")]
-        public void Has_Valid_BagInfo()
+        public void Test_Validate_BagInfo()
         {
             var validBag = Path.Combine(_tmpDir, "valid-bag");
             Assert.True(_tagFileService.ValidateBagInfo(validBag));
             
+        }
+
+        [Fact]
+        [Trait("Category", "Unit")]
+        public void Test_Get_Tags()
+        {
+            var _validBag = Path.Combine(_tmpDir, "valid-bag");
+            var _bagInfo = Path.Combine(_validBag, "bag-info.txt");
+            var _tags = _tagFileService.GetTags(_bagInfo);
+            Assert.True(_tags.Count > 0 );
+            Assert.Equal("1.0", _tags["BagIt-Version"][0]);
         }
 
     }

@@ -140,8 +140,50 @@ namespace bagit.net.services
             //check that it does not contain a BOM
             if (_fileManagerService.HasBOM(_bagInfo))
                 return false;
-            
+
+            //get the dictionary as tags
+            var _tags = GetTags(_bagInfo);
+
+            //ensure there is only one value for the following
+            if (_tags["Payload-Oxum"].Count > 1)
+                return false;
+            if (_tags["Bag-Software-Agent"].Count > 1)
+                return false;
+            if (_tags["BagIt-Version"].Count > 1)
+                return false;
+            if (_tags["Bagging-Date"].Count > 1)
+                return false;
+
             return true;
+        }
+
+        public Dictionary<string, List<string>> GetTags(string tagFilePath)
+        {
+            var _tags = new Dictionary<string, List<string>>();
+
+            var lines = File.ReadAllLines(tagFilePath)
+                .Where(line => !string.IsNullOrWhiteSpace(line))
+                .ToList();
+
+            foreach( var line in lines)
+            {
+                var parts = line.Split(new[] { ':' }, 2);
+                if (parts.Length != 2)
+                    throw new FormatException($"Invalid bag-info.txt line: {line}");
+     
+                var key = parts[0].Trim();
+                var value = parts[1].Trim();
+                if (_tags.ContainsKey(key))
+                {
+                    _tags[key].Add(value);
+                }
+                else
+                {
+                    _tags[key] = new List<string>() { value };
+                }
+            }
+
+            return _tags;
         }
     }
 }
