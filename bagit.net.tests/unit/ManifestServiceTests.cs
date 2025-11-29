@@ -1,4 +1,5 @@
-﻿using bagit.net.interfaces;
+﻿using bagit.net.domain;
+using bagit.net.interfaces;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace bagit.net.tests.unit

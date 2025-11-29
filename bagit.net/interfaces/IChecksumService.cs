@@ -1,4 +1,6 @@
-﻿namespace bagit.net.interfaces
+﻿using bagit.net.domain;
+
+namespace bagit.net.interfaces
 {
     public interface IChecksumService
     {      

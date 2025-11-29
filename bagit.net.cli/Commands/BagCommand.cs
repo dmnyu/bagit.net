@@ -1,4 +1,4 @@
-﻿using bagit.net.interfaces;
+﻿using bagit.net.domain;
 using Microsoft.Extensions.DependencyInjection;
 using Spectre.Console;
 using Spectre.Console.Cli;

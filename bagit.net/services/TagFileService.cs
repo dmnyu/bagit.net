@@ -1,4 +1,5 @@
-﻿using bagit.net.interfaces;
+﻿using bagit.net.domain;
+using bagit.net.interfaces;
 using Microsoft.Extensions.Logging;
 using System.Globalization;
 using System.Text;

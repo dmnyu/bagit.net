@@ -1,9 +1,4 @@
-﻿using bagit.net.interfaces;
-using bagit.net.services;
-using Microsoft.Extensions.DependencyInjection;
-using Serilog;
-
-namespace bagit.net
+﻿namespace bagit.net.domain
 {
     public static class Bagit
     {

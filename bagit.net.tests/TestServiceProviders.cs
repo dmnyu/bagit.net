@@ -74,13 +74,31 @@ namespace bagit.net.tests
         }
     }
 
+    public static class CreateServiceConfigurator
+    {
+        public static ServiceProvider BuildServiceProvider()
+        {
+            var services = new ServiceCollection();
+            var logger = DefaultLogger.GetDefaultLogger();
+            services.AddLogging(builder => builder.AddSerilog(logger, dispose: true));
+            services.AddSingleton<ICreationService, CreationService>();
+            services.AddSingleton<IValidationService, ValidationService>();
+            services.AddSingleton<ITagFileService, TagFileService>();
+            services.AddSingleton<IFileManagerService, FileManagerService>();
+            services.AddSingleton<IManifestService, ManifestService>();
+            services.AddSingleton<IChecksumService, ChecksumService>();
+            return services.BuildServiceProvider();
+        }
+    }
+
+
     static class DefaultLogger
     {
         public static Logger GetDefaultLogger()
         {
             return new LoggerConfiguration()
                 .MinimumLevel.Debug()
-                .WriteTo.Console(new ShortLevelFormatter())
+                .WriteTo.Console()
                 .CreateLogger();
         }
     }

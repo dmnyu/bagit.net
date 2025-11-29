@@ -86,8 +86,7 @@ namespace bagit.net.tests.unit
         public void Test_Validate_BagInfo()
         {
             var validBag = Path.Combine(_tmpDir, "valid-bag");
-            Assert.True(_tagFileService.ValidateBagInfo(validBag));
-
+            Assert.True(_tagFileService.ValidateBagInfo(Path.Combine(validBag, "bag-info.txt")));
         }
 
         [Fact]

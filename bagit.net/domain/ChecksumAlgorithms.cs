@@ -1,4 +1,4 @@
-﻿namespace bagit.net.interfaces
+﻿namespace bagit.net.domain
 {
     public enum ChecksumAlgorithm
     {

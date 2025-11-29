@@ -1,72 +1,23 @@
-﻿using bagit.net.interfaces;
+﻿using bagit.net.domain;
+using bagit.net.interfaces;
 using Microsoft.Extensions.Logging;
 
 namespace bagit.net.cli
 {
     public class Bagger
     {
-        private string bagLocation = string.Empty;
-        private string dataDir = string.Empty;
-        private string tempDataDir = string.Empty;
-        private readonly ILogger _logger;
-        private readonly IManifestService _manifestService;
-        private readonly ITagFileService _tagFileService;
-        private readonly IFileManagerService _fileManagerService;
+        readonly ICreationService _creationService;
+        readonly ILogger _logger;
             
-        public Bagger(ILogger<Bagger> logger, IManifestService manifestService, ITagFileService tagFileService, IFileManagerService fileManagerService  )
+        public Bagger(ILogger<Validator> logger, ICreationService creationService)
         {
             _logger = logger;
-            _manifestService = manifestService;
-            _tagFileService = tagFileService;
-            _fileManagerService = fileManagerService;
+            _creationService = creationService;
         }
 
-        public void CreateBag(string? path, ChecksumAlgorithm algorithm)
+        public void CreateBag(string dirLocation, ChecksumAlgorithm algorithm)
         {
-            _logger.LogInformation($"Using bagit.net v{Bagit.VERSION}");
-            if (path == null)
-            {
-                _logger.LogCritical("The path to a directory cannot be null");
-                throw new ArgumentNullException(nameof(path),"The path to a directory cannot be null");
-            }
-            if (!Directory.Exists(path))
-            {
-                _logger.LogCritical("{path} does not exist", path);
-                throw new DirectoryNotFoundException($"{path} does not exist");
-            }
-
-            _logger.LogInformation("Creating bag for directory {path}", path);
-            bagLocation = path;
-            dataDir = Path.Combine(bagLocation, "data");
-            try
-            {
-                _logger.LogInformation($"Creating data directory");
-                tempDataDir = _fileManagerService.CreateTempDirectory(bagLocation);
-                _fileManagerService.MoveContentsOfDirectory(bagLocation, tempDataDir);
-                _logger.LogInformation("Moving {tempDataDir} to data", tempDataDir);
-                _fileManagerService.MoveDirectory(tempDataDir, Path.Combine(bagLocation, "data"));
-                _manifestService.CreatePayloadManifest(bagLocation, algorithm);
-                _logger.LogInformation("Creating bagit.txt"); 
-                _tagFileService.CreateBagItTXT(bagLocation);
-                _logger.LogInformation("Creating bag-info.txt");
-                _tagFileService.CreateBagInfo(bagLocation);
-                _manifestService.CreateTagManifestFile(bagLocation, algorithm);
-            }
-            catch (IOException ex)
-            {
-                _logger.LogCritical(ex, "Failed to create bag at {Path}", path);
-                throw new InvalidOperationException($"Failed to create bag at {path}", ex);
-            }
-            catch (UnauthorizedAccessException ex)
-            {
-                _logger.LogCritical(ex, "Access denied when creating bag at {path}", path);
-                throw new InvalidOperationException($"Access denied when creating bag at {path}", ex);
-            }
-            catch (Exception ex){
-                _logger.LogCritical(ex, "Unknown exception while creating bag at {path}", path);
-                throw new Exception($"Unknown exception while creating bag at {path}", ex);
-            }
+            _creationService.CreateBag(dirLocation, algorithm);
         }
-
     }
 }
