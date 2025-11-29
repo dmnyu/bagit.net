@@ -56,7 +56,7 @@ namespace bagit.net.services
             catch (UnauthorizedAccessException ex)
             {
                 _logger.LogCritical(ex, "Access denied when creating bag at {path}", dirLocation);
-                throw new UnauthorizedAccessException($"Access denied when creating bag at {dirLocation}", ex);
+                throw new InvalidOperationException($"Access denied when creating bag at {dirLocation}", ex);
             }
             catch (Exception ex)
             {
