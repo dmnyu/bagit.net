@@ -29,7 +29,7 @@ namespace bagit.net.services
             {
                 _logger.LogInformation($"Generating manifest lines for file {entry}");
                 var checksum = _checksumService.CalculateChecksum(Path.Combine(bagRoot, entry), algorithm);
-                manifestContent.Append($"{checksum} {entry}\n");
+                manifestContent.Append($"{checksum.Trim()} {entry.Trim()}\n");
             }
 
             var manifestFilename = Path.Combine(bagRoot, $"manifest-{algorithmCode}.txt");
@@ -47,7 +47,7 @@ namespace bagit.net.services
             foreach (var entry in fileEntries)
             {
                 var checksum = _checksumService.CalculateChecksum(Path.Combine(bagRoot, entry), algorithm);
-                sb.Append($"{checksum} {entry}\n");
+                sb.Append($"{checksum.Trim()} {entry.Trim()}\n");
             }
             
             File.WriteAllText(manifestFilename, sb.ToString(), new UTF8Encoding(encoderShouldEmitUTF8Identifier: false));
