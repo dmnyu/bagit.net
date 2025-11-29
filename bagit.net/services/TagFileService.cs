@@ -210,7 +210,7 @@ namespace bagit.net.services
         {
             var _tags = new Dictionary<string, List<string>>();
 
-            string currentKey = null;
+            string? currentKey = null;
 
             foreach (var line in File.ReadLines(tagFilePath))
             {
