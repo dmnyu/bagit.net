@@ -83,7 +83,7 @@ namespace bagit.net.services
             var tags = _tagFileService.GetTags(Path.Combine(bagPath, "bag-info.txt"));
             if (!tags.TryGetValue("Payload-Oxum", out var storedOxumTag))
             {
-                throw new InvalidDataException($"bag-info.txt does not conatin a payload-oxum");
+                throw new InvalidDataException($"bag-info.txt does not contain a payload-oxum");
             }
 
             var storedOxum = storedOxumTag[0];
