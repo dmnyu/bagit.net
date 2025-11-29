@@ -8,6 +8,7 @@ It currently consists of a core library (`bagit.net`) and a CLI application (`ba
 ![BagIt.NET CI](https://github.com/dmnyu/bagit.net/actions/workflows/ci.yml/badge.svg)
 
 > ⚠️ **Note:** This project is in early development. It currently supports the creation and validation of **BagIt-formatted bags**.
+There is currently no error handling in place and will crash if an error is encountered.
 
 ---
 

@@ -91,6 +91,25 @@ namespace bagit.net.services
                 .ToList();
         }
 
+        public void ValidateManifestFiles(string bagPath)
+        {
+            var validatedManifestCounter = 0;
+            foreach (var f in Directory.EnumerateFiles(bagPath))
+            {
+
+                if (System.Text.RegularExpressions.Regex.IsMatch(Path.GetFileName(f), @"^(manifest|tagmanifest)-(md5|sha1|sha256|sha384|sha512)\.txt$"))
+                {
+                    validatedManifestCounter++;
+                    ValidateManifestFile(f);
+                }
+            }
+
+            if (validatedManifestCounter == 0)
+            {
+                throw new InvalidDataException($"{bagPath} did not contain any manifest files.");
+            }
+        }
+
         public void ValidateManifestFile(string manifestFile)
         {
             string dir = Path.GetDirectoryName(manifestFile)

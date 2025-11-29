@@ -1,5 +1,6 @@
 ﻿using bagit.net.interfaces;
 using Microsoft.Extensions.Logging;
+using System.Text;
 
 namespace bagit.net.services
 {
@@ -32,6 +33,36 @@ namespace bagit.net.services
             var tempDataDir = Path.Combine(path, $"tmp{suffix}");
             CreateDirectory(tempDataDir);
             return tempDataDir;
+        }
+
+        public bool HasBOM(string path)
+        {
+                Span<byte> bom = stackalloc byte[3];
+
+                using var fs = File.OpenRead(path);
+                if (fs.Read(bom) < 3)
+                    return false;
+
+                return bom[0] == 0xEF && bom[1] == 0xBB && bom[2] == 0xBF;
+        }
+
+        public bool IsValidUTF8(string path)
+        {
+            var utf8 = new UTF8Encoding(
+                encoderShouldEmitUTF8Identifier: false,
+                throwOnInvalidBytes: true);
+
+            byte[] bytes = File.ReadAllBytes(path);
+
+            try
+            {
+                utf8.GetString(bytes);
+                return true;
+            }
+            catch (DecoderFallbackException)
+            {
+                return false;
+            }
         }
 
         public void MoveContentsOfDirectory(string originalPath, string destinationPath)
