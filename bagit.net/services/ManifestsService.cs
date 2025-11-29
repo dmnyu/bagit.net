@@ -3,6 +3,7 @@ using System.Runtime.InteropServices;
 using System.Text;
 using System.Text.RegularExpressions;
 using bagit.net.interfaces;
+using bagit.net.domain;
 
 namespace bagit.net.services
 {
@@ -28,7 +29,7 @@ namespace bagit.net.services
             {
                 _logger.LogInformation($"Generating manifest lines for file {entry}");
                 var checksum = _checksumService.CalculateChecksum(Path.Combine(bagRoot, entry), algorithm);
-                manifestContent.AppendLine($"{checksum} {entry}");
+                manifestContent.Append($"{checksum.Trim()} {entry.Trim()}\n");
             }
 
             var manifestFilename = Path.Combine(bagRoot, $"manifest-{algorithmCode}.txt");
@@ -46,7 +47,7 @@ namespace bagit.net.services
             foreach (var entry in fileEntries)
             {
                 var checksum = _checksumService.CalculateChecksum(Path.Combine(bagRoot, entry), algorithm);
-                sb.AppendLine($"{checksum} {entry}");
+                sb.Append($"{checksum.Trim()} {entry.Trim()}\n");
             }
             
             File.WriteAllText(manifestFilename, sb.ToString(), new UTF8Encoding(encoderShouldEmitUTF8Identifier: false));

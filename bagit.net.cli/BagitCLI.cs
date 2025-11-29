@@ -1,4 +1,5 @@
 ﻿using bagit.net.cli.Commands;
+using bagit.net.domain;
 using Spectre.Console;
 using Spectre.Console.Cli;
 

@@ -1,6 +1,8 @@
 name: BagIt.NET CI
 
 on:
+  push:
+    branches: ["*"]
   pull_request:
     branches: [ main ]
 

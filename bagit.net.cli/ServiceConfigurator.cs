@@ -3,18 +3,12 @@ using bagit.net.services;
 using Microsoft.Extensions.DependencyInjection;
 using Serilog;
 
-namespace bagit.net
+
+namespace bagit.net.cli
 {
-    public static class Bagit
-    {
-        public const string VERSION = "0.2.3-alpha"; 
-        public const string BAGIT_VERSION = "1.0";
-
-    }
-
     public static class ServiceConfigurator
     {
-        public static ServiceProvider BuildServiceProvider<TWorker>(string logFile = "")
+        public static ServiceProvider BuildServiceProvider<TWorker>(string? logFile = "")
             where TWorker : class
         {
 
@@ -40,6 +34,7 @@ namespace bagit.net
             services.AddSingleton<ITagFileService, TagFileService>();
             services.AddSingleton<IFileManagerService, FileManagerService>();
             services.AddSingleton<IValidationService, ValidationService>();
+            services.AddSingleton<ICreationService, CreationService>();
             services.AddTransient<TWorker>();
             return services.BuildServiceProvider();
         }

@@ -4,7 +4,7 @@ using System.Text.RegularExpressions;
 
 namespace bagit.net.services
 {
-    internal class ValidationService : IValidationService
+    public class ValidationService : IValidationService
     {
         readonly ILogger<ValidationService> _logger;
         readonly ITagFileService _tagFileService;

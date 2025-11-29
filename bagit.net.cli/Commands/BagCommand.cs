@@ -1,5 +1,4 @@
-﻿using bagit.net.interfaces;
-using Microsoft.Extensions.DependencyInjection;
+﻿using Microsoft.Extensions.DependencyInjection;
 using Spectre.Console;
 using Spectre.Console.Cli;
 using System.ComponentModel;
@@ -26,49 +25,16 @@ class BagCommand : Command<BagCommand.Settings>
 
     public override int Execute(CommandContext context, Settings settings, CancellationToken cancellationToken)
     {
-
-        if (string.IsNullOrWhiteSpace(settings.Directory))
+        try
         {
-            AnsiConsole.MarkupLine("[red][bold]ERROR:[/][/]");
-            AnsiConsole.MarkupLine("[red]a directory to bag must be specified when creating a bag[/]\n");
-            BagitCLI.app.Run(new string[] { "help" }, cancellationToken);
+            var serviceProvider = ServiceConfigurator.BuildServiceProvider<Bagger>(settings.logFile);
+            var bagger = serviceProvider.GetRequiredService<Bagger>();
+            bagger.CreateBag(settings.Directory, settings.Algorithm, settings.logFile, cancellationToken);
+        }
+        catch (Exception ex) {
+            AnsiConsole.MarkupLine($"[red][bold]ERROR:[/] {ex.Message}");
             return 1;
         }
-
-        var bagPath = Path.GetFullPath(settings.Directory);
-        if (!Directory.Exists(bagPath)) {
-            AnsiConsole.MarkupLine("[red][bold]ERROR:[/][/]");
-            AnsiConsole.MarkupLine($"[red]the directory {bagPath} does not exist[/]\n");
-            BagitCLI.app.Run(new string[] { "help" }, cancellationToken);
-            return 1;
-        }
-
-        //get the algorithm
-        ChecksumAlgorithm algorithm;
-        if (string.IsNullOrWhiteSpace(settings.Algorithm))
-        {
-            algorithm = ChecksumAlgorithm.SHA256;
-        } else if(ChecksumAlgorithmMap.Algorithms.ContainsKey(settings.Algorithm))
-        {
-            algorithm = ChecksumAlgorithmMap.Algorithms[settings.Algorithm];
-        } else
-        {
-            AnsiConsole.MarkupLine("[red][bold]ERROR:[/][/]");
-            AnsiConsole.MarkupLine($"[red]checksum algorithm {settings.Algorithm} is not supported[/]\n");
-            BagitCLI.app.Run(new string[] { "help" }, cancellationToken);
-            return 1;
-        }
-
-        //get logging option
-        if (!string.IsNullOrWhiteSpace(settings.logFile))
-        {
-            AnsiConsole.MarkupLine($"bagit.net.cli v{Bagit.VERSION}");
-            AnsiConsole.MarkupLine($"Logging to {settings.logFile}");
-        }
-
-        var serviceProvider = ServiceConfigurator.BuildServiceProvider<Bagger>();
-        var bagger = serviceProvider.GetRequiredService<Bagger>();
-        bagger.CreateBag(bagPath, algorithm);
         return 0;
     }
 }
