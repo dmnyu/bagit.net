@@ -58,9 +58,14 @@ namespace bagit.net.tests.unit
         public void Test_Validate_Manifests(string bag) {
             var validBag = Path.Combine(_tmpDir, bag);
             var manifests = new List<string>() { "manifest-sha256.txt", "tagmanifest-sha256.txt"};
+            
             foreach (var manifest in manifests)
             {
                 var manifestFile = Path.Combine(validBag, manifest);
+                Console.WriteLine($"Checking file: {manifestFile}, exists: {File.Exists(manifestFile)}");
+                Console.WriteLine($"Temp dir: {Path.GetTempPath()}");
+
+
                 var ex = Record.Exception(() => _manifestService.ValidateManifestFile(manifestFile));
                 Assert.Null(ex);
             }
