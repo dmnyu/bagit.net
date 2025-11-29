@@ -26,7 +26,7 @@ class BagCommand : Command<BagCommand.Settings>
 
     public override int Execute(CommandContext context, Settings settings, CancellationToken cancellationToken)
     {
-        var serviceProvider = ServiceConfigurator.BuildServiceProvider<Bagger>();
+        var serviceProvider = ServiceConfigurator.BuildServiceProvider<Bagger>(settings.logFile);
         var bagger = serviceProvider.GetRequiredService<Bagger>();
         return bagger.CreateBag(settings.Directory, settings.Algorithm, settings.logFile, cancellationToken);
     }

@@ -2,7 +2,6 @@
 using bagit.net.interfaces;
 using Microsoft.Extensions.Logging;
 using Spectre.Console;
-using System.Threading;
 
 namespace bagit.net.cli
 {
@@ -17,7 +16,7 @@ namespace bagit.net.cli
             _creationService = creationService;
         }
 
-        public int CreateBag(string dirLocation, string checkSumAlgorithm, string logFile, CancellationToken cancellationToken)
+        public int CreateBag(string? dirLocation, string? checkSumAlgorithm, string? logFile, CancellationToken cancellationToken)
         {
             if (string.IsNullOrWhiteSpace(dirLocation))
             {

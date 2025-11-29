@@ -14,7 +14,7 @@ namespace bagit.net.cli
             _logger = logger;
             _validationService = validationService;
         }
-        public int ValidateBag(string bagPath, bool fast, string logFile, CancellationToken cancellationToken)
+        public int ValidateBag(string? bagPath, bool fast, string? logFile, CancellationToken cancellationToken)
         {
             _logger.LogInformation($"Using bagit.net v{Bagit.VERSION}");
             

@@ -8,7 +8,7 @@ namespace bagit.net.cli
 {
     public static class ServiceConfigurator
     {
-        public static ServiceProvider BuildServiceProvider<TWorker>(string logFile = "")
+        public static ServiceProvider BuildServiceProvider<TWorker>(string? logFile = "")
             where TWorker : class
         {
 
@@ -34,6 +34,7 @@ namespace bagit.net.cli
             services.AddSingleton<ITagFileService, TagFileService>();
             services.AddSingleton<IFileManagerService, FileManagerService>();
             services.AddSingleton<IValidationService, ValidationService>();
+            services.AddSingleton<ICreationService, CreationService>();
             services.AddTransient<TWorker>();
             return services.BuildServiceProvider();
         }

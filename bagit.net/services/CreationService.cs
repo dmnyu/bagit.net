@@ -4,7 +4,7 @@ using Microsoft.Extensions.Logging;
 
 namespace bagit.net.services
 {
-    internal class CreationService : ICreationService
+    public class CreationService : ICreationService
     {
         readonly ILogger _logger;
         readonly ITagFileService _tagFileService;
