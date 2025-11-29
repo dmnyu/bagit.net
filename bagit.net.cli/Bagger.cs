@@ -60,7 +60,7 @@ namespace bagit.net.cli
                 AnsiConsole.MarkupLine($"Logging to {logFile}");
             }
 
-            _creationService.CreateBag(dirLocation, algorithm);
+            _creationService.CreateBag(bagPath, algorithm);
             return 0;
         }
     }

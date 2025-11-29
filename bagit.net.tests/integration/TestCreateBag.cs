@@ -42,6 +42,7 @@ namespace bagit.net.tests.integration
         public void CreateBag_Throws_On_Invalid_Directories()
         {
             Assert.Throws<DirectoryNotFoundException>(() => _creationService.CreateBag(Path.Combine(_tmpDir, "Foo"), ChecksumAlgorithm.MD5));
+            Assert.Throws<ArgumentNullException>(() => _creationService.CreateBag(null, ChecksumAlgorithm.MD5));
         }
 
     }

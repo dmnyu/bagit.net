@@ -10,7 +10,7 @@ namespace bagit.net.services
         readonly ITagFileService _tagFileService;
         readonly IManifestService _manifestService;
         readonly IFileManagerService _fileManagerService;
-        public CreationService(ILogger<ValidationService> logger, ITagFileService tagFileService, IManifestService manifestService, IFileManagerService fileManagerService)
+        public CreationService(ILogger<CreationService> logger, ITagFileService tagFileService, IManifestService manifestService, IFileManagerService fileManagerService)
         {
             _logger = logger;
             _tagFileService = tagFileService;
@@ -56,12 +56,12 @@ namespace bagit.net.services
             catch (UnauthorizedAccessException ex)
             {
                 _logger.LogCritical(ex, "Access denied when creating bag at {path}", dirLocation);
-                throw new InvalidOperationException($"Access denied when creating bag at {dirLocation}", ex);
+                throw new UnauthorizedAccessException($"Access denied when creating bag at {dirLocation}", ex);
             }
             catch (Exception ex)
             {
                 _logger.LogCritical(ex, "Unknown exception while creating bag at {path}", dirLocation);
-                throw new Exception($"Unknown exception while creating bag at {dirLocation}", ex);
+                throw new InvalidOperationException($"Unknown exception while creating bag at {dirLocation}", ex);
             }
         }
     }
