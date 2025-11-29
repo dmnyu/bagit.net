@@ -7,7 +7,7 @@ It currently consists of a core library (`bagit.net`) and a CLI application (`ba
 [![Release](https://img.shields.io/badge/release-v0.2.1--alpha-blue)](https://github.com/dmnyu/bagit.net/releases/v0.2.1-alpha)
 ![BagIt.NET CI](https://github.com/dmnyu/bagit.net/actions/workflows/ci.yml/badge.svg)
 
-> ⚠️ **Note:** This project is in early development. It currently supports the creation and validation of **BagIt-formatted bags**.</>
+> ⚠️ **Note:** This project is in early development. It currently supports the creation and validation of **BagIt-formatted bags**.
 There is currently no error handeling in place and will crash if an error is encountered.
 
 ---
