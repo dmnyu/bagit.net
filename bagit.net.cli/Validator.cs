@@ -1,6 +1,7 @@
 ﻿using bagit.net.domain;
 using bagit.net.interfaces;
 using Microsoft.Extensions.Logging;
+using Spectre.Console;
 
 namespace bagit.net.cli
 {
@@ -13,20 +14,46 @@ namespace bagit.net.cli
             _logger = logger;
             _validationService = validationService;
         }
-        public void ValidateBag(string bagPath, bool fast)
+        public int ValidateBag(string bagPath, bool fast, string logFile, CancellationToken cancellationToken)
         {
             _logger.LogInformation($"Using bagit.net v{Bagit.VERSION}");
+            
             try
-            {   
-                if(fast)
+            {
+
+                if (string.IsNullOrWhiteSpace(bagPath))
+                {
+                    AnsiConsole.MarkupLine("[red][bold]ERROR:[/][/]");
+                    AnsiConsole.MarkupLine("[red]a directory to a BagIt bag must be specified when creating a bag[/]\n");
+                    BagitCLI.app.Run(new string[] { "help" }, cancellationToken);
+                    return 1;
+                }
+
+                bagPath = Path.GetFullPath(bagPath);
+                if (!Directory.Exists(bagPath))
+                {
+                    AnsiConsole.MarkupLine("[red][bold]ERROR:[/][/]");
+                    AnsiConsole.MarkupLine($"[red]the directory {bagPath} does not exist[/]\n");
+                    BagitCLI.app.Run(new string[] { "help" }, cancellationToken);
+                    return 1;
+                }
+
+                if (!string.IsNullOrWhiteSpace(logFile))
+                {
+                    AnsiConsole.MarkupLine($"bagit.net.cli v{Bagit.VERSION}");
+                    AnsiConsole.MarkupLine($"Logging to {logFile}");
+                }
+
+                if (fast)
                 {  
                     _validationService.ValidateBag(bagPath);
                     _logger.LogInformation($"{bagPath} is valid according to Payload-Oxum");
-                    return;
+                    return 0;
                 }
 
                 _validationService.ValidateBag(bagPath);
                 _logger.LogInformation($"{bagPath} is valid");
+                return 0;
             } catch (Exception ex) {
                 _logger.LogCritical(ex, "Failed to validate bag at {Path}", bagPath);
                 throw;

@@ -23,34 +23,10 @@ namespace bagit.net.cli.Commands
 
         public override int Execute(CommandContext context, Settings settings, CancellationToken cancellationToken)
         {
-            if (string.IsNullOrWhiteSpace(settings.Directory))
-            {
-                AnsiConsole.MarkupLine("[red][bold]ERROR:[/][/]");
-                AnsiConsole.MarkupLine("[red]a directory to a BagIt bag must be specified when creating a bag[/]\n");
-                BagitCLI.app.Run(new string[] { "help" }, cancellationToken);
-                return 1;
-            }
-
-            var bagPath = Path.GetFullPath(settings.Directory);
-            if (!Directory.Exists(bagPath))
-            {
-                AnsiConsole.MarkupLine("[red][bold]ERROR:[/][/]");
-                AnsiConsole.MarkupLine($"[red]the directory {bagPath} does not exist[/]\n");
-                BagitCLI.app.Run(new string[] { "help" }, cancellationToken);
-                return 1;
-            }
-
-            if (!string.IsNullOrWhiteSpace(settings.logFile))
-            {
-                AnsiConsole.MarkupLine($"bagit.net.cli v{Bagit.VERSION}");
-                AnsiConsole.MarkupLine($"Logging to {settings.logFile}");
-            }
 
             var serviceProvider = ServiceConfigurator.BuildServiceProvider<Validator>();
             var validator = serviceProvider.GetRequiredService<Validator>();
-            validator.ValidateBag(bagPath, settings.Fast);
-
-            return 0;
+            return validator.ValidateBag(settings.Directory, settings.Fast, settings.logFile, cancellationToken);
         }
     }
 }
