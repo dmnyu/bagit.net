@@ -44,10 +44,10 @@ namespace bagit.net.services
             var oxum = CalculateOxum(bagDir);
             var sb = new StringBuilder();
 
-            sb.AppendLine($"Bag-Software-Agent: bagit.net v{Bagit.VERSION}");
-            sb.AppendLine($"BagIt-Version: {Bagit.BAGIT_VERSION}");
-            sb.AppendLine($"Bagging-Date: {DateTime.UtcNow:yyyy-MM-dd}");
-            sb.AppendLine($"Payload-Oxum: {oxum}");
+            sb.Append($"Bag-Software-Agent: bagit.net v{Bagit.VERSION}\n");
+            sb.Append($"BagIt-Version: {Bagit.BAGIT_VERSION}\n");
+            sb.Append($"Bagging-Date: {DateTime.UtcNow:yyyy-MM-dd}\n");
+            sb.Append($"Payload-Oxum: {oxum}\n");
 
             var bagInfoFile = Path.Combine(bagDir, "bag-info.txt");
             File.WriteAllText(bagInfoFile, sb.ToString(), new UTF8Encoding(encoderShouldEmitUTF8Identifier: false));

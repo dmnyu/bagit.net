@@ -51,10 +51,12 @@ namespace bagit.net.tests.unit
             Assert.True(File.Exists(Path.Combine(dataBag, manifestName)));
         }
 
-        [Fact]
+        [Theory]
         [Trait("Category", "Unit")]
-        public void Test_Validate_Manifests() {
-            var validBag = Path.Combine(_tmpDir, "valid-bag");
+        [InlineData("valid-bag")]
+        [InlineData("valid-bag-bagitnet")]
+        public void Test_Validate_Manifests(string bag) {
+            var validBag = Path.Combine(_tmpDir, bag);
             var manifests = new List<string>() { "manifest-sha256.txt", "tagmanifest-sha256.txt"};
             foreach (var manifest in manifests)
             {
