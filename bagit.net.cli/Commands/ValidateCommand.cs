@@ -23,10 +23,17 @@ namespace bagit.net.cli.Commands
 
         public override int Execute(CommandContext context, Settings settings, CancellationToken cancellationToken)
         {
-
-            var serviceProvider = ServiceConfigurator.BuildServiceProvider<Validator>(settings.logFile);
-            var validator = serviceProvider.GetRequiredService<Validator>();
-            return validator.ValidateBag(settings.Directory, settings.Fast, settings.logFile, cancellationToken);
+            try
+            {
+                var serviceProvider = ServiceConfigurator.BuildServiceProvider<Validator>(settings.logFile);
+                var validator = serviceProvider.GetRequiredService<Validator>();
+                validator.ValidateBag(settings.Directory, settings.Fast, settings.logFile, cancellationToken);
+            }
+            catch (Exception ex) {
+                AnsiConsole.MarkupLine($"[red][bold]ERROR:[/] {ex.Message}");
+                return 1;
+            }
+            return 0;
         }
     }
 }

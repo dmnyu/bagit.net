@@ -10,7 +10,7 @@ namespace bagit.net.cli
         readonly ICreationService _creationService;
         readonly ILogger _logger;
             
-        public Bagger(ILogger<Validator> logger, ICreationService creationService)
+        public Bagger(ILogger<Bagger> logger, ICreationService creationService)
         {
             _logger = logger;
             _creationService = creationService;

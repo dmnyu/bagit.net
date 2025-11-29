@@ -1,5 +1,4 @@
-﻿using bagit.net.domain;
-using Microsoft.Extensions.DependencyInjection;
+﻿using Microsoft.Extensions.DependencyInjection;
 using Spectre.Console;
 using Spectre.Console.Cli;
 using System.ComponentModel;
@@ -26,8 +25,16 @@ class BagCommand : Command<BagCommand.Settings>
 
     public override int Execute(CommandContext context, Settings settings, CancellationToken cancellationToken)
     {
-        var serviceProvider = ServiceConfigurator.BuildServiceProvider<Bagger>(settings.logFile);
-        var bagger = serviceProvider.GetRequiredService<Bagger>();
-        return bagger.CreateBag(settings.Directory, settings.Algorithm, settings.logFile, cancellationToken);
+        try
+        {
+            var serviceProvider = ServiceConfigurator.BuildServiceProvider<Bagger>(settings.logFile);
+            var bagger = serviceProvider.GetRequiredService<Bagger>();
+            bagger.CreateBag(settings.Directory, settings.Algorithm, settings.logFile, cancellationToken);
+        }
+        catch (Exception ex) {
+            AnsiConsole.MarkupLine($"[red][bold]ERROR:[/] {ex.Message}");
+            return 1;
+        }
+        return 0;
     }
 }
