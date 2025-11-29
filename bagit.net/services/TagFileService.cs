@@ -166,7 +166,7 @@ namespace bagit.net.services
                 if (payloadOxum.Count > 1)
                     return false;
 
-                // if thete is a oxum, ensure it matches 
+                // if there is a oxum, ensure it matches 
                 var oxum = payloadOxum[0];
                 if (string.IsNullOrEmpty(oxum)) {
                     if (!Regex.IsMatch(oxum, @"^\d+\.\d+$"))
