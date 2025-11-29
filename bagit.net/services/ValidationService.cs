@@ -7,9 +7,13 @@ namespace bagit.net.services
     internal class ValidationService : IValidationService
     {
         readonly ILogger<ValidationService> _logger;
-        public ValidationService(ILogger<ValidationService> logger) 
+        readonly ITagFileService _tagFileService;
+        readonly IManifestService _manifestService;
+        public ValidationService(ILogger<ValidationService> logger, ITagFileService tagFileService, IManifestService manifestService) 
         {
             _logger = logger;
+            _tagFileService = tagFileService;
+            _manifestService = manifestService;
         }
 
         public void HasRequiredFiles(string bagPath)
@@ -47,12 +51,49 @@ namespace bagit.net.services
 
         public void ValidateBag(string bagPath)
         {
-            throw new NotImplementedException();
+            //must hav a valid bagit.txt
+            if (!_tagFileService.HasBagItTXT(bagPath))
+                throw new InvalidDataException($"{bagPath} does not contain a bagit.xt");
+
+            //validate bagit.txt
+            _tagFileService.ValidateBagitTXT(bagPath);
+
+            //must have a data directory
+            if (!Directory.Exists(Path.Combine(bagPath, "data")))
+                throw new DirectoryNotFoundException($"{bagPath}");
+                
+            //if there is a baginfo.txt
+            var _bagInfo = Path.Combine(bagPath, "bag-info.txt");
+            if (File.Exists(_bagInfo))
+            {
+                _tagFileService.ValidateBagInfo(_bagInfo);
+            }
+
+            //validate any manifests
+            _manifestService.ValidateManifestFiles(bagPath);
         }
 
         public void ValidateBagFast(string bagPath)
         {
-            throw new NotImplementedException();
+            if(!_tagFileService.HasBagInfo(bagPath))
+            {
+                throw new FileNotFoundException($"{bagPath} does not contain a bag-info.txt file");
+            }
+
+            var tags = _tagFileService.GetTags(Path.Combine(bagPath, "bag-info.txt"));
+            if (!tags.TryGetValue("Payload-Oxum", out var storedOxumTag))
+            {
+                throw new InvalidDataException($"bag-info.txt does not conatin a payload-oxum");
+            }
+
+            var storedOxum = storedOxumTag[0];
+            var calculatedOxum = _tagFileService.CalculateOxum(bagPath);
+            if (storedOxum != calculatedOxum)
+            {
+                throw new InvalidDataException($"Payload Oxum did not match, expected {storedOxum} found {calculatedOxum}");
+            }
+
+
         }
     }
 }

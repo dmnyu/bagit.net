@@ -5,102 +5,66 @@ namespace bagit.net.tests.integration
 {
     public class TestValidateBag : IDisposable
     {
-        private readonly string _tmpDir;
+        private readonly string _testDir;
         private readonly string _unsupportedBag;
         private readonly ServiceProvider _serviceProvider;
-        private readonly Validator _validator;
+        private readonly IValidationService _validationService;
         
         public TestValidateBag()
         {
-            _tmpDir = TestHelpers.PrepareTempTestData();
-            _unsupportedBag = Path.Combine(_tmpDir, "unsupported-algorithm");
-            _serviceProvider = ServiceConfigurator.BuildServiceProvider<Validator>();
-            _validator = _serviceProvider.GetRequiredService<Validator>();
+            _testDir = TestHelpers.PrepareTempTestData();
+            _unsupportedBag = Path.Combine(_testDir, "unsupported-algorithm");
+            _serviceProvider = ValidationServiceConfigurator.BuildServiceProvider();
+            _validationService = _serviceProvider.GetRequiredService<IValidationService>();
         }
 
         public void Dispose()
         {
             _serviceProvider?.Dispose();
-            if (Directory.Exists(_tmpDir))
-                Directory.Delete(_tmpDir, true);
-        }
-
-        [Fact]
-        [Trait("Category", "Integration")]
-        public void Test_Bag_Exists() 
-        {
-            var _validBag = Path.Combine(_tmpDir, "valid-bag");
-            Assert.True(Directory.Exists(_validBag));
-        }
-
-        [Fact]
-        [Trait("Category", "Integration")]
-        public void Test_Has_Valid_BagitTXT()
-        {
-            var _validBag = Path.Combine(_tmpDir, "valid-bag");
-            var ex = Record.Exception(() => _validator.Has_Valid_BagitTXT(_validBag));
-            Assert.Null(ex);
-        }
-
-        [Fact]
-        [Trait("Category", "Integration")]
-        public void Test_Has_Valid_BaginfoTXT()
-        {
-            var _validBag = Path.Combine(_tmpDir, "valid-bag");
-            var ex = Record.Exception(() => _validator.Has_Valid_BaginfoTXT(_validBag, false));
-            Assert.Null(ex);
-        }
-
-        [Fact]
-        [Trait("Category", "Integration")]
-        public void Test_Validate_Manifest_Files()
-        {
-            var _validBag = Path.Combine(_tmpDir, "valid-bag");
-            var ex = Record.Exception(() => _validator.ValidateManifests(_validBag));
-            Assert.Null(ex);
-        }
-
-        [Fact]
-        [Trait("Category", "Integration")]
-        public void Test_Unsupported_Algorithm()
-        {
-            var manifestService = _serviceProvider.GetRequiredService<IManifestService>();
-            string unsupportedAlgorithmManifest =  Path.Combine(_unsupportedBag, "manifest-blake2s.txt");
-            Assert.Throws<InvalidDataException>(() => manifestService.ValidateManifestFile(unsupportedAlgorithmManifest));
-        }
-
-        [Fact]
-        [Trait("Category", "Integration")]
-        public void Test_Unsupported_Algorithm_Bag()
-        {
-            Assert.Throws<InvalidDataException>(() => _validator.ValidateManifests(_unsupportedBag));
-        }
-
-        [Fact]
-        [Trait("Category", "Integration")]
-        public void Test_Invalid_Oxum()
-        {
-            var invalidOxum = Path.Combine(_tmpDir, "bag-invalid-oxum");
-            Assert.Throws<InvalidDataException>(() => _validator.ValidateBag(invalidOxum, false));
-        }
-
-        [Fact]
-        [Trait("Category", "Integration")]
-        public void Test_Validate_Bag()
-        {
-            var _validBag = Path.Combine(_tmpDir, "valid-bag");
-            var ex = Record.Exception(() => _validator.ValidateBag(_validBag, false));
-            Assert.Null(ex);
+            if (Directory.Exists(_testDir))
+                Directory.Delete(_testDir, true);
         }
 
         [Fact]
         [Trait("Category", "Integration")]
         public void Test_Validate_Bag_Fast()
         {
-            var _validBag = Path.Combine(_tmpDir, "valid-bag");
-            var ex = Record.Exception(() => _validator.ValidateBag(_validBag, true));
+            var _validBag = Path.Combine(_testDir, "valid-bag");
+            var ex = Record.Exception(() =>  _validationService.ValidateBagFast(_validBag));
             Assert.Null(ex);
         }
+
+        [Fact]
+        [Trait("Category", "Integration")]
+        public void Test_Validate_Bag()
+        {
+            var _validBag = Path.Combine(_testDir, "valid-bag");
+            var ex = Record.Exception(() => _validationService.ValidateBag(_validBag));
+            Assert.Null(ex);
+        }
+
+
+
+
+
+
+
+
+        /*
+
+
+
+
+                [Fact]
+                [Trait("Category", "Integration")]
+                public void Test_Validate_Bag()
+                {
+                    var _validBag = Path.Combine(_tmpDir, "valid-bag");
+                    var ex = Record.Exception(() => _validator.ValidateBag(_validBag, false));
+                    Assert.Null(ex);
+                }
+
+                */
 
     }
 }

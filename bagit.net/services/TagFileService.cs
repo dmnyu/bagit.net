@@ -1,7 +1,8 @@
 ﻿using bagit.net.interfaces;
 using Microsoft.Extensions.Logging;
-using System.IO;
+using System.Globalization;
 using System.Text;
+using System.Text.RegularExpressions;
 
 namespace bagit.net.services
 {
@@ -39,7 +40,7 @@ namespace bagit.net.services
 
         public void CreateBagInfo(string bagDir)
         {
-            var oxum = GetOxum(bagDir);
+            var oxum = CalculateOxum(bagDir);
             var sb = new StringBuilder();
 
             sb.AppendLine($"Bag-Software-Agent: bagit.net v{Bagit.VERSION}");
@@ -63,7 +64,7 @@ namespace bagit.net.services
             File.WriteAllText(bagitTxt, content, new UTF8Encoding(encoderShouldEmitUTF8Identifier: false));
         }
 
-        public string GetOxum(string bagRoot)
+        public string CalculateOxum(string bagRoot)
         {
             string dataDir = Path.Combine(bagRoot, "data");
             int count = 0;
@@ -126,33 +127,80 @@ namespace bagit.net.services
             return true;    
         }
 
-        public bool ValidateBagInfo(string bagRoot)
+        public bool HasBagItTXT(string bagRoot)
         {
-            //check that bag-info exists
-            var _bagInfo = Path.Combine(bagRoot, "bag-info.txt");
-            if(!HasBagInfo(bagRoot))
+            if (!Path.Exists(Path.Combine(bagRoot, "bagit.txt")))
+            {
                 return false;
+            }
+            return true;
+        }
+
+        public bool ValidateBagInfo(string bagInfo)
+        {
             
             //check that it is valid UTF8
-            if(!_fileManagerService.IsValidUTF8(_bagInfo))
+            if(!_fileManagerService.IsValidUTF8(bagInfo))
                 return false;
 
             //check that it does not contain a BOM
-            if (_fileManagerService.HasBOM(_bagInfo))
+            if (_fileManagerService.HasBOM(bagInfo))
                 return false;
 
             //get the dictionary as tags
-            var _tags = GetTags(_bagInfo);
+            var _tags = GetTags(bagInfo);
 
-            //ensure there is only one value for the following
-            if (_tags["Payload-Oxum"].Count > 1)
+            foreach( var tag in _tags)
+            {
+
+                if (ContainsControlCharacters(tag.Key))
+                {
+                    throw new InvalidDataException($"Invalid Key: {tag.Key}");
+                }
+            }
+
+            //validate the oxum
+            if (_tags.TryGetValue("Payload-Oxum", out var payloadOxum))
+            {
+                // More than one = invalid
+                if (payloadOxum.Count > 1)
+                    return false;
+
+                // if thete is a oxum, ensure it matches 
+                var oxum = payloadOxum[0];
+                if (string.IsNullOrEmpty(oxum)) {
+                    if (!Regex.IsMatch(oxum, @"^\d+\.\d+$"))
+                        return false;
+                }
+            }
+
+            if (_tags.TryGetValue("Bag-Software-Agent", out var agent) && agent.Count > 1)
                 return false;
-            if (_tags["Bag-Software-Agent"].Count > 1)
-                return false;
-            if (_tags["BagIt-Version"].Count > 1)
-                return false;
-            if (_tags["Bagging-Date"].Count > 1)
-                return false;
+            
+            if (_tags.TryGetValue("Bagging-Date", out var baggingDate))
+            {
+
+                if(baggingDate.Count > 1)
+                {
+                    return false;
+                }
+
+                var date = baggingDate[0];
+                if (string.IsNullOrEmpty(date)) 
+                {
+                    return false;
+                }
+
+                if (!DateTime.TryParseExact(
+                    date,
+                    "yyyy-MM-dd",
+                    CultureInfo.InvariantCulture,
+                    DateTimeStyles.None,
+                    out _))
+                {
+                    return false;
+                }
+            }
 
             return true;
         }
@@ -161,29 +209,46 @@ namespace bagit.net.services
         {
             var _tags = new Dictionary<string, List<string>>();
 
-            var lines = File.ReadAllLines(tagFilePath)
-                .Where(line => !string.IsNullOrWhiteSpace(line))
-                .ToList();
+            string currentKey = null;
 
-            foreach( var line in lines)
+            foreach (var line in File.ReadLines(tagFilePath))
             {
-                var parts = line.Split(new[] { ':' }, 2);
-                if (parts.Length != 2)
-                    throw new FormatException($"Invalid bag-info.txt line: {line}");
-     
-                var key = parts[0].Trim();
-                var value = parts[1].Trim();
-                if (_tags.ContainsKey(key))
+                if (string.IsNullOrWhiteSpace(line))
+                    continue;
+
+                if (char.IsWhiteSpace(line[0]))
                 {
-                    _tags[key].Add(value);
+                    if (currentKey == null)
+                        throw new InvalidDataException("Continuation line with no preceding key.");
+
+                    _tags[currentKey].Add(line.TrimStart());
                 }
                 else
                 {
-                    _tags[key] = new List<string>() { value };
+                    var parts = line.Split(new[] { ':' }, 2);
+                    if (parts.Length != 2)
+                        throw new InvalidDataException($"Invalid line: {line}");
+
+                    currentKey = parts[0].Trim();
+                    var value = parts[1].Trim();
+
+                    if (!_tags.ContainsKey(currentKey))
+                        _tags[currentKey] = new List<string>();
+
+                    _tags[currentKey].Add(value);
                 }
             }
-
             return _tags;
+        }
+
+        bool ContainsControlCharacters(string s)
+        {
+            foreach (char c in s)
+            {
+                if (char.IsControl(c))
+                    return true;
+            }
+            return false;
         }
     }
 }

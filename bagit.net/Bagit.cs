@@ -7,7 +7,7 @@ namespace bagit.net
 {
     public static class Bagit
     {
-        public const string VERSION = "0.2.2-alpha"; 
+        public const string VERSION = "0.2.3-alpha"; 
         public const string BAGIT_VERSION = "1.0";
 
     }
@@ -39,6 +39,7 @@ namespace bagit.net
             services.AddSingleton<IChecksumService, ChecksumService>();
             services.AddSingleton<ITagFileService, TagFileService>();
             services.AddSingleton<IFileManagerService, FileManagerService>();
+            services.AddSingleton<IValidationService, ValidationService>();
             services.AddTransient<TWorker>();
             return services.BuildServiceProvider();
         }

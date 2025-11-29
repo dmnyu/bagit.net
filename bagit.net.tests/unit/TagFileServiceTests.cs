@@ -3,7 +3,7 @@ using Microsoft.Extensions.DependencyInjection;
 
 namespace bagit.net.tests.unit
 {
-    public class TagFileServiceTests: IDisposable
+    public class TagFileServiceTests : IDisposable
     {
         readonly ServiceProvider _serviceProvider;
         readonly ITagFileService _tagFileService;
@@ -18,7 +18,7 @@ namespace bagit.net.tests.unit
         public void Dispose()
         {
             _serviceProvider.Dispose();
-            if(Path.Exists(_tmpDir))
+            if (Path.Exists(_tmpDir))
                 Directory.Delete(_tmpDir, true);
         }
 
@@ -58,14 +58,14 @@ namespace bagit.net.tests.unit
         public void Test_Get_Oxum()
         {
             var validBag = Path.Combine(_tmpDir, "valid-bag");
-            var calculatedOxum = _tagFileService.GetOxum(validBag);
+            var calculatedOxum = _tagFileService.CalculateOxum(validBag);
             var bagInfo = Path.Combine(validBag, "bag-info.txt");
             var tagDict = _tagFileService.GetTagFileAsDict(bagInfo);
             Assert.Equal(tagDict["Payload-Oxum"], calculatedOxum);
         }
 
         [Fact]
-        [Trait("Category","Unit")]
+        [Trait("Category", "Unit")]
         public void Test_Validate_BagitTXT()
         {
             var validBag = Path.Combine(_tmpDir, "valid-bag");
@@ -87,7 +87,7 @@ namespace bagit.net.tests.unit
         {
             var validBag = Path.Combine(_tmpDir, "valid-bag");
             Assert.True(_tagFileService.ValidateBagInfo(validBag));
-            
+
         }
 
         [Fact]
@@ -97,9 +97,23 @@ namespace bagit.net.tests.unit
             var _validBag = Path.Combine(_tmpDir, "valid-bag");
             var _bagInfo = Path.Combine(_validBag, "bag-info.txt");
             var _tags = _tagFileService.GetTags(_bagInfo);
-            Assert.True(_tags.Count > 0 );
+            Assert.True(_tags.Count > 0);
             Assert.Equal("1.0", _tags["BagIt-Version"][0]);
         }
 
     }
 }
+
+
+
+/*
+ * 
+        [Fact]
+        [Trait("Category", "Integration")]
+        public void Test_Has_Valid_BagitTXT()
+        {
+            var _validBag = Path.Combine(_tmpDir, "valid-bag");
+            var ex = Record.Exception(() => _validator.Has_Valid_BagitTXT(_validBag));
+            Assert.Null(ex);
+        }
+*/

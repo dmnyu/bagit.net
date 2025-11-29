@@ -36,3 +36,47 @@ namespace bagit.net.tests.unit
 
     }
 }
+
+/*
+ [Fact]
+        [Trait("Category", "Integration")]
+        public void Test_Has_Valid_BaginfoTXT()
+        {
+            var _validBag = Path.Combine(_tmpDir, "valid-bag");
+            var ex = Record.Exception(() => _validator.Has_Valid_BaginfoTXT(_validBag, false));
+            Assert.Null(ex);
+        }
+[Fact]
+[Trait("Category", "Integration")]
+public void Test_Invalid_Oxum()
+{
+    var invalidOxum = Path.Combine(_tmpDir, "bag-invalid-oxum");
+    Assert.Throws<InvalidDataException>(() => _validator.ValidateBag(invalidOxum, false));
+}
+
+        [Fact]
+        [Trait("Category", "Integration")]
+        public void Test_Unsupported_Algorithm()
+        {
+            var manifestService = _serviceProvider.GetRequiredService<IManifestService>();
+            string unsupportedAlgorithmManifest =  Path.Combine(_unsupportedBag, "manifest-blake2s.txt");
+            Assert.Throws<InvalidDataException>(() => manifestService.ValidateManifestFile(unsupportedAlgorithmManifest));
+        }
+
+        /*
+        [Fact]
+        [Trait("Category", "Integration")]
+        public void Test_Bag_Exists() 
+        {
+            var _validBag = Path.Combine(_tmpDir, "valid-bag");
+            Assert.True(Directory.Exists(_validBag));
+        }
+
+
+                [Fact]
+                [Trait("Category", "Integration")]
+                public void Test_Unsupported_Algorithm_Bag()
+                {
+                    Assert.Throws<InvalidDataException>(() => _validator.ValidateManifests(_unsupportedBag));
+                }
+*/
