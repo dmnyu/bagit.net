@@ -169,9 +169,10 @@ namespace bagit.net.services
                 // if there is a oxum, ensure it matches 
                 var oxum = payloadOxum[0];
                 if (string.IsNullOrEmpty(oxum)) {
-                    if (!Regex.IsMatch(oxum, @"^\d+\.\d+$"))
-                        return false;
+                    return false;
                 }
+                if (!Regex.IsMatch(oxum, @"^\d+\.\d+$"))
+                    return false;
             }
 
             if (_tags.TryGetValue("Bag-Software-Agent", out var agent) && agent.Count > 1)
