@@ -5,7 +5,7 @@ This roadmap outlines the planned feature development and release milestones for
 
 ---
 
-## 0.2.4 completeness only validation
+## 0.2.4 completeness only validation (current sprint)
 
 ---
 
