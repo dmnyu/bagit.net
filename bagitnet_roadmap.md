@@ -2,24 +2,22 @@
 
 This roadmap outlines the planned feature development and release milestones for **bagit.net**, a C# implementation of the BagIt specification (RFC 8493). It covers versions **0.2.0** through **0.4.0**, with clear goals and scope for each.
 
----
-
-## **0.2.3 Validation Service
-**Objective:** 
-- remove all functions from the Validator class and move to a validation service
-- implement completeness only 
 
 ---
 
-## **0.2.4 - Error Handling**
+## 0.2.4 completeness only validation
 
 ---
 
-## **0.2.5 - Multiple Checksum Support**
+## **0.2.5 - Error Handling**
 
 ---
 
-## **0.3.0 — Tag File Editing**
+## **0.3.0 - Multiple Checksum Support**
+
+---
+
+## **0.4.0 — Tag File Editing**
 **Objective:** Add full support for reading, modifying, and generating tag files.
 
 **Features:**
@@ -36,7 +34,7 @@ This unlocks bagit.net as a metadata authoring and bag‑inspection tool.
 
 ---
 
-## **0.4.0 — Multithreaded Checksum Calculation**
+## **0.5.0 — Multithreaded Checksum Calculation**
 **Objective:** Improve performance of manifest generation using parallelism.
 
 **Features:**
@@ -62,6 +60,15 @@ These are ideas for after the 0.4.x line:
 ---
 
 ## Previous updates: ##
+
+---
+
+## **0.2.3 Validation / Creation Service
+**Objective:** 
+- remove all functions from the Validator and Bagger classes and move to a services
+- move bagger and Validator to CLI project
+
+---
 
 ## **0.2.2 — FileManager**
 **Objective:** Move all functions in the Bagger class that moves, creates, deletes files or directories to file management service
