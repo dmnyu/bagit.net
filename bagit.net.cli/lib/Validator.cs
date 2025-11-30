@@ -17,8 +17,15 @@ namespace bagit.net.cli.lib
         public int ValidateBag(string? bagPath, bool fast, bool complete, string? logFile, CancellationToken cancellationToken)
         {
             _logger.LogInformation($"Using bagit.net v{Bagit.VERSION}");
-            
-            try
+
+            if (fast && complete)
+            {
+                AnsiConsole.MarkupLine("[red][bold]ERROR:[/][/]");
+                AnsiConsole.MarkupLine($"[red]validation can only be run with one of --fast and --complete flags set[/]\n");
+                return 1;
+            }
+
+                try
             {
 
                 if (string.IsNullOrWhiteSpace(bagPath))
@@ -63,7 +70,9 @@ namespace bagit.net.cli.lib
                 return 0;
             } catch (Exception ex) {
                 _logger.LogCritical(ex, "Failed to validate bag at {Path}", bagPath);
-                throw;
+                AnsiConsole.MarkupLine("[red][bold]ERROR:[/][/]");
+                AnsiConsole.MarkupLine($"[red]Failed to validate bag at {bagPath}\"[/]\n");
+                return 1;
             }
         }
 
