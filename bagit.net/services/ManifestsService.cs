@@ -236,5 +236,35 @@ namespace bagit.net.services
             }
         }
 
+        public void ValidateManifestFilesCompleteness(string bagRoot)
+        {
+            var validatedManifestCounter = 0;
+            foreach (var manifest in Directory.EnumerateFiles(bagRoot))
+            {
+
+                if (System.Text.RegularExpressions.Regex.IsMatch(Path.GetFileName(manifest), @"^(manifest|tagmanifest)-(md5|sha1|sha256|sha384|sha512)\.txt$"))
+                {
+                    validatedManifestCounter++;
+                    ValidateManifestFileCompleteness(manifest);
+                }
+            }
+
+            if (validatedManifestCounter == 0)
+            {
+                throw new InvalidDataException($"{bagRoot} did not contain any manifest files.");
+            }
+        }
+
+        public void ValidateManifestFileCompleteness(string manifestFile)
+        {
+            var bagRoot = Path.GetDirectoryName(manifestFile);
+            List<KeyValuePair<string, string>> payloadFiles = GetManifestAsKeyValuePairs(manifestFile);
+            foreach (var payloadFile in payloadFiles) {
+                var payloadFilePath = Path.Join(bagRoot, payloadFile.Value);
+                if (!Path.Exists(payloadFilePath)) {
+                    throw new InvalidDataException($"{payloadFile} does not exist");
+                }
+            }
+        }
     }
 }

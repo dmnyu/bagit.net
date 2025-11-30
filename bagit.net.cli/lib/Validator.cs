@@ -3,7 +3,7 @@ using bagit.net.interfaces;
 using Microsoft.Extensions.Logging;
 using Spectre.Console;
 
-namespace bagit.net.cli
+namespace bagit.net.cli.lib
 {
     public class Validator
     {
@@ -14,7 +14,7 @@ namespace bagit.net.cli
             _logger = logger;
             _validationService = validationService;
         }
-        public int ValidateBag(string? bagPath, bool fast, string? logFile, CancellationToken cancellationToken)
+        public int ValidateBag(string? bagPath, bool fast, bool complete, string? logFile, CancellationToken cancellationToken)
         {
             _logger.LogInformation($"Using bagit.net v{Bagit.VERSION}");
             
@@ -42,6 +42,13 @@ namespace bagit.net.cli
                 {
                     AnsiConsole.MarkupLine($"bagit.net.cli v{Bagit.VERSION}");
                     AnsiConsole.MarkupLine($"Logging to {logFile}");
+                }
+
+                if (complete)
+                {
+                    _validationService.ValidateCompletness(bagPath);
+                    _logger.LogInformation($"{bagPath} is complete according to manifests files");
+                    return 0;
                 }
 
                 if (fast)

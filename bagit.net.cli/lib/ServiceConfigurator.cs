@@ -4,7 +4,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Serilog;
 
 
-namespace bagit.net.cli
+namespace bagit.net.cli.lib
 {
     public static class ServiceConfigurator
     {
