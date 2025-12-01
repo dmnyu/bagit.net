@@ -94,7 +94,7 @@ On RHEL/CentOS systems with SELinux or `noexec` restrictions on `/tmp`, these bi
 
 ### Windows
 ```powershell
-Invoke-WebRequest -Uri https://github.com/dmnyu/bagit.net/releases/download/v0.2.4-alpha/bagit.net.cli-v0.2.4-alpha-win-x64.zip -OutFile bagit.net.cli-v0.2.1-alpha-win-x64.zip
+Invoke-WebRequest -Uri https://github.com/dmnyu/bagit.net/releases/download/v0.2.4-alpha/bagit.net.cli-v0.2.4-alpha-win-x64.zip -OutFile bagit.net.cli-v0.2.4-alpha-win-x64.zip
 Expand-Archive bagit.net.cli-v0.2.4-alpha-win-x64.zip -DestinationPath .
 cd .\bagit.net
 .\bagit.net.exe --help
