@@ -53,7 +53,7 @@ namespace bagit.net.cli.lib
 
                 if (complete)
                 {
-                    _validationService.ValidateCompletness(bagPath);
+                    _validationService.ValidateCompleteness(bagPath);
                     _logger.LogInformation($"{bagPath} is complete according to manifests files");
                     return 0;
                 }
