@@ -60,7 +60,7 @@ namespace bagit.net.cli.lib
 
                 if (fast)
                 {  
-                    _validationService.ValidateBag(bagPath);
+                    _validationService.ValidateBagFast(bagPath);
                     _logger.LogInformation($"{bagPath} is valid according to Payload-Oxum");
                     return 0;
                 }
