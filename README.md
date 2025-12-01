@@ -4,7 +4,7 @@
 It allows you to create **BagIt bags**—structured file collections with checksums for reliable storage and transfer of digital content.  
 It currently consists of a core library (`bagit.net`) and a CLI application (`bagit.net.cli`) for Linux, MacOS, and Windows.
 
-[![Release](https://img.shields.io/badge/release-v0.2.1--alpha-blue)](https://github.com/dmnyu/bagit.net/releases/v0.2.1-alpha)
+[![Release](https://img.shields.io/badge/release-v0.2.3--alpha-blue)](https://github.com/dmnyu/bagit.net/releases/v0.2.3-alpha)
 ![BagIt.NET CI](https://github.com/dmnyu/bagit.net/actions/workflows/ci.yml/badge.svg)
 
 > ⚠️ **Note:** This project is in early development. It currently supports the creation and validation of **BagIt-formatted bags**.
@@ -90,8 +90,8 @@ On RHEL/CentOS systems with SELinux or `noexec` restrictions on `/tmp`, these bi
 
 ### Windows
 ```powershell
-Invoke-WebRequest -Uri https://github.com/dmnyu/bagit.net/releases/download/v0.2.1-alpha/bagit.net.cli-v0.2.1-alpha-win-x64.zip -OutFile bagit.net.cli-v0.2.1-alpha-win-x64.zip
-Expand-Archive bagit.net.cli-v0.2.1-alpha-win-x64.zip -DestinationPath .
+Invoke-WebRequest -Uri https://github.com/dmnyu/bagit.net/releases/download/v0.2.3-alpha/bagit.net.cli-v0.2.1-alpha-win-x64.zip -OutFile bagit.net.cli-v0.2.3-alpha-win-x64.zip
+Expand-Archive bagit.net.cli-v0.2.3-alpha-win-x64.zip -DestinationPath .
 cd .\bagit.net
 .\bagit.net.exe --help
 .\install.ps1
@@ -102,8 +102,8 @@ cd .\bagit.net
 ---
 
 ```bash
-wget https://github.com/dmnyu/bagit.net/releases/download/0.2.2-alpha/bagit.net.cli-v0.2.2-alpha-macos-arm64.tgz
-tar xvzf bagit.net.cli-v0.2.1-alpha-mac0s-arm64.tgz
+wget https://github.com/dmnyu/bagit.net/releases/download/0.2.3-alpha/bagit.net.cli-v0.2.3-alpha-macos-arm64.tgz
+tar xvzf bagit.net.cli-v0.2.3-alpha-mac0s-arm64.tgz
 cd bagit.net
 sudo ./install.sh
 bagit.net --help
