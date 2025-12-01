@@ -4,7 +4,7 @@
 It allows you to create **BagIt bags**—structured file collections with checksums for reliable storage and transfer of digital content.  
 It currently consists of a core library (`bagit.net`) and a CLI application (`bagit.net.cli`) for Linux, MacOS, and Windows.
 
-[![Release](https://img.shields.io/badge/release-v0.2.1--alpha-blue)](https://github.com/dmnyu/bagit.net/releases/v0.2.1-alpha)
+[![Release](https://img.shields.io/badge/release-v0.2.3--alpha-blue)](https://github.com/dmnyu/bagit.net/releases/v0.2.3-alpha)
 ![BagIt.NET CI](https://github.com/dmnyu/bagit.net/actions/workflows/ci.yml/badge.svg)
 
 > ⚠️ **Note:** This project is in early development. It currently supports the creation and validation of **BagIt-formatted bags**.
