@@ -96,7 +96,7 @@ namespace bagit.net.services
 
         }
 
-        public void ValidateCompletness(string bagPath)
+        public void ValidateCompleteness(string bagPath)
         {
             _manifestService.ValidateManifestFilesCompleteness(bagPath);
         }
