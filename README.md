@@ -44,6 +44,7 @@ Validate a BagIt-formatted bag.
 | Option | Description |
 |--------|-------------|
 | `--fast` | Validate the bag based on payload-oxum only. |
+| `--complete` | Validate the bag based on completeness only. |
 | `--log` | Specify the location to write logging (default: stdout). |
 
 **Usage:**
