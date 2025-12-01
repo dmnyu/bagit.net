@@ -261,7 +261,7 @@ namespace bagit.net.services
             List<KeyValuePair<string, string>> payloadFiles = GetManifestAsKeyValuePairs(manifestFile);
             foreach (var payloadFile in payloadFiles) {
                 var payloadFilePath = Path.Join(bagRoot, payloadFile.Value);
-                if (!Path.Exists(payloadFilePath)) {
+                if (!File.Exists(payloadFilePath)) {
                     throw new InvalidDataException($"{payloadFile} does not exist");
                 }
             }
