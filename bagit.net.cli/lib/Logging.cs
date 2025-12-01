@@ -1,7 +1,7 @@
 ﻿using Serilog.Events;
 using Serilog.Formatting;
 
-namespace bagit.net.cli;
+namespace bagit.net.cli.lib;
 
 public class ShortLevelFormatter : ITextFormatter
 {

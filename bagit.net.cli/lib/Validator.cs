@@ -3,7 +3,7 @@ using bagit.net.interfaces;
 using Microsoft.Extensions.Logging;
 using Spectre.Console;
 
-namespace bagit.net.cli
+namespace bagit.net.cli.lib
 {
     public class Validator
     {
@@ -14,11 +14,18 @@ namespace bagit.net.cli
             _logger = logger;
             _validationService = validationService;
         }
-        public int ValidateBag(string? bagPath, bool fast, string? logFile, CancellationToken cancellationToken)
+        public int ValidateBag(string? bagPath, bool fast, bool complete, string? logFile, CancellationToken cancellationToken)
         {
             _logger.LogInformation($"Using bagit.net v{Bagit.VERSION}");
-            
-            try
+
+            if (fast && complete)
+            {
+                AnsiConsole.MarkupLine("[red][bold]ERROR:[/][/]");
+                AnsiConsole.MarkupLine($"[red]validation can only be run with one of --fast and --complete flags set[/]\n");
+                return 1;
+            }
+
+                try
             {
 
                 if (string.IsNullOrWhiteSpace(bagPath))
@@ -44,9 +51,16 @@ namespace bagit.net.cli
                     AnsiConsole.MarkupLine($"Logging to {logFile}");
                 }
 
+                if (complete)
+                {
+                    _validationService.ValidateCompleteness(bagPath);
+                    _logger.LogInformation($"{bagPath} is complete according to manifests files");
+                    return 0;
+                }
+
                 if (fast)
                 {  
-                    _validationService.ValidateBag(bagPath);
+                    _validationService.ValidateBagFast(bagPath);
                     _logger.LogInformation($"{bagPath} is valid according to Payload-Oxum");
                     return 0;
                 }
@@ -56,7 +70,9 @@ namespace bagit.net.cli
                 return 0;
             } catch (Exception ex) {
                 _logger.LogCritical(ex, "Failed to validate bag at {Path}", bagPath);
-                throw;
+                AnsiConsole.MarkupLine("[red][bold]ERROR:[/][/]");
+                AnsiConsole.MarkupLine($"[red]Failed to validate bag at {bagPath}[/]\n");
+                return 1;
             }
         }
 

@@ -1,4 +1,5 @@
-﻿using bagit.net.domain;
+﻿using bagit.net.cli.lib;
+using bagit.net.domain;
 using Microsoft.Extensions.DependencyInjection;
 using Spectre.Console;
 using Spectre.Console.Cli;
@@ -16,6 +17,9 @@ namespace bagit.net.cli.Commands
             [CommandOption("--fast")]
             public bool Fast { get; set; }
 
+            [CommandOption("--complete")]
+            public bool Completeness { get; set; }
+
             [CommandArgument(0, "[directory]")]
             [Description("Path to the bag directory to validate.")]
             public string? Directory { get; set; }
@@ -27,7 +31,7 @@ namespace bagit.net.cli.Commands
             {
                 var serviceProvider = ServiceConfigurator.BuildServiceProvider<Validator>(settings.logFile);
                 var validator = serviceProvider.GetRequiredService<Validator>();
-                validator.ValidateBag(settings.Directory, settings.Fast, settings.logFile, cancellationToken);
+                validator.ValidateBag(settings.Directory, settings.Fast, settings.Completeness, settings.logFile, cancellationToken);
             }
             catch (Exception ex) {
                 AnsiConsole.MarkupLine($"[red][bold]ERROR:[/] {ex.Message}");

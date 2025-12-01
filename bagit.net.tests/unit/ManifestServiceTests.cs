@@ -24,12 +24,12 @@ namespace bagit.net.tests.unit
         }
 
         [Theory]
-        [Trait("Category", "Unit")]
         [InlineData(ChecksumAlgorithm.MD5, "manifest-md5.txt")]
         [InlineData(ChecksumAlgorithm.SHA1, "manifest-sha1.txt")]
         [InlineData(ChecksumAlgorithm.SHA256, "manifest-sha256.txt")]
         [InlineData(ChecksumAlgorithm.SHA384, "manifest-sha384.txt")]
         [InlineData(ChecksumAlgorithm.SHA512, "manifest-sha512.txt")]
+        [Trait("Category", "Unit")]
         public void Test_Create_Payload_Manifest(ChecksumAlgorithm algorithm, string manifestName)
         {
             var dataBag = Path.Combine(_tmpDir, "data-only");
@@ -84,6 +84,25 @@ namespace bagit.net.tests.unit
                 Assert.True(kvp.Count > 0);
             }
         }
+
+        [Fact]
+        [Trait("Category", "Unit")]
+        public void Test_Validate_Bag_For_Completeness()
+        {
+            var validBag = Path.Combine(_tmpDir, "valid-bag");
+            var ex = Record.Exception(() => _manifestService.ValidateManifestFilesCompleteness(validBag));
+            Assert.Null(ex);
+        }
+
+        [Fact]
+        [Trait("Category", "Unit")]
+        public void Test_Validate_Incomplete_Bag_For_Completeness()
+        {
+            var validBag = Path.Combine(_tmpDir, "bag-incomplete");
+            var ex = Record.Exception(() => _manifestService.ValidateManifestFilesCompleteness(validBag));
+            Assert.NotNull(ex);
+        }
+
     }
 
 }

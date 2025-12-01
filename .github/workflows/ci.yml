@@ -2,7 +2,7 @@ name: BagIt.NET CI
 
 on:
   push:
-    branches: ["*"]
+    branches: ["release-*"]
   pull_request:
     branches: [ main ]
 

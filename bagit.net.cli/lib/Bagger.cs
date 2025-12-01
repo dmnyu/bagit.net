@@ -3,7 +3,7 @@ using bagit.net.interfaces;
 using Microsoft.Extensions.Logging;
 using Spectre.Console;
 
-namespace bagit.net.cli
+namespace bagit.net.cli.lib
 {
     public class Bagger
     {
