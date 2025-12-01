@@ -103,7 +103,7 @@ cd .\bagit.net
 
 ```bash
 wget https://github.com/dmnyu/bagit.net/releases/download/0.2.3-alpha/bagit.net.cli-v0.2.3-alpha-macos-arm64.tgz
-tar xvzf bagit.net.cli-v0.2.3-alpha-mac0s-arm64.tgz
+tar xvzf bagit.net.cli-v0.2.3-alpha-macos-arm64.tgz
 cd bagit.net
 sudo ./install.sh
 bagit.net --help
