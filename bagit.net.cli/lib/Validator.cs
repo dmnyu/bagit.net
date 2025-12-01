@@ -71,7 +71,7 @@ namespace bagit.net.cli.lib
             } catch (Exception ex) {
                 _logger.LogCritical(ex, "Failed to validate bag at {Path}", bagPath);
                 AnsiConsole.MarkupLine("[red][bold]ERROR:[/][/]");
-                AnsiConsole.MarkupLine($"[red]Failed to validate bag at {bagPath}\"[/]\n");
+                AnsiConsole.MarkupLine($"[red]Failed to validate bag at {bagPath}[/]\n");
                 return 1;
             }
         }
