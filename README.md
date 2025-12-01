@@ -56,7 +56,11 @@ bagit.net validate --log bagit.net.log /path/to/directory
 
 # Fast validation
 bagit.net validate --fast /path/to/directory
+
+# Completeness Only validation
+bagit.net validate --complete /path/to/directory
 ```
+>*note: setting both --fast and --complete flags will cause the application to exit* 
 
 ---
 
@@ -75,8 +79,8 @@ bagit.net help
 
 ### Linux
 ```bash
-wget https://github.com/dmnyu/bagit.net/releases/download/v0.2.1-alpha/bagit.net.cli-v0.2.1-alpha-linux-x64.tgz
-tar xvzf bagit.net.cli-v0.2.1-alpha-linux-x64.tgz
+wget https://github.com/dmnyu/bagit.net/releases/download/v0.2.4-alpha/bagit.net.cli-v0.2.4-alpha-linux-x64.tgz
+tar xvzf bagit.net.cli-v0.2.4-alpha-linux-x64.tgz
 cd bagit.net
 sudo ./install.sh
 bagit.net --help
@@ -90,8 +94,8 @@ On RHEL/CentOS systems with SELinux or `noexec` restrictions on `/tmp`, these bi
 
 ### Windows
 ```powershell
-Invoke-WebRequest -Uri https://github.com/dmnyu/bagit.net/releases/download/v0.2.1-alpha/bagit.net.cli-v0.2.1-alpha-win-x64.zip -OutFile bagit.net.cli-v0.2.1-alpha-win-x64.zip
-Expand-Archive bagit.net.cli-v0.2.1-alpha-win-x64.zip -DestinationPath .
+Invoke-WebRequest -Uri https://github.com/dmnyu/bagit.net/releases/download/v0.2.4-alpha/bagit.net.cli-v0.2.4-alpha-win-x64.zip -OutFile bagit.net.cli-v0.2.1-alpha-win-x64.zip
+Expand-Archive bagit.net.cli-v0.2.4-alpha-win-x64.zip -DestinationPath .
 cd .\bagit.net
 .\bagit.net.exe --help
 .\install.ps1
@@ -101,9 +105,10 @@ cd .\bagit.net
 
 ---
 
+### MacOS
 ```bash
-wget https://github.com/dmnyu/bagit.net/releases/download/0.2.2-alpha/bagit.net.cli-v0.2.2-alpha-macos-arm64.tgz
-tar xvzf bagit.net.cli-v0.2.1-alpha-mac0s-arm64.tgz
+wget https://github.com/dmnyu/bagit.net/releases/download/0.2.4-alpha/bagit.net.cli-v0.2.4-alpha-macos-arm64.tgz
+tar xvzf bagit.net.cli-v0.2.4-alpha-macos-arm64.tgz
 cd bagit.net
 sudo ./install.sh
 bagit.net --help
