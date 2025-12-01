@@ -262,7 +262,7 @@ namespace bagit.net.services
             foreach (var payloadFile in payloadFiles) {
                 var payloadFilePath = Path.Join(bagRoot, payloadFile.Value);
                 if (!File.Exists(payloadFilePath)) {
-                    throw new InvalidDataException($"{payloadFile} does not exist");
+                    throw new InvalidDataException($"{payloadFilePath} does not exist");
                 }
             }
         }
