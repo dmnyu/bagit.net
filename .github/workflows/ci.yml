@@ -7,7 +7,7 @@ on:
     branches: [ main ]
 
 jobs:
-  build-and-test:
+  windows-build-and-test:
     runs-on: windows-latest
     steps:
       - name: Checkout code
@@ -32,7 +32,6 @@ jobs:
   
   linux-build-test:
     runs-on: ubuntu-latest
-    needs: build-and-test
     steps:
       - name: Checkout code
         uses: actions/checkout@v3
@@ -56,7 +55,6 @@ jobs:
 
   macos-build-publish:
     runs-on: macos-latest
-    needs: build-and-test
     steps:
       - name: Checkout code
         uses: actions/checkout@v3
