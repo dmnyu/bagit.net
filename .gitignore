@@ -13,5 +13,5 @@ Thumbs.db
 launchSettings.json
 *.lock.json
 bagit.net/docs/*.md
-bagit.net.cli/dist/previous/*
+bagit.net.cli/dist/Previous Versions/*
 bagit.net.cli/dist/v*

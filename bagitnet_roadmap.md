@@ -2,14 +2,13 @@
 
 This roadmap outlines the planned feature development and release milestones for **bagit.net**, a C# implementation of the BagIt specification (RFC 8493). It covers versions **0.2.0** through **0.4.0**, with clear goals and scope for each.
 
-
----
-
-## 0.2.4 completeness only validation (current sprint)
-
 ---
 
 ## **0.2.5 - Error Handling**
+**Objective:** 
+- remove all logging from core library
+- have validation and creation functions return a List of Exception Records instead of throwing
+- log the exception out side of the core library
 
 ---
 
@@ -60,6 +59,10 @@ These are ideas for after the 0.4.x line:
 ---
 
 ## Previous updates: ##
+
+---
+
+## 0.2.4 completeness only validation
 
 ---
 
