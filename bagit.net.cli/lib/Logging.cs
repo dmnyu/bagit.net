@@ -1,5 +1,7 @@
 ﻿using Serilog.Events;
 using Serilog.Formatting;
+using bagit.net.domain;
+using Microsoft.Extensions.Logging;
 
 namespace bagit.net.cli.lib;
 
@@ -29,5 +31,24 @@ public class ShortLevelFormatter : ITextFormatter
         }
     }
 }
+
+public static class Logging
+{
+    public static void LogEvent(MessageRecord messageRecord, ILogger logger)
+    {
+        switch(messageRecord.GetLevel()) {
+            case MessageLevel.INFO: {
+                    logger.LogInformation(messageRecord.GetMessage());
+                    break;
+            }
+            case MessageLevel.ERROR:
+                {
+                    logger.LogError(messageRecord.GetMessage());
+                    break;
+                }
+            case 0: throw new InvalidDataException("Uknown message level");
+        }
+    }
+} 
 
 

@@ -9,7 +9,7 @@ namespace bagit.net.interfaces
         List<KeyValuePair<string, string>> GetManifestAsKeyValuePairs(string manifestPath);
         void ValidateManifestFiles(string bagRoot);
         void ValidateManifestFile(string manifestFile);
-        void ValidateManifestFilesCompleteness(string bagRoot);
-        void ValidateManifestFileCompleteness(string manifestFile);
+        IEnumerable<MessageRecord> ValidateManifestFilesCompleteness(string bagRoot);
+        IEnumerable<MessageRecord> ValidateManifestFileCompleteness(string manifestFile);
     }
 }

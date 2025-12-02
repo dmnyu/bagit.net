@@ -90,8 +90,7 @@ namespace bagit.net.tests.unit
         public void Test_Validate_Bag_For_Completeness()
         {
             var validBag = Path.Combine(_tmpDir, "valid-bag");
-            var ex = Record.Exception(() => _manifestService.ValidateManifestFilesCompleteness(validBag));
-            Assert.Null(ex);
+            Assert.Null(_manifestService.ValidateManifestFilesCompleteness(validBag));
         }
 
         [Fact]
@@ -99,8 +98,7 @@ namespace bagit.net.tests.unit
         public void Test_Validate_Incomplete_Bag_For_Completeness()
         {
             var validBag = Path.Combine(_tmpDir, "bag-incomplete");
-            var ex = Record.Exception(() => _manifestService.ValidateManifestFilesCompleteness(validBag));
-            Assert.NotNull(ex);
+            Assert.NotNull(_manifestService.ValidateManifestFilesCompleteness(validBag));
         }
 
     }

@@ -1,4 +1,5 @@
 ﻿using bagit.net.interfaces;
+using bagit.net.domain;
 using Microsoft.Extensions.Logging;
 using System.Text.RegularExpressions;
 
@@ -96,9 +97,9 @@ namespace bagit.net.services
 
         }
 
-        public void ValidateCompleteness(string bagPath)
+        public IEnumerable<MessageRecord> ValidateBagCompleteness(string bagPath)
         {
-            _manifestService.ValidateManifestFilesCompleteness(bagPath);
+            return _manifestService.ValidateManifestFilesCompleteness(bagPath);
         }
     }
 }

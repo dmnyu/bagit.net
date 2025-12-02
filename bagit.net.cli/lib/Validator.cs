@@ -25,7 +25,7 @@ namespace bagit.net.cli.lib
                 return 1;
             }
 
-                try
+            try
             {
 
                 if (string.IsNullOrWhiteSpace(bagPath))
@@ -53,8 +53,18 @@ namespace bagit.net.cli.lib
 
                 if (complete)
                 {
-                    _validationService.ValidateCompleteness(bagPath);
-                    _logger.LogInformation($"{bagPath} is complete according to manifests files");
+                    var messages = _validationService.ValidateBagCompleteness(bagPath);
+                    if (messages.Count() == 0)
+                    {
+                        _logger.LogInformation($"{bagPath} is complete according to manifests files");
+                        return 0;
+                    }
+
+                    foreach(var message  in messages)
+                    {
+                        Logging.LogEvent(message, _logger);
+                    }
+                    _logger.LogError($"{bagPath} is not complete according to manifests files");
                     return 0;
                 }
 

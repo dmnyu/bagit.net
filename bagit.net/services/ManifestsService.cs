@@ -12,6 +12,8 @@ namespace bagit.net.services
 
         private readonly ILogger<ManifestService> _logger;
         private readonly IChecksumService _checksumService;
+        private static readonly Regex _manifestRegex = new(@"^(manifest|tagmanifest)-(md5|sha1|sha256|sha384|sha512)\.txt$", RegexOptions.Compiled);
+
 
         public ManifestService(ILogger<ManifestService> logger, IChecksumService checksumService)
         {
@@ -94,18 +96,18 @@ namespace bagit.net.services
 
         public void ValidateManifestFiles(string bagPath)
         {
-            var validatedManifestCounter = 0;
+            int manifestCounter = 0;
             foreach (var f in Directory.EnumerateFiles(bagPath))
             {
 
-                if (System.Text.RegularExpressions.Regex.IsMatch(Path.GetFileName(f), @"^(manifest|tagmanifest)-(md5|sha1|sha256|sha384|sha512)\.txt$"))
+                if (_manifestRegex.IsMatch(Path.GetFileName(f)))
                 {
-                    validatedManifestCounter++;
+                    manifestCounter++;
                     ValidateManifestFile(f);
                 }
             }
 
-            if (validatedManifestCounter == 0)
+            if (manifestCounter == 0)
             {
                 throw new InvalidDataException($"{bagPath} did not contain any manifest files.");
             }
@@ -236,35 +238,40 @@ namespace bagit.net.services
             }
         }
 
-        public void ValidateManifestFilesCompleteness(string bagRoot)
+        public IEnumerable<MessageRecord> ValidateManifestFilesCompleteness(string bagRoot)
         {
+            List<MessageRecord> messages = new List<MessageRecord>();
             var validatedManifestCounter = 0;
-            foreach (var manifest in Directory.EnumerateFiles(bagRoot))
+            foreach (var manifestFile in Directory.EnumerateFiles(bagRoot))
             {
 
-                if (System.Text.RegularExpressions.Regex.IsMatch(Path.GetFileName(manifest), @"^(manifest|tagmanifest)-(md5|sha1|sha256|sha384|sha512)\.txt$"))
+                if (_manifestRegex.IsMatch(Path.GetFileName(manifestFile)))
                 {
                     validatedManifestCounter++;
-                    ValidateManifestFileCompleteness(manifest);
+                    messages.AddRange(ValidateManifestFileCompleteness(manifestFile));  
                 }
             }
 
             if (validatedManifestCounter == 0)
             {
-                throw new InvalidDataException($"{bagRoot} did not contain any manifest files.");
+                messages.Add(new MessageRecord(MessageLevel.ERROR, $"{bagRoot} did not contain any manifest files."));
             }
+            return messages;
         }
 
-        public void ValidateManifestFileCompleteness(string manifestFile)
+        public IEnumerable<MessageRecord> ValidateManifestFileCompleteness(string manifestFile)
         {
+            var messages = new List<MessageRecord>();   
             var bagRoot = Path.GetDirectoryName(manifestFile);
             List<KeyValuePair<string, string>> payloadFiles = GetManifestAsKeyValuePairs(manifestFile);
             foreach (var payloadFile in payloadFiles) {
-                var payloadFilePath = Path.Join(bagRoot, payloadFile.Value);
+                var payloadFilePath = Path.GetFullPath(Path.Combine(bagRoot!, payloadFile.Value));
                 if (!File.Exists(payloadFilePath)) {
-                    throw new InvalidDataException($"{payloadFilePath} does not exist");
+                    messages.Add(new MessageRecord(MessageLevel.ERROR, $"{payloadFilePath} does not exist"));
                 }
             }
+            return messages;
+            
         }
     }
 }

@@ -1,5 +1,6 @@
 ﻿using bagit.net.interfaces;
 using Microsoft.Extensions.DependencyInjection;
+using Xunit.Abstractions;
 
 namespace bagit.net.tests.integration
 {
@@ -9,13 +10,15 @@ namespace bagit.net.tests.integration
         private readonly string _unsupportedBag;
         private readonly ServiceProvider _serviceProvider;
         private readonly IValidationService _validationService;
-        
-        public TestValidateBag()
+        private readonly ITestOutputHelper _output;
+
+        public TestValidateBag(ITestOutputHelper output)
         {
             _testDir = TestHelpers.PrepareTempTestData();
             _unsupportedBag = Path.Combine(_testDir, "unsupported-algorithm");
             _serviceProvider = ValidationServiceConfigurator.BuildServiceProvider();
             _validationService = _serviceProvider.GetRequiredService<IValidationService>();
+            _output = output;
         }
 
         public void Dispose()
@@ -42,6 +45,29 @@ namespace bagit.net.tests.integration
             var ex = Record.Exception(() => _validationService.ValidateBag(_validBag));
             Assert.Null(ex);
         }
+
+        [Fact]
+        [Trait("Category", "Integration")]
+        public void Test_Validate_Bag_Completeness() 
+        {
+            var validBag = Path.Combine(_testDir, "valid-bag");
+            var messages = _validationService.ValidateBagCompleteness(validBag);
+            Assert.Empty(messages);
+        }
+
+        [Fact]
+        [Trait("Category", "Integration")]
+        public void Test_Validate_Incomplete_Bag()
+        {
+            var validBag = Path.Combine(_testDir, "bag-incomplete");
+            var messages = _validationService.ValidateBagCompleteness(validBag);
+            Assert.NotEmpty(messages);
+            foreach (var message in messages.ToList())
+            {
+                _output.WriteLine($"{message}");
+            }
+        }
+
 
 
 
