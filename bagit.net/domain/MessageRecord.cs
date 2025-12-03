@@ -1,7 +1,4 @@
-﻿using System.Reflection.Emit;
-using static System.Net.Mime.MediaTypeNames;
-
-namespace bagit.net.domain
+﻿namespace bagit.net.domain
 {
     public enum MessageLevel
     {
@@ -9,6 +6,7 @@ namespace bagit.net.domain
         WARNING,
         ERROR,
         INFO,
+        NULL,
     }
 
     public record MessageRecord

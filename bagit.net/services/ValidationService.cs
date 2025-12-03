@@ -2,6 +2,7 @@
 using bagit.net.domain;
 using Microsoft.Extensions.Logging;
 using System.Text.RegularExpressions;
+using System.Reflection.Metadata.Ecma335;
 
 namespace bagit.net.services
 {
@@ -74,27 +75,21 @@ namespace bagit.net.services
             _manifestService.ValidateManifestFiles(bagPath);
         }
 
-        public void ValidateBagFast(string bagPath)
+        public MessageRecord ValidateBagFast(string bagPath)
         {
-            if(!_tagFileService.HasBagInfo(bagPath))
-            {
-                throw new FileNotFoundException($"{bagPath} does not contain a bag-info.txt file");
-            }
+            if (!_tagFileService.HasBagInfo(bagPath))
+                return new MessageRecord(MessageLevel.ERROR, ($"{bagPath} does not contain a bag-info.txt file"));
 
             var tags = _tagFileService.GetTags(Path.Combine(bagPath, "bag-info.txt"));
             if (!tags.TryGetValue("Payload-Oxum", out var storedOxumTag))
-            {
-                throw new InvalidDataException($"bag-info.txt does not contain a payload-oxum");
-            }
+                return new MessageRecord(MessageLevel.ERROR, ($"bag-info.txt does not contain a payload-oxum"));
 
             var storedOxum = storedOxumTag[0];
-            var calculatedOxum = _tagFileService.CalculateOxum(bagPath);
-            if (storedOxum != calculatedOxum)
-            {
-                throw new InvalidDataException($"Payload Oxum did not match, expected {storedOxum} found {calculatedOxum}");
-            }
+            var actualOxum = _tagFileService.CalculateOxum(bagPath);
+            if (!string.Equals(storedOxum, actualOxum, StringComparison.Ordinal))
+                return new MessageRecord(MessageLevel.ERROR, ($"Payload Oxum did not match, expected {storedOxum} found {actualOxum}"));
 
-
+            return new MessageRecord(MessageLevel.INFO, "bag is valid according to payload oxum");
         }
 
         public IEnumerable<MessageRecord> ValidateBagCompleteness(string bagPath)

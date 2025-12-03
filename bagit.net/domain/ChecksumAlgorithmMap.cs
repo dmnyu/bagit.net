@@ -1,5 +1,14 @@
 ﻿namespace bagit.net.domain
 {
+    public enum ChecksumAlgorithm
+    {
+        MD5,
+        SHA1,
+        SHA256,
+        SHA384,
+        SHA512
+    }
+
     public static class ChecksumAlgorithmMap
     {
 

@@ -16,7 +16,7 @@ namespace bagit.net.cli.lib
         }
         public int ValidateBag(string? bagPath, bool fast, bool complete, string? logFile, CancellationToken cancellationToken)
         {
-            _logger.LogInformation($"Using bagit.net v{Bagit.VERSION}");
+            _logger.LogInformation($"using bagit.net v{Bagit.VERSION}");
 
             if (fast && complete)
             {
@@ -53,25 +53,23 @@ namespace bagit.net.cli.lib
 
                 if (complete)
                 {
-                    var messages = _validationService.ValidateBagCompleteness(bagPath);
-                    if (messages.Count() == 0)
+                    var messages = _validationService.ValidateBagCompleteness(bagPath).ToList();
+
+                    if (!messages.Any())
                     {
-                        _logger.LogInformation($"{bagPath} is complete according to manifests files");
+                        _logger.LogInformation("{BagPath} is complete according to manifest files", bagPath);
                         return 0;
                     }
 
-                    foreach(var message  in messages)
-                    {
-                        Logging.LogEvent(message, _logger);
-                    }
-                    _logger.LogError($"{bagPath} is not complete according to manifests files");
-                    return 0;
+                    messages.ForEach(message => Logging.LogEvent(message, _logger));
+
+                    _logger.LogError("{BagPath} is not complete according to manifest files", bagPath);
+                    return 1; // Return non-zero to indicate failure
                 }
 
                 if (fast)
-                {  
-                    _validationService.ValidateBagFast(bagPath);
-                    _logger.LogInformation($"{bagPath} is valid according to Payload-Oxum");
+                {
+                    Logging.LogEvent(_validationService.ValidateBagFast(bagPath), _logger);
                     return 0;
                 }
 
