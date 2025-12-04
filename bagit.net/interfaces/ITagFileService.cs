@@ -14,10 +14,10 @@ namespace bagit.net.interfaces
         void CreateBagItTXT(string bagRoot);
         bool HasBagInfo(string bagRoot);
         bool HasBagItTXT(string bagRoot);
-        IEnumerable<MessageRecord> ValidateBagInfo(string bagRoot);
-        IEnumerable<MessageRecord> ValidateBagitTXT(string bagRoot);
-        IEnumerable<MessageRecord> ScanFileForInvalidControlChars(string path);
-        IEnumerable<MessageRecord> ValidateTags(string bagInfoPath);
+        void ValidateBagInfo(string bagRoot);
+        void ValidateBagitTXT(string bagRoot);
+        void ScanFileForInvalidControlChars(string path);
+        void ValidateTags(string bagInfoPath);
         Dictionary<String, List<String>> GetTags(string tagFilePath);
         string CalculateOxum(string bagRoot);
     }

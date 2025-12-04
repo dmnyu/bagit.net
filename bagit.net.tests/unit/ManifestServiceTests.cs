@@ -1,6 +1,7 @@
 ﻿using bagit.net.domain;
 using bagit.net.interfaces;
 using Microsoft.Extensions.DependencyInjection;
+using Xunit.Abstractions;
 
 namespace bagit.net.tests.unit
 {
@@ -9,11 +10,16 @@ namespace bagit.net.tests.unit
         private readonly string _tmpDir;
         private readonly ServiceProvider _serviceProvider;
         private readonly IManifestService _manifestService;
-        public ManifestServiceTests()
+        private readonly IMessageService _messageService;
+        private readonly ITestOutputHelper _output;
+        public ManifestServiceTests(ITestOutputHelper output)
         {
             _tmpDir = TestHelpers.PrepareTempTestData();
             _serviceProvider = ManifestServiceConfigurator.BuildServiceProvider();
             _manifestService = _serviceProvider.GetRequiredService<IManifestService>();
+            _messageService = _serviceProvider.GetRequiredService<IMessageService>();
+            _messageService.Clear();
+            _output = output;
         }
 
         public void Dispose()
@@ -90,7 +96,9 @@ namespace bagit.net.tests.unit
         public void Test_Validate_Bag_For_Completeness()
         {
             var validBag = Path.Combine(_tmpDir, "valid-bag");
-            Assert.Null(_manifestService.ValidateManifestFilesCompleteness(validBag));
+            _manifestService.ValidateManifestFilesCompleteness(validBag);
+            Assert.Empty(_messageService.GetAll());
+
         }
 
         [Fact]
@@ -98,7 +106,13 @@ namespace bagit.net.tests.unit
         public void Test_Validate_Incomplete_Bag_For_Completeness()
         {
             var validBag = Path.Combine(_tmpDir, "bag-incomplete");
-            Assert.NotNull(_manifestService.ValidateManifestFilesCompleteness(validBag));
+            _manifestService.ValidateManifestFilesCompleteness(validBag);
+            var messages = _messageService.GetAll();
+            Assert.NotEmpty(messages);
+            foreach(var message in messages)
+            {
+                _output.WriteLine($"{message}");
+            }
         }
 
     }

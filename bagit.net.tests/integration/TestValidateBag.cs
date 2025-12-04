@@ -12,6 +12,7 @@ namespace bagit.net.tests.integration
         private readonly ServiceProvider _serviceProvider;
         private readonly IValidationService _validationService;
         private readonly ITestOutputHelper _output;
+        private readonly IMessageService _messageService;
 
         public TestValidateBag(ITestOutputHelper output)
         {
@@ -19,6 +20,8 @@ namespace bagit.net.tests.integration
             _unsupportedBag = Path.Combine(_testDir, "unsupported-algorithm");
             _serviceProvider = ValidationServiceConfigurator.BuildServiceProvider();
             _validationService = _serviceProvider.GetRequiredService<IValidationService>();
+            _messageService = _serviceProvider.GetRequiredService<IMessageService>();
+            _messageService.Clear();
             _output = output;
         }
 
@@ -34,8 +37,20 @@ namespace bagit.net.tests.integration
         public void Test_Validate_Bag_Fast()
         {
             var _validBag = Path.Combine(_testDir, "valid-bag");
-            var ex = Record.Exception(() =>  _validationService.ValidateBagFast(_validBag));
-            Assert.Null(ex);
+            Assert.Empty(_messageService.GetAll());
+        }
+
+        [Fact]
+        [Trait("Category", "Integration")]
+        public void Test_Invalid_Bag_Fast()
+        {
+            var invalidBag = Path.Combine(_testDir, "bag-invalid-oxum");
+            _validationService.ValidateBagFast(invalidBag);
+            Assert.NotEmpty(_messageService.GetAll());
+            foreach(var message in  _messageService.GetAll())
+            {
+                _output.WriteLine($"{message}");
+            }
         }
 
         [Fact]
@@ -43,8 +58,12 @@ namespace bagit.net.tests.integration
         public void Test_Validate_Bag()
         {
             var _validBag = Path.Combine(_testDir, "valid-bag");
-            var messages = _validationService.ValidateBag(_validBag);
-            Assert.False(MessageHelpers.HasError(messages));
+            _validationService.ValidateBag(_validBag);
+            Assert.False(MessageHelpers.HasError(_messageService.GetAll()));
+            foreach(var message in _messageService.GetAll())
+            {
+                _output.WriteLine($"{message}");
+            }
         }
 
         [Fact]
@@ -52,8 +71,8 @@ namespace bagit.net.tests.integration
         public void Test_Validate_Bag_Completeness() 
         {
             var validBag = Path.Combine(_testDir, "valid-bag");
-            var messages = _validationService.ValidateBagCompleteness(validBag);
-            Assert.Empty(messages);
+            _validationService.ValidateBagCompleteness(validBag);
+            Assert.Empty(_messageService.GetAll());
         }
 
         [Fact]
@@ -61,37 +80,13 @@ namespace bagit.net.tests.integration
         public void Test_Validate_Incomplete_Bag()
         {
             var validBag = Path.Combine(_testDir, "bag-incomplete");
-            var messages = _validationService.ValidateBagCompleteness(validBag);
+            _validationService.ValidateBagCompleteness(validBag);
+            var messages = _messageService.GetAll();
             Assert.NotEmpty(messages);
             foreach (var message in messages.ToList())
             {
                 _output.WriteLine($"{message}");
             }
         }
-
-
-
-
-
-
-
-
-
-        /*
-
-
-
-
-                [Fact]
-                [Trait("Category", "Integration")]
-                public void Test_Validate_Bag()
-                {
-                    var _validBag = Path.Combine(_tmpDir, "valid-bag");
-                    var ex = Record.Exception(() => _validator.ValidateBag(_validBag, false));
-                    Assert.Null(ex);
-                }
-
-                */
-
     }
 }

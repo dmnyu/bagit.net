@@ -4,9 +4,9 @@ namespace bagit.net.interfaces
 {
     public interface IValidationService
     {
-        IEnumerable<MessageRecord> ValidateBag(string bagPath);
-        MessageRecord ValidateBagFast(string bagPath);
-        IEnumerable<MessageRecord> ValidateBagCompleteness(string bagPath);
-        void HasRequiredFiles(string bagPath);
+        void ValidateBag(string bagPath);
+        void ValidateBagFast(string bagPath);
+        void ValidateBagCompleteness(string bagPath);
+        bool HasRequiredFiles(string bagPath);
     }
 }

@@ -7,9 +7,9 @@ namespace bagit.net.interfaces
         void CreatePayloadManifest(string bagRoot, ChecksumAlgorithm algorithm);
         void CreateTagManifestFile(string bagRoot, ChecksumAlgorithm algorithm);
         List<KeyValuePair<string, string>> GetManifestAsKeyValuePairs(string manifestPath);
-        IEnumerable<MessageRecord> ValidateManifestFiles(string bagRoot);
-        IEnumerable<MessageRecord> ValidateManifestFile(string manifestFile);
-        IEnumerable<MessageRecord> ValidateManifestFilesCompleteness(string bagRoot);
-        IEnumerable<MessageRecord> ValidateManifestFileCompleteness(string manifestFile);
+        void ValidateManifestFiles(string bagRoot);
+        void ValidateManifestFile(string manifestFile);
+        void ValidateManifestFilesCompleteness(string bagRoot);
+        void ValidateManifestFileCompleteness(string manifestFile);
     }
 }

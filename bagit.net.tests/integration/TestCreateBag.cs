@@ -1,8 +1,6 @@
 ﻿using bagit.net.domain;
 using bagit.net.interfaces;
-using bagit.net.services;
 using Microsoft.Extensions.DependencyInjection;
-using System.Text;
 
 namespace bagit.net.tests.integration
 {

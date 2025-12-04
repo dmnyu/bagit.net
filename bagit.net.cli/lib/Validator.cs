@@ -9,11 +9,14 @@ namespace bagit.net.cli.lib
     {
         private readonly ILogger _logger;
         private readonly IValidationService _validationService;
-        public Validator(ILogger<Validator> logger, IValidationService validationService)
+        private readonly IMessageService _messageService;
+        public Validator(ILogger<Validator> logger, IValidationService validationService, IMessageService messageService)
         {
             _logger = logger;
             _validationService = validationService;
+            _messageService = messageService;
         }
+
         public int ValidateBag(string? bagPath, bool fast, bool complete, string? logFile, CancellationToken cancellationToken)
         {
             _logger.LogInformation($"using bagit.net v{Bagit.VERSION}");
@@ -53,14 +56,24 @@ namespace bagit.net.cli.lib
 
                 if (complete)
                 {
-                    var messageRecords = _validationService.ValidateBagCompleteness(bagPath);
-                    messageRecords.ToList().ForEach(message => Logging.LogEvent(message, _logger));
-                    _logger.LogError("{BagPath} is not complete according to manifest files", bagPath);
-                    return 0; // Return non-zero to indicate failure
+                    _validationService.ValidateBagCompleteness(bagPath);
+                    var messages = _messageService.GetAll();
+                    messages.ToList().ForEach(message => Logging.LogEvent(message, _logger));
+                    if(MessageHelpers.HasError(messages))
+                    {
+                        Logging.LogEvent(new MessageRecord(MessageLevel.ERROR, $"{bagPath} is not complete."), _logger);
+                    } else
+                    {
+                        Logging.LogEvent(new MessageRecord(MessageLevel.INFO, $"{bagPath} is complete."), _logger);
+                    }
+
+                        return 0; // Return non-zero to indicate failure
                 }
                 else if (fast)
                 {
-                    Logging.LogEvent(_validationService.ValidateBagFast(bagPath), _logger);
+                    _validationService.ValidateBagFast(bagPath);
+                    var messages = _messageService.GetAll();
+                    messages.ToList().ForEach(message => Logging.LogEvent(message, _logger));
                     return 0;
                 }
                 else
