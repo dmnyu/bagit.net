@@ -78,9 +78,10 @@ namespace bagit.net.cli.lib
                 }
                 else
                 {
-                    var messageRecords = _validationService.ValidateBag(bagPath);
-                    messageRecords.ToList().ForEach(message => Logging.LogEvent(message, _logger));
-                    if(!MessageHelpers.HasError(messageRecords))
+                    _validationService.ValidateBag(bagPath);
+                    var messages = _messageService.GetAll();
+                    messages.ToList().ForEach(message => Logging.LogEvent(message, _logger));
+                    if(!MessageHelpers.HasError(messages))
                     {
                         Logging.LogEvent(new MessageRecord(MessageLevel.INFO, "bag is valid"), _logger);    
                     }

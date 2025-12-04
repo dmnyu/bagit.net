@@ -37,15 +37,21 @@ public static class Logging
     public static void LogEvent(MessageRecord messageRecord, ILogger logger)
     {
         switch(messageRecord.GetLevel()) {
-            case MessageLevel.INFO: {
-                    logger.LogInformation(messageRecord.GetMessage());
-                    break;
+            case MessageLevel.INFO: 
+            {
+                logger.LogInformation(messageRecord.GetMessage());
+                break;
             }
             case MessageLevel.ERROR:
-                {
-                    logger.LogError(messageRecord.GetMessage());
-                    break;
-                }
+            {
+                logger.LogError(messageRecord.GetMessage());
+                break;
+             }
+            case MessageLevel.WARNING:
+            {
+                logger.LogWarning(messageRecord.GetMessage());
+                break;
+            }
             default: throw new InvalidDataException("Uknown message level");
         }
     }
