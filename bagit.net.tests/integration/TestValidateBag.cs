@@ -1,4 +1,5 @@
 ﻿using bagit.net.interfaces;
+using bagit.net.domain;
 using Microsoft.Extensions.DependencyInjection;
 using Xunit.Abstractions;
 
@@ -42,8 +43,8 @@ namespace bagit.net.tests.integration
         public void Test_Validate_Bag()
         {
             var _validBag = Path.Combine(_testDir, "valid-bag");
-            var ex = Record.Exception(() => _validationService.ValidateBag(_validBag));
-            Assert.Null(ex);
+            var messages = _validationService.ValidateBag(_validBag);
+            Assert.False(MessageHelpers.HasError(messages));
         }
 
         [Fact]

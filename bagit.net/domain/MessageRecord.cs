@@ -1,4 +1,6 @@
-﻿namespace bagit.net.domain
+﻿using System.Diagnostics;
+
+namespace bagit.net.domain
 {
     public enum MessageLevel
     {
@@ -25,7 +27,22 @@
             return $"[{_messageLevel}] {_message}";
         }
 
-        public string GetMessage() { return _message ; }
-        public MessageLevel GetLevel() { return _messageLevel ; }
+        public string GetMessage() { return _message; }
+        public MessageLevel GetLevel() { return _messageLevel; }
+    }
+
+
+    public static class MessageHelpers
+    {
+        public static bool HasError(IEnumerable<MessageRecord> messages)
+        {
+            foreach (var record in messages) {
+                if (record.GetLevel() == MessageLevel.ERROR) {
+                    return true;
+                }
+            }
+            return false;
+        }
     }
 }
+

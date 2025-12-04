@@ -1,4 +1,5 @@
-﻿using bagit.net.interfaces;
+﻿using bagit.net.domain;
+using bagit.net.interfaces;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace bagit.net.tests.unit
@@ -69,8 +70,7 @@ namespace bagit.net.tests.unit
         public void Test_Validate_BagitTXT()
         {
             var validBag = Path.Combine(_tmpDir, "valid-bag");
-            var ex = Record.Exception(() => _tagFileService.ValidateBagitTXT(validBag));
-            Assert.Null(ex);
+            Assert.False(MessageHelpers.HasError(_tagFileService.ValidateBagitTXT(validBag)));
         }
 
         [Fact]
@@ -86,7 +86,7 @@ namespace bagit.net.tests.unit
         public void Test_Validate_BagInfo()
         {
             var validBag = Path.Combine(_tmpDir, "valid-bag");
-            Assert.True(_tagFileService.ValidateBagInfo(Path.Combine(validBag, "bag-info.txt")));
+            Assert.False(MessageHelpers.HasError(_tagFileService.ValidateBagInfo(Path.Combine(validBag, "bag-info.txt"))));
         }
 
         [Fact]

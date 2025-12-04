@@ -13,7 +13,7 @@ namespace bagit.net.services
         private readonly ILogger<ManifestService> _logger;
         private readonly IChecksumService _checksumService;
         private static readonly Regex _manifestRegex = new(@"^(manifest|tagmanifest)-(md5|sha1|sha256|sha384|sha512)\.txt$", RegexOptions.Compiled);
-
+        private static readonly Regex _nonCREndingsRegex = new(@"\r(?!\n)");
 
         public ManifestService(ILogger<ManifestService> logger, IChecksumService checksumService)
         {
@@ -94,35 +94,40 @@ namespace bagit.net.services
                 .ToList();
         }
 
-        public void ValidateManifestFiles(string bagPath)
+        public IEnumerable<MessageRecord> ValidateManifestFiles(string bagPath)
         {
+
             int manifestCounter = 0;
+           
+            var messages = new List<MessageRecord>();
             foreach (var f in Directory.EnumerateFiles(bagPath))
             {
 
                 if (_manifestRegex.IsMatch(Path.GetFileName(f)))
                 {
                     manifestCounter++;
-                    ValidateManifestFile(f);
+                    messages.AddRange(ValidateManifestFile(f));
                 }
             }
 
             if (manifestCounter == 0)
             {
-                throw new InvalidDataException($"{bagPath} did not contain any manifest files.");
+                messages.Add(new MessageRecord(MessageLevel.ERROR, $"{bagPath} did not contain any manifest files."));
             }
+
+            return messages;
         }
 
-        public void ValidateManifestFile(string manifestFile)
+        public IEnumerable<MessageRecord> ValidateManifestFile(string manifestFile)
         {
-            string dir = Path.GetDirectoryName(manifestFile)
+            var messages = new List<MessageRecord>();
+            string bagRoot = Path.GetDirectoryName(manifestFile)
                 ?? throw new InvalidDataException("Could not determine manifest directory.");
-
             string fn = Path.GetFileName(manifestFile);
 
             ChecksumAlgorithm algorithm = GetManifestAlgorithm(fn);
 
-            ValidateManifestLineEndings(manifestFile);
+            messages.AddRange(ValidateManifestLineEndings(manifestFile));
 
             
             foreach (var line in File.ReadLines(manifestFile))
@@ -130,8 +135,10 @@ namespace bagit.net.services
                 if (string.IsNullOrWhiteSpace(line))
                     continue;
 
-                ValidateManifestLine(line, dir, fn, algorithm);
+                messages.AddRange(ValidateManifestLine(line, bagRoot, fn, algorithm));
             }
+
+            return messages;
         }
 
         internal ChecksumAlgorithm GetManifestAlgorithm(string manifestFilename)
@@ -143,13 +150,17 @@ namespace bagit.net.services
             return ChecksumAlgorithmMap.Algorithms[match.Groups[1].Value.ToLowerInvariant()];
         }
 
-        internal void ValidateManifestLine(string line, string manifestDir, string manifestFileName, ChecksumAlgorithm algorithm)
+        internal IEnumerable<MessageRecord> ValidateManifestLine(string line, string manifestDir, string manifestFileName, ChecksumAlgorithm algorithm)
         {
+            var messages = new List<MessageRecord>();
+
             var parts = line.Split(' ', 2, StringSplitOptions.None);
             if (parts.Length != 2)
-                throw new InvalidDataException($"Invalid manifest line format: '{line}'.");
+            {
+                return new List<MessageRecord>() { new MessageRecord(MessageLevel.ERROR, ($"Invalid manifest line format: '{line}'.")) };
+            }
 
-            string checksum = parts[0];
+            string checksum = parts[0].Trim();
             string payloadFile = parts[1].Trim();
 
             // Normalize path for Windows
@@ -163,41 +174,27 @@ namespace bagit.net.services
             string fullPath = Path.Combine(manifestDir, payloadFile);
             string filename = Path.GetFileName(payloadFile);
 
-           
-            ValidateLineLength(line);
-            ValidateFilenameUtf8(payloadFile);
-            ValidateFilenameNormalization(filename, payloadFile);
 
-            _logger.LogInformation($"Verifying checksum for file {fullPath}");
-            if (!_checksumService.CompareChecksum(fullPath, checksum, algorithm))
-            {
-                throw new InvalidDataException(
-                    $"Checksum mismatch for '{payloadFile}' in manifest '{manifestFileName}'. Expected: {checksum}"
-                );
-            }
-        }
+            if (line.Length > 200)
+                messages.Add(new MessageRecord(MessageLevel.WARNING, $"Manifest line exceeds 200 characters, may be too long for some file systems: {line}"));
 
-        internal void ValidateLineLength(string line, int maxLength = 200)
-        {
-            if (line.Length > maxLength)
-                _logger.LogWarning($"Manifest line exceeds {maxLength} characters, may be too long for some file systems: {line}");
-        }
-
-        internal void ValidateFilenameUtf8(string filename)
-        {
             if (!IsValidUtf8(filename))
-                _logger.LogWarning($"{filename} contains non-unicode characters");
-        }
+                messages.Add(new MessageRecord(MessageLevel.WARNING, $"{filename} contains non-unicode characters"));
 
-        internal void ValidateFilenameNormalization(string filename, string fullPath)
-        {
             if (!filename.IsNormalized(NormalizationForm.FormC))
-                _logger.LogWarning($"{fullPath} is not NFC-Normalized");
+                messages.Add(new MessageRecord(MessageLevel.WARNING, $"{fullPath} is not NFC-Normalized"));
+
+            messages.Add(new MessageRecord(MessageLevel.INFO, $"Verifying checksum for file {fullPath}"));
+            if (!_checksumService.CompareChecksum(fullPath, checksum, algorithm))
+                messages.Add(new MessageRecord(MessageLevel.ERROR, $"Checksum mismatch for '{payloadFile}' in manifest '{manifestFileName}'. Expected: {checksum}"));
+
+            return messages;
         }
 
 
-        internal void ValidateManifestLineEndings(string manifestFile)
+        internal IEnumerable<MessageRecord> ValidateManifestLineEndings(string manifestFile)
         {
+            var messages = new List<MessageRecord>();
             string content = File.ReadAllText(manifestFile, Encoding.UTF8);
 
             // Match all line endings (either LF or CRLF)
@@ -205,22 +202,21 @@ namespace bagit.net.services
             var matches = Regex.Matches(content, lineEndingPattern);
 
             if (matches.Count == 0)
-            {
-                _logger.LogWarning($"{Path.GetFileName(manifestFile)} contains no line endings");
-                return;
-            }
+              messages.Add(new MessageRecord(MessageLevel.ERROR, $"{Path.GetFileName(manifestFile)} contains no line endings"));
 
             // Check for any CR-only line endings (\r not followed by \n)
-            if (Regex.IsMatch(content, @"\r(?!\n)"))
+            if (_nonCREndingsRegex.IsMatch(content))
             {
-                _logger.LogWarning($"{Path.GetFileName(manifestFile)} contains CR-only line endings");
+                messages.Add(new MessageRecord(MessageLevel.WARNING, $"{Path.GetFileName(manifestFile)} contains CR-only line endings"));
             }
 
             // Check if last line ends with a newline
             if (!content.EndsWith("\n") && !content.EndsWith("\r"))
             {
-                _logger.LogWarning($"{Path.GetFileName(manifestFile)} does not end with a newline");
+                messages.Add(new MessageRecord(MessageLevel.WARNING, ($"{Path.GetFileName(manifestFile)} does not end with a newline")));
             }
+
+            return messages;
         }
 
 

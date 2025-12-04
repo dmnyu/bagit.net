@@ -53,29 +53,27 @@ namespace bagit.net.cli.lib
 
                 if (complete)
                 {
-                    var messages = _validationService.ValidateBagCompleteness(bagPath).ToList();
-
-                    if (!messages.Any())
-                    {
-                        _logger.LogInformation("{BagPath} is complete according to manifest files", bagPath);
-                        return 0;
-                    }
-
-                    messages.ForEach(message => Logging.LogEvent(message, _logger));
-
+                    var messageRecords = _validationService.ValidateBagCompleteness(bagPath);
+                    messageRecords.ToList().ForEach(message => Logging.LogEvent(message, _logger));
                     _logger.LogError("{BagPath} is not complete according to manifest files", bagPath);
-                    return 1; // Return non-zero to indicate failure
+                    return 0; // Return non-zero to indicate failure
                 }
-
-                if (fast)
+                else if (fast)
                 {
                     Logging.LogEvent(_validationService.ValidateBagFast(bagPath), _logger);
                     return 0;
                 }
+                else
+                {
+                    var messageRecords = _validationService.ValidateBag(bagPath);
+                    messageRecords.ToList().ForEach(message => Logging.LogEvent(message, _logger));
+                    if(!MessageHelpers.HasError(messageRecords))
+                    {
+                        Logging.LogEvent(new MessageRecord(MessageLevel.INFO, "bag is valid"), _logger);    
+                    }
+                    return 0;
 
-                _validationService.ValidateBag(bagPath);
-                _logger.LogInformation($"{bagPath} is valid");
-                return 0;
+                }
             } catch (Exception ex) {
                 _logger.LogCritical(ex, "Failed to validate bag at {Path}", bagPath);
                 AnsiConsole.MarkupLine("[red][bold]ERROR:[/][/]");

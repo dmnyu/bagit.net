@@ -8,12 +8,10 @@ namespace bagit.net.services
 {
     public class ValidationService : IValidationService
     {
-        readonly ILogger<ValidationService> _logger;
         readonly ITagFileService _tagFileService;
         readonly IManifestService _manifestService;
-        public ValidationService(ILogger<ValidationService> logger, ITagFileService tagFileService, IManifestService manifestService) 
+        public ValidationService(ITagFileService tagFileService, IManifestService manifestService) 
         {
-            _logger = logger;
             _tagFileService = tagFileService;
             _manifestService = manifestService;
         }
@@ -51,28 +49,39 @@ namespace bagit.net.services
                 throw new FileNotFoundException("bag does not contain a manifest file.", bagPath);
         }
 
-        public void ValidateBag(string bagPath)
+        public IEnumerable<MessageRecord> ValidateBag(string bagPath)
         {
-            //must hav a valid bagit.txt
+            var messages = new List<MessageRecord>();
+            //must have a valid bagit.txt
             if (!_tagFileService.HasBagItTXT(bagPath))
-                throw new InvalidDataException($"{bagPath} does not contain a bagit.xt");
-
-            //validate bagit.txt
-            _tagFileService.ValidateBagitTXT(bagPath);
+            {
+                messages.Add(new MessageRecord(MessageLevel.ERROR, ($"{bagPath} does not contain a bagit.txt file")));
+            }
+            else
+            {
+                //validate bagit.txt
+                messages.AddRange(_tagFileService.ValidateBagitTXT(bagPath));
+            }
 
             //must have a data directory
             if (!Directory.Exists(Path.Combine(bagPath, "data")))
-                throw new DirectoryNotFoundException($"{bagPath}");
-                
+                messages.Add(new MessageRecord(MessageLevel.ERROR, $"{bagPath} does not contain `data` directory"));
+
             //if there is a baginfo.txt
             var _bagInfo = Path.Combine(bagPath, "bag-info.txt");
-            if (File.Exists(_bagInfo))
+            if(!File.Exists(_bagInfo))
             {
-                _tagFileService.ValidateBagInfo(_bagInfo);
+                messages.Add(new MessageRecord(MessageLevel.WARNING, ($"{bagPath} does not contain a bag-info.txt file")));
+            }
+            else
+            {
+                messages.AddRange(_tagFileService.ValidateBagInfo(_bagInfo));
             }
 
             //validate any manifests
-            _manifestService.ValidateManifestFiles(bagPath);
+            messages.AddRange(_manifestService.ValidateManifestFiles(bagPath));
+
+            return messages; 
         }
 
         public MessageRecord ValidateBagFast(string bagPath)
