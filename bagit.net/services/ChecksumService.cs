@@ -9,28 +9,36 @@ namespace bagit.net.services
 
     public class ChecksumService : IChecksumService
     {
+        private readonly IMessageService _messageService;
+
+        public ChecksumService(IMessageService messageService)
+        {
+            _messageService = messageService;
+        }
         public string CalculateChecksum(string? filePath, ChecksumAlgorithm algorithm)
         {
             ArgumentNullException.ThrowIfNull(filePath);
             if (!File.Exists(filePath))
             {
-                throw new FileNotFoundException("File not found.", filePath);
+                _messageService.Add(new MessageRecord(MessageLevel.ERROR, $"{filePath} not found."));
             }
 
-
-            using var hashAlgorithm = algorithm switch
+            HashAlgorithm hashAlgorithm = algorithm switch
             {
-                ChecksumAlgorithm.MD5 => (HashAlgorithm)MD5.Create(),
-                ChecksumAlgorithm.SHA1 => (HashAlgorithm)SHA1.Create(),
-                ChecksumAlgorithm.SHA256 => (HashAlgorithm)SHA256.Create(),
-                ChecksumAlgorithm.SHA384 => (HashAlgorithm)SHA384.Create(),
-                ChecksumAlgorithm.SHA512 => (HashAlgorithm)SHA512.Create(),
-                _ => throw new NotSupportedException($"Algorithm {algorithm} not supported.")
+                ChecksumAlgorithm.MD5 => MD5.Create(),
+                ChecksumAlgorithm.SHA1 => SHA1.Create(),
+                ChecksumAlgorithm.SHA256 => SHA256.Create(),
+                ChecksumAlgorithm.SHA384 => SHA384.Create(),
+                ChecksumAlgorithm.SHA512 => SHA512.Create(),
+                _ => throw new ArgumentException("checksum algorithm {algorithm} is not supported")
             };
 
-            using var fileStream = File.OpenRead(filePath);
-            byte[] hashBytes = hashAlgorithm.ComputeHash(fileStream);
-            return Convert.ToHexString(hashBytes).ToLowerInvariant();
+            using (hashAlgorithm)
+            using (var fileStream = File.OpenRead(filePath))
+            {
+                byte[] hashBytes = hashAlgorithm.ComputeHash(fileStream);
+                return Convert.ToHexString(hashBytes).ToLowerInvariant();
+            }
         }
 
         public bool CompareChecksum(string? path, string checksum, ChecksumAlgorithm algorithm)

@@ -17,6 +17,7 @@ namespace bagit.net.tests
             var logger = DefaultLogger.GetDefaultLogger();
             services.AddLogging(builder => builder.AddSerilog(logger, dispose: true));
             services.AddSingleton<IChecksumService, ChecksumService>();
+            services.AddSingleton<IMessageService, MessageService>();
             return services.BuildServiceProvider();
         }
     }
@@ -57,6 +58,7 @@ namespace bagit.net.tests
             var logger = DefaultLogger.GetDefaultLogger();
             services.AddLogging(builder => builder.AddSerilog(logger, dispose: true));
             services.AddSingleton<IFileManagerService, FileManagerService>();
+            services.AddSingleton<IMessageService, MessageService>();
             return services.BuildServiceProvider();
         }
     }
@@ -91,6 +93,7 @@ namespace bagit.net.tests
             services.AddSingleton<IFileManagerService, FileManagerService>();
             services.AddSingleton<IManifestService, ManifestService>();
             services.AddSingleton<IChecksumService, ChecksumService>();
+            services.AddSingleton<IMessageService, MessageService>();
             return services.BuildServiceProvider();
         }
     }

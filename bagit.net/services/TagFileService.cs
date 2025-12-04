@@ -9,14 +9,12 @@ namespace bagit.net.services
 {
     public class TagFileService : ITagFileService
     {
-        private readonly ILogger _logger;
         private readonly IFileManagerService _fileManagerService;
         private readonly IMessageService _messageService;
         private static readonly Regex _oxumPattern = new(@"^\d+\.\d+$", RegexOptions.Compiled);
 
-        public TagFileService(ILogger<TagFileService> logger, IFileManagerService fileManagerService, IMessageService messageService)
+        public TagFileService(IFileManagerService fileManagerService, IMessageService messageService)
         {
-            _logger = logger;
             _fileManagerService = fileManagerService;
             _messageService = messageService;
         }
@@ -60,8 +58,8 @@ namespace bagit.net.services
             var bagitTxt = Path.Combine(bagRoot, "bagit.txt");
             if (!System.Text.RegularExpressions.Regex.IsMatch(Bagit.BAGIT_VERSION, @"^\d+\.\d+$"))
             {
-                _logger.LogCritical("Invalid BagIt version: {b}. Must be in 'major.minor' format.", Bagit.BAGIT_VERSION);
-                throw new InvalidOperationException($"Invalid BagIt version: {Bagit.BAGIT_VERSION}. Must be in 'major.minor' format.");
+                _messageService.Add(new MessageRecord(MessageLevel.ERROR, ("Invalid BagIt version: {Bagit.BAGIT_VERSION}. Must be in 'major.minor' format.")));
+                return;
             }
             var content = $"BagIt-Version: {Bagit.BAGIT_VERSION}\nTag-File-Character-Encoding: UTF-8\n";
             File.WriteAllText(bagitTxt, content, new UTF8Encoding(encoderShouldEmitUTF8Identifier: false));

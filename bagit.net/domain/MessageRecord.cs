@@ -43,6 +43,18 @@ namespace bagit.net.domain
             }
             return false;
         }
+
+        public static bool HasWarning(IEnumerable<MessageRecord> messages)
+        {
+            foreach (var record in messages)
+            {
+                if (record.GetLevel() == MessageLevel.WARNING)
+                {
+                    return true;
+                }
+            }
+            return false;
+        }
     }
 }
 

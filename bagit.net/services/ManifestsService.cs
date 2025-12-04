@@ -1,5 +1,4 @@
-﻿using Microsoft.Extensions.Logging;
-using System.Runtime.InteropServices;
+﻿using System.Runtime.InteropServices;
 using System.Text;
 using System.Text.RegularExpressions;
 using bagit.net.interfaces;
@@ -10,7 +9,6 @@ namespace bagit.net.services
     public class ManifestService : IManifestService
     {
 
-        private readonly ILogger<ManifestService> _logger;
         private readonly IChecksumService _checksumService;
         private readonly IMessageService _messageService;
         private static readonly Regex _manifestRegex = new(@"^(manifest|tagmanifest)-(md5|sha1|sha256|sha384|sha512)\.txt$", RegexOptions.Compiled);
@@ -19,23 +17,22 @@ namespace bagit.net.services
         public const string TagmanifestPattern = @"tagmanifest-(md5|sha1|sha256|sha384|sha512).txt";
        
     
-        public ManifestService(ILogger<ManifestService> logger, IChecksumService checksumService, IMessageService messageService)
+        public ManifestService(IChecksumService checksumService, IMessageService messageService)
         {
 
             _checksumService = checksumService;
-            _logger = logger;
             _messageService = messageService;
         }
 
         public void CreatePayloadManifest(string bagRoot, ChecksumAlgorithm algorithm)
         {
             var algorithmCode = _checksumService.GetAlgorithmCode(algorithm);
-            _logger.LogInformation($"Generating manifests using {algorithmCode}");
+            _messageService.Add(new MessageRecord(MessageLevel.INFO, $"Generating manifests using {algorithmCode}"));
             var manifestContent = new StringBuilder();
             var fileEntries = GetPayloadFiles(bagRoot);
             foreach (var entry in fileEntries)
             {
-                _logger.LogInformation($"Generating manifest lines for file {entry}");
+                _messageService.Add(new MessageRecord(MessageLevel.INFO, $"Generating manifest lines for file {entry}"));
                 var checksum = _checksumService.CalculateChecksum(Path.Combine(bagRoot, entry), algorithm);
                 manifestContent.Append($"{checksum.Trim()} {entry.Trim()}\n");
             }
@@ -48,7 +45,7 @@ namespace bagit.net.services
         {
             var algorithmCode = _checksumService.GetAlgorithmCode(algorithm);
             var manifestFilename = Path.Combine(bagRoot, $"tagmanifest-{algorithmCode}.txt");
-            _logger.LogInformation($"Creating {manifestFilename}");
+            _messageService.Add(new MessageRecord(MessageLevel.INFO, $"Creating {manifestFilename}"));
             
             StringBuilder sb  = new StringBuilder();
             var fileEntries = GetRootFiles(bagRoot);

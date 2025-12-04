@@ -1,6 +1,7 @@
 ﻿using bagit.net.domain;
 using bagit.net.interfaces;
 using Microsoft.Extensions.DependencyInjection;
+using Xunit.Abstractions;
 
 namespace bagit.net.tests.integration
 {
@@ -10,13 +11,18 @@ namespace bagit.net.tests.integration
         private readonly string _testDir;
         private readonly ServiceProvider _serviceProvider;
         private readonly ICreationService _creationService;
+        private readonly IMessageService _messageService;
+        private readonly ITestOutputHelper _output;
 
-        public TestCreateBag()
+        public TestCreateBag(ITestOutputHelper output)
         {
+            _tmpDir = Path.GetTempPath();   
             _tmpDir = TestHelpers.PrepareTempTestData();
             _testDir = Path.Combine(_tmpDir, "test-bag");
             _serviceProvider = CreateServiceConfigurator.BuildServiceProvider();
             _creationService = _serviceProvider.GetRequiredService<ICreationService>();
+            _messageService = _serviceProvider.GetRequiredService<IMessageService>();
+            _output = output;
         }
 
         public void Dispose()
@@ -41,6 +47,19 @@ namespace bagit.net.tests.integration
         {
             Assert.Throws<DirectoryNotFoundException>(() => _creationService.CreateBag(Path.Combine(_tmpDir, "Foo"), ChecksumAlgorithm.MD5));
             Assert.Throws<ArgumentNullException>(() => _creationService.CreateBag(null!, ChecksumAlgorithm.MD5));
+        }
+
+        [Fact]
+        [Trait("Category", "Integration")]
+        public void Create_Bag()
+        {
+            _creationService.CreateBag(Path.Combine(_tmpDir, "dir"), ChecksumAlgorithm.MD5);
+            var messages = _messageService.GetAll();
+            Assert.False(MessageHelpers.HasError(messages));
+            foreach(var message in messages)
+            {
+                _output.WriteLine($"{message}");
+            }
         }
 
     }

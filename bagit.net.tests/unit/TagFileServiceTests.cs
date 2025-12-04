@@ -1,5 +1,4 @@
-﻿using bagit.net.domain;
-using bagit.net.interfaces;
+﻿using bagit.net.interfaces;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace bagit.net.tests.unit
@@ -105,17 +104,3 @@ namespace bagit.net.tests.unit
 
     }
 }
-
-
-
-/*
- * 
-        [Fact]
-        [Trait("Category", "Integration")]
-        public void Test_Has_Valid_BagitTXT()
-        {
-            var _validBag = Path.Combine(_tmpDir, "valid-bag");
-            var ex = Record.Exception(() => _validator.Has_Valid_BagitTXT(_validBag));
-            Assert.Null(ex);
-        }
-*/
