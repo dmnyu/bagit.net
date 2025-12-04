@@ -10,6 +10,7 @@ namespace bagit.net.services
         readonly ITagFileService _tagFileService;
         readonly IManifestService _manifestService;
         readonly IMessageService _messageService;
+        public const string ManifestPattern = @"manifest-(md5|sha1|sha256|sha384|sha512).txt";
         public ValidationService(ITagFileService tagFileService, IManifestService manifestService, IMessageService messageService) 
         {
             _tagFileService = tagFileService;
@@ -37,7 +38,7 @@ namespace bagit.net.services
             }
 
             //check that at least one manifest exists
-            var manifestRegex = new Regex(ServiceHelpers.ManifestPattern);
+            var manifestRegex = new Regex(ManifestPattern);
             var tagmanifests = new List<string>();
 
             var hasManifest = false;

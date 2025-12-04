@@ -15,7 +15,10 @@ namespace bagit.net.services
         private readonly IMessageService _messageService;
         private static readonly Regex _manifestRegex = new(@"^(manifest|tagmanifest)-(md5|sha1|sha256|sha384|sha512)\.txt$", RegexOptions.Compiled);
         private static readonly Regex _nonCREndingsRegex = new(@"\r(?!\n)");
-
+        public const string ChecksumPattern = @"-(md5|sha1|sha256|sha384|sha512)\b";
+        public const string TagmanifestPattern = @"tagmanifest-(md5|sha1|sha256|sha384|sha512).txt";
+       
+    
         public ManifestService(ILogger<ManifestService> logger, IChecksumService checksumService, IMessageService messageService)
         {
 
@@ -133,7 +136,7 @@ namespace bagit.net.services
 
         internal ChecksumAlgorithm GetManifestAlgorithm(string manifestFilename)
         {
-            Match match = Regex.Match(manifestFilename, ServiceHelpers.ChecksumPattern, RegexOptions.IgnoreCase);
+            Match match = Regex.Match(manifestFilename, ChecksumPattern, RegexOptions.IgnoreCase);
             if (!match.Success)
                 throw new InvalidDataException($"Cannot determine checksum algorithm from manifest filename '{manifestFilename}'.");
 
