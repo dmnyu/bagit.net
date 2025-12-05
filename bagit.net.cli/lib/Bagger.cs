@@ -9,15 +9,18 @@ namespace bagit.net.cli.lib
     {
         readonly ICreationService _creationService;
         readonly ILogger _logger;
+        readonly IMessageService _messageService;
             
-        public Bagger(ILogger<Bagger> logger, ICreationService creationService)
+        public Bagger(ILogger<Bagger> logger, ICreationService creationService, IMessageService messageService)
         {
             _logger = logger;
             _creationService = creationService;
+            _messageService = messageService;
         }
 
-        public int CreateBag(string? dirLocation, string? checkSumAlgorithm, string? logFile, CancellationToken cancellationToken)
+        public int CreateBag(string? dirLocation, string? checkSumAlgorithm, bool quiet, string? logFile, CancellationToken cancellationToken)
         {
+            _messageService.Add(new MessageRecord(MessageLevel.INFO, $"using bagit.net v{Bagit.VERSION}"));
             if (string.IsNullOrWhiteSpace(dirLocation))
             {
                 AnsiConsole.MarkupLine("[red][bold]ERROR:[/][/]");
@@ -61,6 +64,8 @@ namespace bagit.net.cli.lib
             }
 
             _creationService.CreateBag(bagPath, algorithm);
+            var messages = _messageService.GetAll();
+            Logging.LogEvents(messages, quiet, _logger);
             return 0;
         }
     }

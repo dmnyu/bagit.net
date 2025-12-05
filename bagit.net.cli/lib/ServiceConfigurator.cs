@@ -22,7 +22,7 @@ namespace bagit.net.cli.lib
             }
             else
             {
-                loggerConfig = loggerConfig.WriteTo.File(logFile);
+                loggerConfig = loggerConfig.WriteTo.File(new ShortLevelFormatter(), logFile);
             }
 
             Log.Logger = loggerConfig.CreateLogger();

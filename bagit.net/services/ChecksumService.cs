@@ -10,11 +10,12 @@ namespace bagit.net.services
     public class ChecksumService : IChecksumService
     {
         private readonly IMessageService _messageService;
-
+        public readonly IEnumerable<string> supportedAlgorithmCodes = new List<string>() { "md5", "sha1", "sha256", "sha384", "sha512" };
         public ChecksumService(IMessageService messageService)
         {
             _messageService = messageService;
         }
+
         public string CalculateChecksum(string? filePath, ChecksumAlgorithm algorithm)
         {
             ArgumentNullException.ThrowIfNull(filePath);
@@ -30,7 +31,7 @@ namespace bagit.net.services
                 ChecksumAlgorithm.SHA256 => SHA256.Create(),
                 ChecksumAlgorithm.SHA384 => SHA384.Create(),
                 ChecksumAlgorithm.SHA512 => SHA512.Create(),
-                _ => throw new ArgumentException("checksum algorithm {algorithm} is not supported")
+                _ => throw new ArgumentOutOfRangeException(nameof(algorithm))
             };
 
             using (hashAlgorithm)
@@ -43,8 +44,10 @@ namespace bagit.net.services
 
         public bool CompareChecksum(string? path, string checksum, ChecksumAlgorithm algorithm)
         {
-            var cleanedChecksum = CleanChecksum(checksum, algorithm);
-            if (cleanedChecksum is null)
+            bool isValid;
+            string? cleanedChecksum;    
+            (isValid, cleanedChecksum) = CleanChecksum(checksum, algorithm);
+            if(!isValid)
                 return false;
 
             var calculatedMD5 = CalculateChecksum(path, algorithm);
@@ -65,11 +68,12 @@ namespace bagit.net.services
             };
         }
 
-        private string CleanChecksum(string checksum, ChecksumAlgorithm algorithm)
+        private (bool, string?) CleanChecksum(string checksum, ChecksumAlgorithm algorithm)
         {
-            if (string.IsNullOrWhiteSpace(checksum))
-                throw new ArgumentNullException("the checksum passed is blank or null");
-
+            if (string.IsNullOrWhiteSpace(checksum)) {
+                _messageService.Add(new MessageRecord(MessageLevel.ERROR, "the checksum passed is blank or null"));
+                return (false, null);
+            }
 
             checksum = checksum.Trim();
 
@@ -87,9 +91,12 @@ namespace bagit.net.services
             };
 
             if (expectedLen > 0 && checksum.Length != expectedLen)
-                throw new ArgumentException($"the specified algorithm size for {algorithm} and the checksum size do not match.");
+            {
+                _messageService.Add(new MessageRecord(MessageLevel.ERROR, $"the specified algorithm size for {algorithm} and the checksum size do not match."));
+                return (false, null);
+            }
 
-            return checksum;
+            return (true, checksum);
         }
     }
 

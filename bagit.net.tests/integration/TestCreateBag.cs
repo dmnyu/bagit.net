@@ -45,8 +45,11 @@ namespace bagit.net.tests.integration
         [Trait("Category", "Integration")]
         public void CreateBag_Throws_On_Invalid_Directories()
         {
-            Assert.Throws<DirectoryNotFoundException>(() => _creationService.CreateBag(Path.Combine(_tmpDir, "Foo"), ChecksumAlgorithm.MD5));
-            Assert.Throws<ArgumentNullException>(() => _creationService.CreateBag(null!, ChecksumAlgorithm.MD5));
+            _creationService.CreateBag(Path.Combine(_tmpDir, "Foo"), ChecksumAlgorithm.MD5);
+            var messages = _messageService.GetAll();
+            Assert.True(MessageHelpers.HasError(messages));
+            foreach (var message in messages)
+                _output.WriteLine($"{message}");
         }
 
         [Fact]
@@ -57,9 +60,7 @@ namespace bagit.net.tests.integration
             var messages = _messageService.GetAll();
             Assert.False(MessageHelpers.HasError(messages));
             foreach(var message in messages)
-            {
                 _output.WriteLine($"{message}");
-            }
         }
 
     }

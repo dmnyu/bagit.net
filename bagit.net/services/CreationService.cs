@@ -1,6 +1,5 @@
 ﻿using bagit.net.domain;
 using bagit.net.interfaces;
-using Microsoft.Extensions.Logging;
 
 namespace bagit.net.services
 {
@@ -27,7 +26,7 @@ namespace bagit.net.services
             }
             if (!Directory.Exists(dirLocation))
             {
-                _messageService.Add(new MessageRecord(MessageLevel.ERROR, "{dirLocation)} does not exist"));
+                _messageService.Add(new MessageRecord(MessageLevel.ERROR, $"{dirLocation} does not exist"));
                 return;
             }
 

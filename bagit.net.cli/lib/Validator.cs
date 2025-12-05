@@ -17,9 +17,9 @@ namespace bagit.net.cli.lib
             _messageService = messageService;
         }
 
-        public int ValidateBag(string? bagPath, bool fast, bool complete, string? logFile, CancellationToken cancellationToken)
+        public int ValidateBag(string? bagPath, bool fast, bool complete, bool quiet, string? logFile, CancellationToken cancellationToken)
         {
-            _logger.LogInformation($"using bagit.net v{Bagit.VERSION}");
+            _messageService.Add(new MessageRecord(MessageLevel.INFO, $"using bagit.net v{Bagit.VERSION}"));
 
             if (fast && complete)
             {
@@ -54,40 +54,38 @@ namespace bagit.net.cli.lib
                     AnsiConsole.MarkupLine($"Logging to {logFile}");
                 }
 
+                List<MessageRecord> messages;
+
                 if (complete)
                 {
                     _validationService.ValidateBagCompleteness(bagPath);
-                    var messages = _messageService.GetAll();
-                    messages.ToList().ForEach(message => Logging.LogEvent(message, _logger));
+                    messages = _messageService.GetAll().ToList();
+
                     if(MessageHelpers.HasError(messages))
                     {
-                        Logging.LogEvent(new MessageRecord(MessageLevel.ERROR, $"{bagPath} is not complete."), _logger);
+                       messages.Add(new MessageRecord(MessageLevel.ERROR, $"{bagPath} is not complete."));
                     } else
                     {
-                        Logging.LogEvent(new MessageRecord(MessageLevel.INFO, $"{bagPath} is complete."), _logger);
+                        messages.Add(new MessageRecord(MessageLevel.INFO, $"{bagPath} is complete."));
                     }
-
-                        return 0; // Return non-zero to indicate failure
                 }
                 else if (fast)
                 {
                     _validationService.ValidateBagFast(bagPath);
-                    var messages = _messageService.GetAll();
-                    messages.ToList().ForEach(message => Logging.LogEvent(message, _logger));
-                    return 0;
+                    messages = _messageService.GetAll().ToList(); 
                 }
                 else
                 {
                     _validationService.ValidateBag(bagPath);
-                    var messages = _messageService.GetAll();
-                    messages.ToList().ForEach(message => Logging.LogEvent(message, _logger));
+                    messages = _messageService.GetAll().ToList();
                     if(!MessageHelpers.HasError(messages))
                     {
-                        Logging.LogEvent(new MessageRecord(MessageLevel.INFO, "bag is valid"), _logger);    
+                       messages.Add(new MessageRecord(MessageLevel.INFO, "bag is valid"));    
                     }
-                    return 0;
-
                 }
+                Logging.LogEvents(messages, quiet, _logger);
+                return 0;
+
             } catch (Exception ex) {
                 _logger.LogCritical(ex, "Failed to validate bag at {Path}", bagPath);
                 AnsiConsole.MarkupLine("[red][bold]ERROR:[/][/]");

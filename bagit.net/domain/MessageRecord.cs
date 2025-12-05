@@ -1,6 +1,4 @@
-﻿using System.Diagnostics;
-
-namespace bagit.net.domain
+﻿namespace bagit.net.domain
 {
     public enum MessageLevel
     {

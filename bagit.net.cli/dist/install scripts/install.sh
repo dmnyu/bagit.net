@@ -3,7 +3,7 @@
 # Usage: sudo ./install.sh
 
 BINARY_NAME="bagit.net"
-TARGET_DIR="/usr/local/bin"
+TARGET_DIR="$HOME/bin"
 TARGET_PATH="$TARGET_DIR/bagit.net"
 
 # Check if the binary exists in the current directory
