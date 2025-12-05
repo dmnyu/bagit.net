@@ -120,3 +120,11 @@ copyFile installScriptSource installScriptDest
 zipDirectory distPath zipFilePath
 
 log "Build completed successfully."
+
+//install if there is a --install flag
+let args = fsi.CommandLineArgs |> Array.skip 1  // skip the script name
+if args |> Array.exists ((=) "--install") then
+    log "Installing binary"
+    let binPath = $"bagit.net.cli\\dist\\{version}\\windows\\bagit.net"
+    runProcess "powershell.exe" "-ExecutionPolicy Bypass -File .\\install.ps1" binPath
+    log "bin installed successfully"

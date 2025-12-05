@@ -22,7 +22,7 @@ namespace bagit.net.cli.lib
             }
             else
             {
-                loggerConfig = loggerConfig.WriteTo.File(logFile);
+                loggerConfig = loggerConfig.WriteTo.File(new ShortLevelFormatter(), logFile);
             }
 
             Log.Logger = loggerConfig.CreateLogger();
@@ -35,6 +35,7 @@ namespace bagit.net.cli.lib
             services.AddSingleton<IFileManagerService, FileManagerService>();
             services.AddSingleton<IValidationService, ValidationService>();
             services.AddSingleton<ICreationService, CreationService>();
+            services.AddSingleton<IMessageService, MessageService>();
             services.AddTransient<TWorker>();
             return services.BuildServiceProvider();
         }

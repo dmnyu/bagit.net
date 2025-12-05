@@ -1,4 +1,5 @@
-﻿using bagit.net.interfaces;
+﻿using bagit.net.domain;
+using bagit.net.interfaces;
 using Microsoft.Extensions.Logging;
 using System.Text;
 
@@ -6,11 +7,11 @@ namespace bagit.net.services
 {
     public class FileManagerService : IFileManagerService
     {
-        private readonly ILogger _logger;
+        private readonly IMessageService _messageService;
 
-        public FileManagerService(ILogger<FileManagerService> logger)
+        public FileManagerService(IMessageService messageService)
         {
-            _logger = logger;
+            _messageService = messageService;
         }
         public void CreateDirectory(string path)
         {
@@ -71,7 +72,7 @@ namespace bagit.net.services
             {
                 var filename = Path.GetFileName(file);
                 var dest = Path.Combine(destinationPath, filename);
-                _logger.LogInformation("Moving {filename} to {dest}", filename, dest);
+                _messageService.Add(new MessageRecord(MessageLevel.INFO, $"Moving {filename} to {dest}"));
                 File.Move(file, dest);
             }
 
@@ -82,7 +83,7 @@ namespace bagit.net.services
 
                 var dirName = Path.GetFileName(dir);
                 var destDir = Path.Combine(destinationPath, dirName);
-                _logger.LogInformation("Moving {dirName} to {destDir}", dirName, destDir);
+                _messageService.Add(new MessageRecord(MessageLevel.INFO, $"Moving {dirName} to {destDir}"));
                 MoveDirectory(dir, destDir);
             }
         }

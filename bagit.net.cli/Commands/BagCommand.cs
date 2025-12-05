@@ -18,6 +18,9 @@ class BagCommand : Command<BagCommand.Settings>
         [CommandOption("--log")]
         public string? logFile { get; set; }
 
+        [CommandOption("--quiet")]
+        public bool Quiet { get; set; }
+
         [CommandArgument(0, "[directory]")]
         [Description("Path to the directory to bag.")]
         public string? Directory { get; set; }
@@ -30,7 +33,7 @@ class BagCommand : Command<BagCommand.Settings>
         {
             var serviceProvider = ServiceConfigurator.BuildServiceProvider<Bagger>(settings.logFile);
             var bagger = serviceProvider.GetRequiredService<Bagger>();
-            bagger.CreateBag(settings.Directory, settings.Algorithm, settings.logFile, cancellationToken);
+            bagger.CreateBag(settings.Directory, settings.Algorithm, settings.Quiet, settings.logFile, cancellationToken);
         }
         catch (Exception ex) {
             AnsiConsole.MarkupLine($"[red][bold]ERROR:[/] {ex.Message}");

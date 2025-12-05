@@ -7,11 +7,13 @@ namespace bagit.net.tests.unit
     {
         readonly ServiceProvider _serviceProvider;
         readonly ITagFileService _tagFileService;
+        readonly IMessageService _messageService;
         readonly string _tmpDir;
         public TagFileServiceTests()
         {
             _serviceProvider = TagFileServiceConfigurator.BuildServiceProvider();
             _tagFileService = _serviceProvider.GetRequiredService<ITagFileService>();
+            _messageService = _serviceProvider.GetRequiredService<IMessageService>();
             _tmpDir = TestHelpers.PrepareTempTestData();
         }
 
@@ -69,8 +71,8 @@ namespace bagit.net.tests.unit
         public void Test_Validate_BagitTXT()
         {
             var validBag = Path.Combine(_tmpDir, "valid-bag");
-            var ex = Record.Exception(() => _tagFileService.ValidateBagitTXT(validBag));
-            Assert.Null(ex);
+            _tagFileService.ValidateBagitTXT(validBag);
+            Assert.Empty(_messageService.GetAll());
         }
 
         [Fact]
@@ -86,7 +88,8 @@ namespace bagit.net.tests.unit
         public void Test_Validate_BagInfo()
         {
             var validBag = Path.Combine(_tmpDir, "valid-bag");
-            Assert.True(_tagFileService.ValidateBagInfo(Path.Combine(validBag, "bag-info.txt")));
+            _tagFileService.ValidateBagInfo(Path.Combine(validBag, "bag-info.txt"));
+            Assert.Empty(_messageService.GetAll());
         }
 
         [Fact]
@@ -101,17 +104,3 @@ namespace bagit.net.tests.unit
 
     }
 }
-
-
-
-/*
- * 
-        [Fact]
-        [Trait("Category", "Integration")]
-        public void Test_Has_Valid_BagitTXT()
-        {
-            var _validBag = Path.Combine(_tmpDir, "valid-bag");
-            var ex = Record.Exception(() => _validator.Has_Valid_BagitTXT(_validBag));
-            Assert.Null(ex);
-        }
-*/

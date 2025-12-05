@@ -9,13 +9,14 @@ namespace bagit.net.services
 {
     public class TagFileService : ITagFileService
     {
-        private readonly ILogger _logger;
         private readonly IFileManagerService _fileManagerService;
+        private readonly IMessageService _messageService;
+        private static readonly Regex _oxumPattern = new(@"^\d+\.\d+$", RegexOptions.Compiled);
 
-        public TagFileService(ILogger<TagFileService> logger, IFileManagerService fileManagerService)
+        public TagFileService(IFileManagerService fileManagerService, IMessageService messageService)
         {
-            _logger = logger;
             _fileManagerService = fileManagerService;
+            _messageService = messageService;
         }
 
         public Dictionary<string, string> GetTagFileAsDict(string tagFilePath)
@@ -57,8 +58,8 @@ namespace bagit.net.services
             var bagitTxt = Path.Combine(bagRoot, "bagit.txt");
             if (!System.Text.RegularExpressions.Regex.IsMatch(Bagit.BAGIT_VERSION, @"^\d+\.\d+$"))
             {
-                _logger.LogCritical("Invalid BagIt version: {b}. Must be in 'major.minor' format.", Bagit.BAGIT_VERSION);
-                throw new InvalidOperationException($"Invalid BagIt version: {Bagit.BAGIT_VERSION}. Must be in 'major.minor' format.");
+                _messageService.Add(new MessageRecord(MessageLevel.ERROR, $"Invalid BagIt version: {Bagit.BAGIT_VERSION}. Must be in 'major.minor' format."));
+                return;
             }
             var content = $"BagIt-Version: {Bagit.BAGIT_VERSION}\nTag-File-Character-Encoding: UTF-8\n";
             File.WriteAllText(bagitTxt, content, new UTF8Encoding(encoderShouldEmitUTF8Identifier: false));
@@ -101,21 +102,31 @@ namespace bagit.net.services
         {
             var bagitPath = Path.Combine(bagRoot, "bagit.txt");
             if (!File.Exists(bagitPath))
-                throw new FileNotFoundException("bagit.txt is missing from the bag root.", bagitPath);
-
+            {
+                _messageService.Add(new MessageRecord(MessageLevel.ERROR, $"bagit.txt is missing from {bagRoot}."));
+                return;
+            }
             var tags = GetTagFileAsDict(bagitPath);
 
             if (!tags.TryGetValue("BagIt-Version", out var version))
-                throw new FormatException("BagIt-Version key is missing in bagit.txt.");
-
-            if (!System.Text.RegularExpressions.Regex.IsMatch(version, @"^\d+\.\d+$"))
-                throw new FormatException($"Invalid BagIt-Version format: {version}");
+            {
+                _messageService.Add(new MessageRecord(MessageLevel.WARNING, ("BagIt-Version key is missing in bagit.txt.")));
+            } else {
+                if (!System.Text.RegularExpressions.Regex.IsMatch(version, @"^\d+\.\d+$"))
+                    _messageService.Add(new MessageRecord(MessageLevel.WARNING, ($"Invalid BagIt-Version format: {version}")));
+            }
 
             if (!tags.TryGetValue("Tag-File-Character-Encoding", out var encoding))
-                throw new FormatException("Tag-File-Character-Encoding key is missing in bagit.txt.");
-
-            if (!string.Equals(encoding, "UTF-8", StringComparison.OrdinalIgnoreCase))
-                throw new FormatException($"Unsupported Tag-File-Character-Encoding: {encoding}");
+            {
+                _messageService.Add(new MessageRecord(MessageLevel.ERROR, "Tag-File-Character-Encoding key is missing in bagit.txt."));
+            }
+            else
+            {
+                if (!string.Equals(encoding, "UTF-8", StringComparison.OrdinalIgnoreCase))
+                {
+                    _messageService.Add(new MessageRecord(MessageLevel.ERROR, $"Unsupported Tag-File-Character-Encoding: {encoding}"));
+                }
+            }
         }
 
         public bool HasBagInfo(string bagRoot)
@@ -136,74 +147,84 @@ namespace bagit.net.services
             return true;
         }
 
-        public bool ValidateBagInfo(string bagInfo)
+        public void ValidateBagInfo(string bagInfoPath)
         {
-            
             //check that it is valid UTF8
-            if(!_fileManagerService.IsValidUTF8(bagInfo))
-                return false;
+            if (!_fileManagerService.IsValidUTF8(bagInfoPath))
+                _messageService.Add(new MessageRecord(MessageLevel.ERROR, "bag-info.txt is not valid UTF-8 encoded text"));
 
             //check that it does not contain a BOM
-            if (_fileManagerService.HasBOM(bagInfo))
-                return false;
+            if (_fileManagerService.HasBOM(bagInfoPath))
+                _messageService.Add(new MessageRecord(MessageLevel.WARNING, "bag-info.txt contains BOM byte sequence"));
 
-            //get the dictionary as tags
-            var _tags = GetTags(bagInfo);
+            //check that the tag file does not contain invalid control characters
+            ScanFileForInvalidControlChars(bagInfoPath);
 
-            foreach( var tag in _tags)
-            {
+            //validate tags
+            ValidateTags(bagInfoPath);
+        }
 
-                if (ContainsControlCharacters(tag.Key))
-                {
-                    throw new InvalidDataException($"Invalid Key: {tag.Key}");
-                }
-            }
+        public void ValidateTags(string bagInfoPath)
+        {
+            var _tags = GetTags(bagInfoPath);
 
             //validate the oxum
             if (_tags.TryGetValue("Payload-Oxum", out var payloadOxum))
             {
                 // More than one = invalid
                 if (payloadOxum.Count > 1)
-                    return false;
-
-                // if there is a oxum, ensure it matches 
-                var oxum = payloadOxum[0];
-                if (string.IsNullOrEmpty(oxum)) {
-                    return false;
+                    _messageService.Add(new MessageRecord(MessageLevel.ERROR, "bag-info.txt contains multiple payload oxum tags, cannot validate"));
+                else
+                {
+                    // if there is a oxum, ensure it matches 
+                    var oxum = payloadOxum[0];
+                    if (string.IsNullOrEmpty(oxum))
+                        _messageService.Add(new MessageRecord(MessageLevel.WARNING, "bag-info.txt does not contain a payload-oxum"));
+                    else
+                    {
+                        if (!_oxumPattern.IsMatch(oxum))
+                            _messageService.Add(new MessageRecord(MessageLevel.ERROR, $"bag-info.txt payload-oxum `{oxum}` value is invalid"));
+                        else
+                        {
+                            var bagRoot = Path.GetDirectoryName(bagInfoPath);
+                            var calculatedOxum = CalculateOxum(bagRoot!);
+                            //validate the oxum
+                            if (oxum != calculatedOxum)
+                                _messageService.Add(new MessageRecord(MessageLevel.ERROR, $"payload oxum is invalid, stored: {oxum} calculated: {calculatedOxum}"));
+                        }
+                    }
                 }
-                if (!Regex.IsMatch(oxum, @"^\d+\.\d+$"))
-                    return false;
             }
 
             if (_tags.TryGetValue("Bag-Software-Agent", out var agent) && agent.Count > 1)
-                return false;
-            
+                _messageService.Add(new MessageRecord(MessageLevel.WARNING, $"bag-info.txt contains multiple Bag-Software-Agent tags"));
+
             if (_tags.TryGetValue("Bagging-Date", out var baggingDate))
             {
 
-                if(baggingDate.Count > 1)
+                if (baggingDate.Count > 1)
+                    _messageService.Add(new MessageRecord(MessageLevel.WARNING, $"bag-info.txt contains multiple Bagging-Date tags"));
+                else
                 {
-                    return false;
-                }
+                    var date = baggingDate[0];
+                    if (string.IsNullOrEmpty(date))
+                        _messageService.Add(new MessageRecord(MessageLevel.WARNING, $"bag-info.txt does not contain a Bagging-Date tag"));
+                    else
+                    {
 
-                var date = baggingDate[0];
-                if (string.IsNullOrEmpty(date)) 
-                {
-                    return false;
-                }
-
-                if (!DateTime.TryParseExact(
-                    date,
-                    "yyyy-MM-dd",
-                    CultureInfo.InvariantCulture,
-                    DateTimeStyles.None,
-                    out _))
-                {
-                    return false;
+                        if (!DateTime.TryParseExact(
+                            date,
+                            "yyyy-MM-dd",
+                            CultureInfo.InvariantCulture,
+                            DateTimeStyles.None,
+                            out _))
+                        {
+                            _messageService.Add(new MessageRecord(MessageLevel.ERROR, $"bag-info.txt Bagging-Date must be in YYYY-MM-DD format (ISO 8601 date)"));
+                        }
+                    }
                 }
             }
-
-            return true;
+            
         }
 
         public Dictionary<string, List<string>> GetTags(string tagFilePath)
@@ -242,14 +263,24 @@ namespace bagit.net.services
             return _tags;
         }
 
-        bool ContainsControlCharacters(string s)
+        public void ScanFileForInvalidControlChars(string path)
         {
-            foreach (char c in s)
+            int lineNum = 0;
+
+            foreach (var line in File.ReadLines(path))
             {
-                if (char.IsControl(c))
-                    return true;
+                lineNum++;
+                foreach (var ch in line)
+                {
+                    if (char.IsControl(ch) && ch != '\r' && ch != '\n' && ch != '\t')
+                    {
+                       _messageService.Add(new MessageRecord(
+                            MessageLevel.ERROR,
+                            $"Control character 0x{(int)ch:X2} found on line {lineNum} in {path}"
+                        ));
+                    }
+                }
             }
-            return false;
         }
     }
 }

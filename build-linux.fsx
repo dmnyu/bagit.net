@@ -119,5 +119,13 @@ copyFile installScriptSource installScriptDest
 let tgFilePath = Path.Combine(archivePath, $"bagit.net.cli-{version}-linux-x64.tgz")
 createTgz distPath tgFilePath
 
-
 log "Build completed successfully."
+
+//install if there is a --install flag
+let args = fsi.CommandLineArgs |> Array.skip 1  // skip the script name
+if args |> Array.exists ((=) "--install") then
+    log "Installing binary"
+    let relativeBinPath = $"./bagit.net.cli/dist/{version}/linux/bagit.net"
+    let binPath = Path.GetFullPath(relativeBinPath)
+    runProcess "bash" "install.sh" binPath
+    log "bin installed successfully"

@@ -9,14 +9,17 @@ namespace bagit.net.cli.lib
     {
         private readonly ILogger _logger;
         private readonly IValidationService _validationService;
-        public Validator(ILogger<Validator> logger, IValidationService validationService)
+        private readonly IMessageService _messageService;
+        public Validator(ILogger<Validator> logger, IValidationService validationService, IMessageService messageService)
         {
             _logger = logger;
             _validationService = validationService;
+            _messageService = messageService;
         }
-        public int ValidateBag(string? bagPath, bool fast, bool complete, string? logFile, CancellationToken cancellationToken)
+
+        public int ValidateBag(string? bagPath, bool fast, bool complete, bool quiet, string? logFile, CancellationToken cancellationToken)
         {
-            _logger.LogInformation($"Using bagit.net v{Bagit.VERSION}");
+            _messageService.Add(new MessageRecord(MessageLevel.INFO, $"using bagit.net v{Bagit.VERSION}"));
 
             if (fast && complete)
             {
@@ -25,7 +28,7 @@ namespace bagit.net.cli.lib
                 return 1;
             }
 
-                try
+            try
             {
 
                 if (string.IsNullOrWhiteSpace(bagPath))
@@ -51,23 +54,38 @@ namespace bagit.net.cli.lib
                     AnsiConsole.MarkupLine($"Logging to {logFile}");
                 }
 
+                List<MessageRecord> messages;
+
                 if (complete)
                 {
-                    _validationService.ValidateCompleteness(bagPath);
-                    _logger.LogInformation($"{bagPath} is complete according to manifests files");
-                    return 0;
-                }
+                    _validationService.ValidateBagCompleteness(bagPath);
+                    messages = _messageService.GetAll().ToList();
 
-                if (fast)
-                {  
+                    if(MessageHelpers.HasError(messages))
+                    {
+                       messages.Add(new MessageRecord(MessageLevel.ERROR, $"{bagPath} is not complete."));
+                    } else
+                    {
+                        messages.Add(new MessageRecord(MessageLevel.INFO, $"{bagPath} is complete."));
+                    }
+                }
+                else if (fast)
+                {
                     _validationService.ValidateBagFast(bagPath);
-                    _logger.LogInformation($"{bagPath} is valid according to Payload-Oxum");
-                    return 0;
+                    messages = _messageService.GetAll().ToList(); 
                 }
-
-                _validationService.ValidateBag(bagPath);
-                _logger.LogInformation($"{bagPath} is valid");
+                else
+                {
+                    _validationService.ValidateBag(bagPath);
+                    messages = _messageService.GetAll().ToList();
+                    if(!MessageHelpers.HasError(messages))
+                    {
+                       messages.Add(new MessageRecord(MessageLevel.INFO, "bag is valid"));    
+                    }
+                }
+                Logging.LogEvents(messages, quiet, _logger);
                 return 0;
+
             } catch (Exception ex) {
                 _logger.LogCritical(ex, "Failed to validate bag at {Path}", bagPath);
                 AnsiConsole.MarkupLine("[red][bold]ERROR:[/][/]");

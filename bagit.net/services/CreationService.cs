@@ -1,68 +1,50 @@
 ﻿using bagit.net.domain;
 using bagit.net.interfaces;
-using Microsoft.Extensions.Logging;
 
 namespace bagit.net.services
 {
     public class CreationService : ICreationService
     {
-        readonly ILogger _logger;
+        readonly IMessageService _messageService;
         readonly ITagFileService _tagFileService;
         readonly IManifestService _manifestService;
         readonly IFileManagerService _fileManagerService;
-        public CreationService(ILogger<CreationService> logger, ITagFileService tagFileService, IManifestService manifestService, IFileManagerService fileManagerService)
+        public CreationService(IMessageService messageService, ITagFileService tagFileService, IManifestService manifestService, IFileManagerService fileManagerService)
         {
-            _logger = logger;
+            _messageService = messageService;
             _tagFileService = tagFileService;
             _manifestService = manifestService;
             _fileManagerService = fileManagerService;
         }
         public void CreateBag(string dirLocation, ChecksumAlgorithm algorithm)
         {
-            _logger.LogInformation($"Using bagit.net v{Bagit.VERSION}");
+            _messageService.Add(new MessageRecord(MessageLevel.INFO, $"Using bagit.net v{Bagit.VERSION}"));
             if (dirLocation == null)
             {
-                _logger.LogCritical("The path to a directory cannot be null");
-                throw new ArgumentNullException(nameof(dirLocation), "The path to a directory cannot be null");
+                _messageService.Add(new MessageRecord(MessageLevel.ERROR, "The path to a directory cannot be null"));
+                return;
             }
             if (!Directory.Exists(dirLocation))
             {
-                _logger.LogCritical("{path} does not exist", dirLocation);
-                throw new DirectoryNotFoundException($"{dirLocation} does not exist");
+                _messageService.Add(new MessageRecord(MessageLevel.ERROR, $"{dirLocation} does not exist"));
+                return;
             }
 
-            _logger.LogInformation("Creating bag for directory {path}", dirLocation);
+            _messageService.Add(new MessageRecord(MessageLevel.INFO, $"Creating bag for directory {dirLocation}"));
 
             var dataDir = Path.Combine(dirLocation, "data");
-            try
-            {
-                _logger.LogInformation($"Creating data directory");
-                var tempDataDir = _fileManagerService.CreateTempDirectory(dirLocation);
-                _fileManagerService.MoveContentsOfDirectory(dirLocation, tempDataDir);
-                _logger.LogInformation("Moving {tempDataDir} to data", tempDataDir);
-                _fileManagerService.MoveDirectory(tempDataDir, Path.Combine(dirLocation, "data"));
-                _manifestService.CreatePayloadManifest(dirLocation, algorithm);
-                _logger.LogInformation("Creating bagit.txt");
-                _tagFileService.CreateBagItTXT(dirLocation);
-                _logger.LogInformation("Creating bag-info.txt");
-                _tagFileService.CreateBagInfo(dirLocation);
-                _manifestService.CreateTagManifestFile(dirLocation, algorithm);
-            }
-            catch (IOException ex)
-            {
-                _logger.LogCritical(ex, "Failed to create bag at {Path}", dirLocation);
-                throw new InvalidOperationException($"Failed to create bag at {dirLocation}", ex);
-            }
-            catch (UnauthorizedAccessException ex)
-            {
-                _logger.LogCritical(ex, "Access denied when creating bag at {path}", dirLocation);
-                throw new InvalidOperationException($"Access denied when creating bag at {dirLocation}", ex);
-            }
-            catch (Exception ex)
-            {
-                _logger.LogCritical(ex, "Unknown exception while creating bag at {path}", dirLocation);
-                throw new InvalidOperationException($"Unknown exception while creating bag at {dirLocation}", ex);
-            }
+
+            _messageService.Add(new MessageRecord(MessageLevel.INFO, "Creating data directory"));
+            var tempDataDir = _fileManagerService.CreateTempDirectory(dirLocation);
+            _fileManagerService.MoveContentsOfDirectory(dirLocation, tempDataDir);
+            _messageService.Add(new MessageRecord(MessageLevel.INFO, $"Moving {tempDataDir} to data"));
+            _fileManagerService.MoveDirectory(tempDataDir, Path.Combine(dirLocation, "data"));
+            _manifestService.CreatePayloadManifest(dirLocation, algorithm);
+            _messageService.Add(new MessageRecord(MessageLevel.INFO, "Creating bagit.txt"));
+            _tagFileService.CreateBagItTXT(dirLocation);
+            _messageService.Add(new MessageRecord(MessageLevel.INFO, "Creating bag-info.txt"));
+            _tagFileService.CreateBagInfo(dirLocation);
+            _manifestService.CreateTagManifestFile(dirLocation, algorithm);
         }
     }
 }
