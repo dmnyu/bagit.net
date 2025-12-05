@@ -58,7 +58,7 @@ namespace bagit.net.services
             var bagitTxt = Path.Combine(bagRoot, "bagit.txt");
             if (!System.Text.RegularExpressions.Regex.IsMatch(Bagit.BAGIT_VERSION, @"^\d+\.\d+$"))
             {
-                _messageService.Add(new MessageRecord(MessageLevel.ERROR, ("Invalid BagIt version: {Bagit.BAGIT_VERSION}. Must be in 'major.minor' format.")));
+                _messageService.Add(new MessageRecord(MessageLevel.ERROR, $"Invalid BagIt version: {Bagit.BAGIT_VERSION}. Must be in 'major.minor' format."));
                 return;
             }
             var content = $"BagIt-Version: {Bagit.BAGIT_VERSION}\nTag-File-Character-Encoding: UTF-8\n";
