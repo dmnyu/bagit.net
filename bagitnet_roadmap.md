@@ -12,11 +12,11 @@ This roadmap outlines the planned feature development and release milestones for
 
 ---
 
-## **0.3.0 - Multiple Checksum Support**
+## **0.2.6 - Multiple Checksum Support**
 
 ---
 
-## **0.4.0 — Tag File Editing**
+## **0.2.7 — Tag File Editing**
 **Objective:** Add full support for reading, modifying, and generating tag files.
 
 **Features:**
@@ -33,7 +33,7 @@ This unlocks bagit.net as a metadata authoring and bag‑inspection tool.
 
 ---
 
-## **0.5.0 — Multithreaded Checksum Calculation**
+## **0.3.0 — Multithreaded Checksum Calculation**
 **Objective:** Improve performance of manifest generation using parallelism.
 
 **Features:**
@@ -48,7 +48,7 @@ This release focuses on speed and scalability, especially for large bags.
 
 ---
 
-## Future Considerations (Post‑0.4)
+## Future Considerations (Post‑0.3)
 These are ideas for after the 0.4.x line:
 - Bag repair tools (e.g., regenerate missing checksums).
 - Partial rehashing (only changed files).
