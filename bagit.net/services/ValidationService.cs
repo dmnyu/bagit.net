@@ -35,6 +35,7 @@ namespace bagit.net.services
             if (!Directory.Exists(Path.Combine(bagPath, "data"))) 
             {
                 _messageService.Add(new MessageRecord(MessageLevel.ERROR, $"data directory missing from bag root"));
+                return false;
             }
 
             //check that at least one manifest exists
