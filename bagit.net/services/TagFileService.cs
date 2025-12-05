@@ -114,10 +114,14 @@ namespace bagit.net.services
             }
 
             if (!tags.TryGetValue("Tag-File-Character-Encoding", out var encoding))
+            {
                 _messageService.Add(new MessageRecord(MessageLevel.ERROR, "Tag-File-Character-Encoding key is missing in bagit.txt."));
-
-            if (!string.Equals(encoding, "UTF-8", StringComparison.OrdinalIgnoreCase))
-                _messageService.Add(new MessageRecord(MessageLevel.ERROR, $"Unsupported Tag-File-Character-Encoding: {encoding}"));
+            }
+            else
+            {
+                if (!string.Equals(encoding, "UTF-8", StringComparison.OrdinalIgnoreCase))
+                    _messageService.Add(new MessageRecord(MessageLevel.ERROR, $"Unsupported Tag-File-Character-Encoding: {encoding}"));
+            }
         }
 
         public bool HasBagInfo(string bagRoot)
