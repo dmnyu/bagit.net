@@ -1,9 +1,12 @@
 ﻿using bagit.net.domain;
 
-public interface IMessageService
+namespace bagit.net.interfaces
 {
-    void Add(MessageRecord message);
-    void AddRange(IEnumerable<MessageRecord> records);
-    IReadOnlyList<MessageRecord> GetAll();
-    void Clear();
+    public interface IMessageService
+    {
+        void Add(MessageRecord message);
+        void AddRange(IEnumerable<MessageRecord> records);
+        IReadOnlyList<MessageRecord> GetAll();
+        void Clear();
+    }
 }
