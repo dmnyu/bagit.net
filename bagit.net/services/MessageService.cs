@@ -1,4 +1,5 @@
 ﻿using bagit.net.domain;
+using bagit.net.interfaces;
 
 namespace bagit.net.services
 {

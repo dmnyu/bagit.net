@@ -53,7 +53,7 @@ public static class Logging
                 logger.LogWarning(messageRecord.GetMessage());
                 break;
             }
-            default: throw new InvalidDataException("Uknown message level");
+            default: throw new InvalidDataException("Unknown message level");
         }
     }
 
