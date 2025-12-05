@@ -21,6 +21,7 @@ namespace bagit.net.services
             if (!File.Exists(filePath))
             {
                 _messageService.Add(new MessageRecord(MessageLevel.ERROR, $"{filePath} not found."));
+                return string.Empty;
             }
 
             HashAlgorithm hashAlgorithm = algorithm switch
