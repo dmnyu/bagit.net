@@ -102,7 +102,7 @@ namespace bagit.net.services
         {
             var bagitPath = Path.Combine(bagRoot, "bagit.txt");
             if (!File.Exists(bagitPath))
-                _messageService.Add(new MessageRecord(MessageLevel.ERROR, "bagit.txt is missing from {bagRoot}."));
+                _messageService.Add(new MessageRecord(MessageLevel.ERROR, $"bagit.txt is missing from {bagRoot}."));
             var tags = GetTagFileAsDict(bagitPath);
 
             if (!tags.TryGetValue("BagIt-Version", out var version))
