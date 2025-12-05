@@ -10,7 +10,6 @@ namespace bagit.net.services
     public class ChecksumService : IChecksumService
     {
         private readonly IMessageService _messageService;
-        public readonly IEnumerable<string> supportedAlgorithmCodes = new List<string>() { "md5", "sha1", "sha256", "sha384", "sha512" };
         public ChecksumService(IMessageService messageService)
         {
             _messageService = messageService;
