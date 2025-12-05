@@ -120,7 +120,9 @@ namespace bagit.net.services
             else
             {
                 if (!string.Equals(encoding, "UTF-8", StringComparison.OrdinalIgnoreCase))
+                {
                     _messageService.Add(new MessageRecord(MessageLevel.ERROR, $"Unsupported Tag-File-Character-Encoding: {encoding}"));
+                }
             }
         }
 
