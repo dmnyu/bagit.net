@@ -16,7 +16,6 @@ namespace bagit.net.tests.integration
 
         public TestCreateBag(ITestOutputHelper output)
         {
-            _tmpDir = Path.GetTempPath();   
             _tmpDir = TestHelpers.PrepareTempTestData();
             _testDir = Path.Combine(_tmpDir, "test-bag");
             _serviceProvider = CreateServiceConfigurator.BuildServiceProvider();
