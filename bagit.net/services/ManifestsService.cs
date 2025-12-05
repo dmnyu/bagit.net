@@ -190,7 +190,7 @@ namespace bagit.net.services
             var matches = Regex.Matches(content, lineEndingPattern);
 
             if (matches.Count == 0)
-              _messageService.Add(new MessageRecord(MessageLevel.ERROR, $"{Path.GetFileName(manifestFile)} contains no line endings"));
+              _messageService.Add(new MessageRecord(MessageLevel.WARNING, $"{Path.GetFileName(manifestFile)} contains no line endings"));
 
             // Check for any CR-only line endings (\r not followed by \n)
             if (_nonCREndingsRegex.IsMatch(content))
