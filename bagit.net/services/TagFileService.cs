@@ -39,7 +39,7 @@ namespace bagit.net.services
             return tagDictionary;
         }
 
-        public void CreateBagInfo(string bagDir)
+        public void CreateBagInfo(string bagDir, string? tagFileLocation)
         {
             var oxum = CalculateOxum(bagDir);
             var sb = new StringBuilder();
@@ -48,6 +48,20 @@ namespace bagit.net.services
             sb.Append($"BagIt-Version: {Bagit.BAGIT_VERSION}\n");
             sb.Append($"Bagging-Date: {DateTime.UtcNow:yyyy-MM-dd}\n");
             sb.Append($"Payload-Oxum: {oxum}\n");
+
+            if( tagFileLocation != null )
+            {
+                var tagFileName = Path.GetFileName(tagFileLocation);
+                _messageService.Add(new MessageRecord(MessageLevel.INFO, $"Adding metadata file {tagFileName} to bag-info.txt"));
+                var tags = GetTags(tagFileLocation);
+                foreach( var tag in tags)
+                {
+                    foreach(var val in tag.Value)
+                    {
+                        sb.Append($"{tag.Key}: {val}\n");
+                    }
+                }
+            }
 
             var bagInfoFile = Path.Combine(bagDir, "bag-info.txt");
             File.WriteAllText(bagInfoFile, sb.ToString(), new UTF8Encoding(encoderShouldEmitUTF8Identifier: false));

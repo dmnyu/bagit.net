@@ -18,7 +18,7 @@ namespace bagit.net.cli.lib
             _messageService = messageService;
         }
 
-        public int CreateBag(string? dirLocation, string? checkSumAlgorithm, bool quiet, string? logFile, CancellationToken cancellationToken)
+        public int CreateBag(string? dirLocation, string? checkSumAlgorithm, string? tagFile, bool quiet, string? logFile, CancellationToken cancellationToken)
         {
             _messageService.Add(new MessageRecord(MessageLevel.INFO, $"using bagit.net v{Bagit.VERSION}"));
             if (string.IsNullOrWhiteSpace(dirLocation))
@@ -63,7 +63,7 @@ namespace bagit.net.cli.lib
                 AnsiConsole.MarkupLine($"Logging to {logFile}");
             }
 
-            _creationService.CreateBag(bagPath, algorithm);
+            _creationService.CreateBag(bagPath, algorithm, tagFile);
             var messages = _messageService.GetAll();
             Logging.LogEvents(messages, quiet, _logger);
             return 0;

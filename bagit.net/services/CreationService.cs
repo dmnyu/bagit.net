@@ -16,7 +16,7 @@ namespace bagit.net.services
             _manifestService = manifestService;
             _fileManagerService = fileManagerService;
         }
-        public void CreateBag(string dirLocation, ChecksumAlgorithm algorithm)
+        public void CreateBag(string dirLocation, ChecksumAlgorithm algorithm, string? tagFileLocation = null)
         {
             _messageService.Add(new MessageRecord(MessageLevel.INFO, $"Using bagit.net v{Bagit.VERSION}"));
             if (dirLocation == null)
@@ -43,7 +43,8 @@ namespace bagit.net.services
             _messageService.Add(new MessageRecord(MessageLevel.INFO, "Creating bagit.txt"));
             _tagFileService.CreateBagItTXT(dirLocation);
             _messageService.Add(new MessageRecord(MessageLevel.INFO, "Creating bag-info.txt"));
-            _tagFileService.CreateBagInfo(dirLocation);
+            
+            _tagFileService.CreateBagInfo(dirLocation, tagFileLocation);
             _manifestService.CreateTagManifestFile(dirLocation, algorithm);
         }
     }

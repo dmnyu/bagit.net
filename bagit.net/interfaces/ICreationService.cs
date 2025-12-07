@@ -4,6 +4,6 @@ namespace bagit.net.interfaces
 {
     public interface ICreationService
     {
-        public void CreateBag(string bagPath, ChecksumAlgorithm algorithm);
+        public void CreateBag(string bagPath, ChecksumAlgorithm algorithm, string? tagFileLocation);
     }
 }

@@ -10,7 +10,7 @@ namespace bagit.net.interfaces
         List<KeyValuePair<string, string>> GetTagFileAsList(string baginfoPath);
 
 
-        void CreateBagInfo(string bagDir);
+        void CreateBagInfo(string bagDir, string? tagFileLocation);
         void CreateBagItTXT(string bagRoot);
         bool HasBagInfo(string bagRoot);
         bool HasBagItTXT(string bagRoot);

@@ -39,28 +39,40 @@ namespace bagit.net.tests.integration
             Assert.Matches(@"^\d+\.\d+$", Bagit.BAGIT_VERSION);
         }
 
-
         [Fact]
         [Trait("Category", "Integration")]
-        public void CreateBag_Throws_On_Invalid_Directories()
+        public void Create_Bag()
         {
-            _creationService.CreateBag(Path.Combine(_tmpDir, "Foo"), ChecksumAlgorithm.MD5);
+            _creationService.CreateBag(Path.Combine(_tmpDir, "dir"), ChecksumAlgorithm.MD5, null);
             var messages = _messageService.GetAll();
-            Assert.True(MessageHelpers.HasError(messages));
+            Assert.False(MessageHelpers.HasError(messages));
             foreach (var message in messages)
                 _output.WriteLine($"{message}");
         }
 
         [Fact]
         [Trait("Category", "Integration")]
-        public void Create_Bag()
+        public void Create_Bag_With_Metdata()
         {
-            _creationService.CreateBag(Path.Combine(_tmpDir, "dir"), ChecksumAlgorithm.MD5);
+            _creationService.CreateBag(Path.Combine(_tmpDir, "dir"), ChecksumAlgorithm.MD5, Path.Combine(_tmpDir, "metadata.txt"));
             var messages = _messageService.GetAll();
             Assert.False(MessageHelpers.HasError(messages));
-            foreach(var message in messages)
+            foreach (var message in messages)
                 _output.WriteLine($"{message}");
         }
+
+        [Fact]
+        [Trait("Category", "Integration")]
+        public void CreateBag_Throws_On_Invalid_Directories()
+        {
+            _creationService.CreateBag(Path.Combine(_tmpDir, "Foo"), ChecksumAlgorithm.MD5, null);
+            var messages = _messageService.GetAll();
+            Assert.True(MessageHelpers.HasError(messages));
+            foreach (var message in messages)
+                _output.WriteLine($"{message}");
+        }
+
+
 
     }
 }
