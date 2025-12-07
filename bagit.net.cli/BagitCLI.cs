@@ -46,6 +46,8 @@ class BagitCLI
                 .WithDescription("Display the help page");
             config.AddCommand<ValidateCommand>("validate")
                 .WithDescription("Validate a BagIt bag");
+            config.AddCommand<ManageCommand>("manage")
+                .WithDescription("Manage metadata tags");
         });
 
         return app.Run(args);

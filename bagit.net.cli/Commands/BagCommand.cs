@@ -26,7 +26,7 @@ class BagCommand : Command<BagCommand.Settings>
 
         [CommandArgument(0, "[directory]")]
         [Description("Path to the directory to bag.")]
-        public string? Directory { get; set; }
+        required public string Directory { get; set; }
 
     }
 

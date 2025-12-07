@@ -24,7 +24,7 @@ namespace bagit.net.cli.Commands
 
             [CommandArgument(0, "[directory]")]
             [Description("Path to the bag directory to validate.")]
-            public string? Directory { get; set; }
+            public required string Directory { get; set; }
         }
 
         public override int Execute(CommandContext context, Settings settings, CancellationToken cancellationToken)
