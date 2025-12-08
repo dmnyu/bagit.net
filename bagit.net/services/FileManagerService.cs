@@ -1,6 +1,5 @@
 ﻿using bagit.net.domain;
 using bagit.net.interfaces;
-using Microsoft.Extensions.Logging;
 using System.Text;
 
 namespace bagit.net.services
@@ -8,6 +7,7 @@ namespace bagit.net.services
     public class FileManagerService : IFileManagerService
     {
         private readonly IMessageService _messageService;
+        private readonly string _tmpChars = "abcdefghijklmnopqrstuvwxyz0123456789";
 
         public FileManagerService(IMessageService messageService)
         {
@@ -25,15 +25,29 @@ namespace bagit.net.services
 
         public string CreateTempDirectory(string path)
         {
-            
-            const string chars = "abcdefghijklmnopqrstuvwxyz0123456789";
             var random = new Random();
             var suffix = new string(Enumerable.Range(0, 8)
-                .Select(_ => chars[random.Next(chars.Length)])
+                .Select(_ => _tmpChars[random.Next(_tmpChars.Length)])
                 .ToArray());
             var tempDataDir = Path.Combine(path, $"tmp{suffix}");
             CreateDirectory(tempDataDir);
             return tempDataDir;
+        }
+
+        public string CreateTempFile(string path)
+        {
+            var random = new Random();
+            var suffix = new string(Enumerable.Range(0, 8)
+                .Select(_ => _tmpChars[random.Next(_tmpChars.Length)])
+                .ToArray());
+            var tmpFile = Path.Combine(path, $"tmp{suffix}");
+            CreateFile(tmpFile);
+            return tmpFile;
+        }
+
+        public void DeleteFile(string path)
+        {
+            File.Delete(path);
         }
 
         public bool HasBOM(string path)
@@ -91,6 +105,16 @@ namespace bagit.net.services
         public void MoveDirectory(string originalPath, string destinationPath)
         {
             Directory.Move(originalPath, destinationPath);
+        }
+
+        public void MoveFile(string originalPath, string destinationPath)
+        {
+            File.Move(originalPath, destinationPath);
+        }
+
+        public void WriteToFile(string path, string content)
+        {
+            File.WriteAllText(path, content, new UTF8Encoding(encoderShouldEmitUTF8Identifier: false));
         }
     }
 }

@@ -11,16 +11,17 @@ namespace bagit.net.services
 
         private readonly IChecksumService _checksumService;
         private readonly IMessageService _messageService;
+        private readonly IFileManagerService _fileManagerService;
         private static readonly Regex _manifestRegex = new(@"^(manifest|tagmanifest)-(md5|sha1|sha256|sha384|sha512)\.txt$", RegexOptions.Compiled);
         private static readonly Regex _nonCREndingsRegex = new(@"\r(?!\n)");
-        public const string ChecksumPattern = @"-(md5|sha1|sha256|sha384|sha512)\b";
-        public const string TagmanifestPattern = @"tagmanifest-(md5|sha1|sha256|sha384|sha512).txt";
+        public static readonly Regex _checkSumRegex = new(@"-(md5|sha1|sha256|sha384|sha512)\b", RegexOptions.Compiled);
+        public static readonly Regex _tagmanifestRegex = new(@"tagmanifest-(md5|sha1|sha256|sha384|sha512).txt$", RegexOptions.Compiled);
        
     
-        public ManifestService(IChecksumService checksumService, IMessageService messageService)
+        public ManifestService(IChecksumService checksumService, IMessageService messageService, IFileManagerService fileManagerService)
         {
-
             _checksumService = checksumService;
+            _fileManagerService = fileManagerService;
             _messageService = messageService;
         }
 
@@ -54,8 +55,36 @@ namespace bagit.net.services
                 var checksum = _checksumService.CalculateChecksum(Path.Combine(bagRoot, entry), algorithm);
                 sb.Append($"{checksum.Trim()} {entry.Trim()}\n");
             }
-            
-            File.WriteAllText(manifestFilename, sb.ToString(), new UTF8Encoding(encoderShouldEmitUTF8Identifier: false));
+
+            _fileManagerService.WriteToFile(manifestFilename, sb.ToString());
+        }
+
+        public void UpdateTagManifest(string bagRoot)
+        {
+            var rootFiles = Directory.GetFiles(bagRoot);
+            foreach (var rootFile in rootFiles)
+            {
+                if (_tagmanifestRegex.IsMatch(rootFile))
+                {
+                    _messageService.Add(new MessageRecord(MessageLevel.INFO, $"Updating {rootFile}"));
+                    var algorithm = GetManifestAlgorithm(rootFile);
+                    var tmpFile = _fileManagerService.CreateTempFile(bagRoot);
+                    StringBuilder sb = new StringBuilder();
+                    var fileEntries = GetRootFiles(bagRoot);
+                    foreach (var entry in fileEntries)
+                    {
+                        if (Path.GetFileName(entry) != Path.GetFileName(tmpFile) && Path.GetFileName(entry) != Path.GetFileName(rootFile))
+                        {
+                            var checksum = _checksumService.CalculateChecksum(Path.Combine(bagRoot, entry), algorithm);
+                            sb.Append($"{checksum.Trim()} {entry.Trim()}\n");
+                        }
+                    }
+                    _fileManagerService.WriteToFile(tmpFile, sb.ToString());
+                    _fileManagerService.DeleteFile(rootFile);
+                    _fileManagerService.MoveFile(tmpFile, rootFile);
+                }
+            }
+
         }
 
         internal IEnumerable<string> GetPayloadFiles(string bagRoot)
@@ -133,7 +162,7 @@ namespace bagit.net.services
 
         internal ChecksumAlgorithm GetManifestAlgorithm(string manifestFilename)
         {
-            Match match = Regex.Match(manifestFilename, ChecksumPattern, RegexOptions.IgnoreCase);
+            Match match = _checkSumRegex.Match(manifestFilename);
             if (!match.Success)
                 throw new InvalidDataException($"Cannot determine checksum algorithm from manifest filename '{manifestFilename}'.");
 

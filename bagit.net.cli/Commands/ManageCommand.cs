@@ -27,8 +27,8 @@ class ManageCommand : Command<ManageCommand.Settings>
 
     public override int Execute(CommandContext context, Settings settings, CancellationToken cancellationToken)
     {
-        var serviceProvider = ServiceConfigurator.BuildServiceProvider<Manager>();
-        var manager = serviceProvider.GetRequiredService<Manager>();
+        var serviceProvider = ServiceConfigurator.BuildServiceProvider<TagManager>();
+        var manager = serviceProvider.GetRequiredService<TagManager>();
         if(settings.Add != null)
         {
             manager.Add(settings.Directory, settings.Add);

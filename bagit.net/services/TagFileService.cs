@@ -1,6 +1,5 @@
 ﻿using bagit.net.domain;
 using bagit.net.interfaces;
-using Microsoft.Extensions.Logging;
 using System.Globalization;
 using System.Text;
 using System.Text.RegularExpressions;
@@ -11,12 +10,14 @@ namespace bagit.net.services
     {
         private readonly IFileManagerService _fileManagerService;
         private readonly IMessageService _messageService;
+        private readonly IManifestService _manifestService;
         private static readonly Regex _oxumPattern = new(@"^\d+\.\d+$", RegexOptions.Compiled);
 
-        public TagFileService(IFileManagerService fileManagerService, IMessageService messageService)
+        public TagFileService(IFileManagerService fileManagerService, IMessageService messageService, IManifestService manifestService)
         {
             _fileManagerService = fileManagerService;
             _messageService = messageService;
+            _manifestService = manifestService;
         }
 
         public Dictionary<string, string> GetTagFileAsDict(string tagFilePath)
@@ -277,6 +278,7 @@ namespace bagit.net.services
             return _tags;
         }
 
+        //move this to filemanagerservice
         public void ScanFileForInvalidControlChars(string path)
         {
             int lineNum = 0;
@@ -295,6 +297,58 @@ namespace bagit.net.services
                     }
                 }
             }
+        }
+
+        public void AddTag(string key, string value, string bagRoot)
+        {
+            var bagInfo = Path.Combine(bagRoot, "bag-info.txt");
+            if(!Path.Exists(bagInfo))
+            {
+                _messageService.Add(new MessageRecord(MessageLevel.ERROR, $"{bagInfo} does not exist"));
+                return;
+            }
+            _messageService.Add(new MessageRecord(MessageLevel.INFO, $"Adding {key}:{value} to {bagInfo}"));
+            //get the file as tags
+            var tags = GetTags(bagInfo);
+            //add the new tag //set if the tag already exists
+            if (tags.ContainsKey(key))
+            {
+                tags[key].Add(value);
+            }
+            else
+            {
+                tags[key] = new List<string>() { value };
+            }
+
+            //convert tags to string
+            var sb = new StringBuilder();
+            foreach (var tag in tags)
+            {
+                foreach (var val in tag.Value)
+                {
+                    sb.Append($"{tag.Key}: {val}\n");
+                }
+            }
+
+            //create temp tagFile
+            var tmpFile = _fileManagerService.CreateTempFile(bagRoot);
+            //write to temp tagfile //do this in the file service
+            _fileManagerService.WriteToFile(tmpFile, sb.ToString());
+            //delete bag-info
+            _fileManagerService.DeleteFile(bagInfo);
+            //move temp to bag-info.txt
+            _fileManagerService.MoveFile(tmpFile, bagInfo);
+            //write new tmp tag-manifest
+            _manifestService.UpdateTagManifest(bagRoot);
+
+        }
+        public void SetTag(string key, string value, string bagRoot)
+        {
+            throw new NotImplementedException();
+        }
+        public void DeleteTag(string key, string bagRoot)
+        {
+            throw new NotImplementedException();
         }
     }
 }

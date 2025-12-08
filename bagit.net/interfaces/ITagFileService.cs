@@ -20,6 +20,9 @@ namespace bagit.net.interfaces
         void ValidateTags(string bagInfoPath);
         Dictionary<String, List<String>> GetTags(string tagFilePath);
         string CalculateOxum(string bagRoot);
+        void AddTag(string key, string value, string bagRoot);
+        void SetTag(string key, string value, string bagRoot);
+        void DeleteTag(string key, string bagRoot);
     }
 }
 
