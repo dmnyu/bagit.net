@@ -310,9 +310,13 @@ namespace bagit.net.services
             _messageService.Add(new MessageRecord(MessageLevel.INFO, $"Adding {key}:{value} to {bagInfo}"));
             //get the file as tags
             var tags = GetTags(bagInfo);
-            //add the new tag //set if the tag already exists
-            if (tags.ContainsKey(key))
-            {
+            //check that the keyvalue pair doesn't already exist
+            if (tags.ContainsKey(key)) {
+                if (tags[key].Contains(value))
+                {
+                    _messageService.Add(new MessageRecord(MessageLevel.ERROR, $"bag-info.txt already contains the value: {value} for key: {key}"));
+                    return;
+                }
                 tags[key].Add(value);
             }
             else
