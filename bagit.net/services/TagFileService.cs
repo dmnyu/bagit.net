@@ -6,12 +6,20 @@ using System.Text.RegularExpressions;
 
 namespace bagit.net.services
 {
+
     public class TagFileService : ITagFileService
     {
         private readonly IFileManagerService _fileManagerService;
         private readonly IMessageService _messageService;
         private readonly IManifestService _manifestService;
         private static readonly Regex _oxumPattern = new(@"^\d+\.\d+$", RegexOptions.Compiled);
+        private readonly HashSet<string> nonRepeatableKeys = new HashSet<string>(StringComparer.OrdinalIgnoreCase)
+        {
+            "BagIt-Version",
+            "Bagging-Date",
+            "Payload-Oxum",
+            "Bag-Software-Agent"
+        };
 
         public TagFileService(IFileManagerService fileManagerService, IMessageService messageService, IManifestService manifestService)
         {
@@ -19,6 +27,8 @@ namespace bagit.net.services
             _messageService = messageService;
             _manifestService = manifestService;
         }
+
+
 
         public Dictionary<string, string> GetTagFileAsDict(string tagFilePath)
         {
@@ -307,9 +317,17 @@ namespace bagit.net.services
                 _messageService.Add(new MessageRecord(MessageLevel.ERROR, $"{bagInfo} does not exist"));
                 return;
             }
+
             _messageService.Add(new MessageRecord(MessageLevel.INFO, $"Adding {key}:{value} to {bagInfo}"));
+            
             //get the file as tags
             var tags = GetTags(bagInfo);
+            //check that the key is a not a non-repeatable field
+            if (nonRepeatableKeys.Contains(key) && tags.ContainsKey(key))
+            {
+                _messageService.Add(new MessageRecord(MessageLevel.ERROR, $"Cannot add multiple values for the non-repeatable key: {key}"));
+                return;
+            }
             //check that the keyvalue pair doesn't already exist
             if (tags.ContainsKey(key)) {
                 if (tags[key].Contains(value))
