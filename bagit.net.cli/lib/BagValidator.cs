@@ -5,12 +5,12 @@ using Spectre.Console;
 
 namespace bagit.net.cli.lib
 {
-    public class Validator
+    public class BagValidator
     {
         private readonly ILogger _logger;
         private readonly IValidationService _validationService;
         private readonly IMessageService _messageService;
-        public Validator(ILogger<Validator> logger, IValidationService validationService, IMessageService messageService)
+        public BagValidator(ILogger<BagValidator> logger, IValidationService validationService, IMessageService messageService)
         {
             _logger = logger;
             _validationService = validationService;

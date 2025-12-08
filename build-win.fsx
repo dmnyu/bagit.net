@@ -86,6 +86,7 @@ let installScriptSource = Path.Combine(projectDir, "dist", "install scripts", "i
 let publishDir = Path.Combine(projectDir, "bin", "Release", "net9.0", "win-x64", "publish")
 let exeName = "bagit.net.cli.exe"
 let exeDestName = "bagit.net.exe"
+let args = fsi.CommandLineArgs |> Array.skip 1
 
 
 
@@ -94,7 +95,16 @@ let exeDestName = "bagit.net.exe"
 // -------------------------------
 
 // 1. Publish the project
-runProcess "dotnet" "publish -c Release -r win-x64 --self-contained true /p:PublishSingleFile=true" projectDir
+
+let selfContained =
+    if args |> Array.contains "--framework" then "true"
+    else "false"
+
+let publishArgs =
+    $"publish -c Release -r win-x64 --self-contained {selfContained} /p:PublishSingleFile=true"
+
+runProcess "dotnet" publishArgs projectDir
+
 
 //2. get the version
 let exePath = @".\bagit.net.cli\bin\Release\net9.0\win-x64\publish\bagit.net.cli.exe"
@@ -117,12 +127,11 @@ copyFile (Path.Combine(publishDir, exeName)) (Path.Combine(distPath, exeDestName
 copyFile installScriptSource installScriptDest
 
 // 4. Zip the dist directory
-zipDirectory distPath zipFilePath
+if args |> Array.contains "--archive" then
+    zipDirectory distPath zipFilePath
 
 log "Build completed successfully."
-
-//install if there is a --install flag
-let args = fsi.CommandLineArgs |> Array.skip 1  // skip the script name
+//install if there is a --install flag  // skip the script name
 if args |> Array.exists ((=) "--install") then
     log "Installing binary"
     let binPath = $"bagit.net.cli\\dist\\{version}\\windows\\bagit.net"

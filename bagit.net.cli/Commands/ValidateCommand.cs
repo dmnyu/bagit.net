@@ -31,8 +31,8 @@ namespace bagit.net.cli.Commands
         {
             try
             {
-                var serviceProvider = ServiceConfigurator.BuildServiceProvider<Validator>(settings.logFile);
-                var validator = serviceProvider.GetRequiredService<Validator>();
+                var serviceProvider = ServiceConfigurator.BuildServiceProvider<BagValidator>(settings.logFile);
+                var validator = serviceProvider.GetRequiredService<BagValidator>();
                 validator.ValidateBag(settings.Directory, settings.Fast, settings.Completeness, settings.Quiet, settings.logFile, cancellationToken);
             }
             catch (Exception ex) {

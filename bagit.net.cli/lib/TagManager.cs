@@ -1,6 +1,5 @@
 ﻿using bagit.net.domain;
 using bagit.net.interfaces;
-using bagit.net.services;
 using Microsoft.Extensions.Logging;
 
 namespace bagit.net.cli.lib
@@ -10,7 +9,7 @@ namespace bagit.net.cli.lib
         private readonly ILogger _logger;
         private readonly IMessageService _messageService;
         private readonly ITagFileService _tagFileService;
-        public TagManager(ILogger<Validator> logger, IValidationService validationService, IMessageService messageService, ITagFileService tagFileService)
+        public TagManager(ILogger<BagValidator> logger, IValidationService validationService, IMessageService messageService, ITagFileService tagFileService)
         {
             _logger = logger;
             _messageService = messageService;
@@ -27,16 +26,16 @@ namespace bagit.net.cli.lib
             }
 
             var bagInfo = Path.Combine(bagPath, "bag-info.txt");
-            _messageService.Add(new MessageRecord(MessageLevel.INFO, $"adding key-value `{key}: {value}` to {bagInfo}"));
             _tagFileService.AddTag(key, value, bagPath);
         }
 
         public void Set(string bagPath, string kv)
         {
             var (valid, key, value) = parseKeyValue(kv);
-            if (!valid)
+            if (!valid || key is null || value is null)
             {
                 _messageService.Add(new MessageRecord(MessageLevel.ERROR, $"`{kv}` is not valid"));
+                return;
             }
 
             var dir = Path.GetDirectoryName(bagPath);
@@ -45,8 +44,8 @@ namespace bagit.net.cli.lib
                 _messageService.Add(new MessageRecord(MessageLevel.ERROR, $"Cannot determine directory for bag path `{bagPath}`."));
                 return;
             }
-            var bagInfo = Path.Combine(dir, "bag-info.txt");
-            _messageService.Add(new MessageRecord(MessageLevel.INFO, $"setting key-value `{key}: {value}` to {bagInfo}"));
+            var bagInfo = Path.Combine(bagPath, "bag-info.txt");
+            _tagFileService.SetTag(key, value, bagPath);
         }
 
         public void Delete(string bagPath, string key)
@@ -59,6 +58,12 @@ namespace bagit.net.cli.lib
             }
             var bagInfo = Path.Combine(dir, "bag-info.txt");
             _messageService.Add(new MessageRecord(MessageLevel.INFO, $"deleting `{key}` from {bagInfo}"));
+            _tagFileService.DeleteTag(key, bagPath);
+        }
+
+        public void View(string bagPath)
+        {
+            _tagFileService.ViewTagFile(bagPath);
         }
 
         public (bool valid, string? key, string? value) parseKeyValue(string input)

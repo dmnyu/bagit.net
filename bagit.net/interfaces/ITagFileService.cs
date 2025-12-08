@@ -23,6 +23,7 @@ namespace bagit.net.interfaces
         void AddTag(string key, string value, string bagRoot);
         void SetTag(string key, string value, string bagRoot);
         void DeleteTag(string key, string bagRoot);
+        void ViewTagFile(string bagRoot);
     }
 }
 

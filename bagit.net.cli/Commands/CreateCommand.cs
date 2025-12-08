@@ -7,7 +7,7 @@ using System.ComponentModel;
 
 namespace bagit.net.cli.Commands;
 
-class BagCommand : Command<BagCommand.Settings>
+class CreateCommand : Command<CreateCommand.Settings>
 {
     public class Settings : CommandSettings
     {
@@ -34,9 +34,9 @@ class BagCommand : Command<BagCommand.Settings>
     {
         try
         {
-            var serviceProvider = ServiceConfigurator.BuildServiceProvider<Bagger>(settings.LogFile);
-            var bagger = serviceProvider.GetRequiredService<Bagger>();
-            bagger.CreateBag(settings.Directory, settings.Algorithm, settings.TagFile, settings.Quiet, settings.LogFile, cancellationToken);
+            var serviceProvider = ServiceConfigurator.BuildServiceProvider<BagCreator>(settings.LogFile);
+            var creator = serviceProvider.GetRequiredService<BagCreator>();
+            creator.CreateBag(settings.Directory, settings.Algorithm, settings.TagFile, settings.Quiet, settings.LogFile, cancellationToken);
         }
         catch (Exception ex) {
             AnsiConsole.MarkupLine($"[red][bold]ERROR:[/] {ex.Message}");

@@ -20,8 +20,12 @@ class ManageCommand : Command<ManageCommand.Settings>
         [CommandOption("--delete")]
         public string? Delete { get; set; }
 
+        [CommandOption("--view")]
+        public bool View { get; set; }
+
         [CommandArgument(0, "[directory]")]
         [Description("Path to the directory to bag.")]
+
         required public string Directory { get; set; }
     }
 
@@ -30,18 +34,17 @@ class ManageCommand : Command<ManageCommand.Settings>
         var serviceProvider = ServiceConfigurator.BuildServiceProvider<TagManager>();
         var manager = serviceProvider.GetRequiredService<TagManager>();
         if(settings.Add != null)
-        {
             manager.Add(settings.Directory, settings.Add);
-        }
 
         if (settings.Set != null)
-        {
             manager.Set(settings.Directory, settings.Set);
-        }
 
         if (settings.Delete != null)
-        {
             manager.Delete(settings.Directory, settings.Delete);
+
+        if (settings.View)
+        {
+            manager.View(settings.Directory);
         }
         
 

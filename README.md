@@ -23,6 +23,7 @@ Create a BagIt-formatted bag from a directory.
 |--------|-------------|
 | `--algorithm` | Specify the checksum algorithm to use: `md5`, `sha1`, `sha256` (default), `sha384`, or `sha512`. |
 | `--log` | Specify the location to write logging (default: stdout). |
+|`--tag-manifest`|Specify the location of an external tag-file to include in bag-info.txt |
 
 **Usage:**
 ```bash
@@ -34,6 +35,9 @@ bagit.net create --algorithm md5 /path/to/directory
 
 # Log to a file
 bagit.net create --log bagit.net.log /path/to/directory
+
+#Include tag metadata from external file in bag-info.txt
+bagit.net create --tag-file /path/to/tag-file.txt /path/to/directory
 ```
 
 ---
@@ -50,19 +54,45 @@ Validate a BagIt-formatted bag.
 **Usage:**
 ```bash
 # Validate a bag
-bagit.net validate /path/to/directory
+bagit.net validate /path/to/bag
 
 # Validate a bag with logging to file
-bagit.net validate --log bagit.net.log /path/to/directory
+bagit.net validate --log bagit.net.log /path/to/bag
 
 # Fast validation
-bagit.net validate --fast /path/to/directory
+bagit.net validate --fast /path/to/bag
 
 # Completeness Only validation
-bagit.net validate --complete /path/to/directory
+bagit.net validate --complete /path/to/bag
 ```
 >*note: setting both --fast and --complete flags will cause the application to exit* 
 
+---
+
+#### manage
+manage tag manifests in existing bag.
+
+| Option | Description |
+|--------|-------------|
+|`--add`|add a new key and value to bag-info.txt|
+|`--set`|replace the value of a key in bag-info.txt|
+|`--delete`|remove a line from bag-info.txt by the key|
+|`--view`|display the contents of bag-it.txt|
+
+**Usage:**
+```bash
+#add a key-value pair to bagit.txt
+bagit.net manage --add "External-Identifier=ID001" /path/to/bag
+
+#replace a value for a given key in bagit.txt
+bagit.net manage --set "External-Identifier=ID002" /path/to/bag
+
+#remove a key and value
+bagit.net manage --delete "External-Identifier" /path/to/bag
+
+#print contents of bag-info.txt to stdout
+bagit.net manage --view /path/to/bag
+```
 ---
 
 #### help
@@ -119,7 +149,6 @@ bagit.net --help
 ---
 
 ## Additional Notes
-
 - The CLI is **self-contained**, so no .NET installation is required for end-users.  
 - On Linux and MacOS, the default install path is `/usr/local/bin/bagit.net`.  
 - On Windows, the default install path is `%LOCALAPPDATA%\bagit.net\bagit.net.exe`.  

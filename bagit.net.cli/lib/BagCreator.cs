@@ -5,13 +5,13 @@ using Spectre.Console;
 
 namespace bagit.net.cli.lib
 {
-    public class Bagger
+    public class BagCreator
     {
         readonly ICreationService _creationService;
         readonly ILogger _logger;
         readonly IMessageService _messageService;
             
-        public Bagger(ILogger<Bagger> logger, ICreationService creationService, IMessageService messageService)
+        public BagCreator(ILogger<BagCreator> logger, ICreationService creationService, IMessageService messageService)
         {
             _logger = logger;
             _creationService = creationService;

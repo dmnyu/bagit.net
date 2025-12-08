@@ -16,7 +16,7 @@ class BagitCLI
     static int Main(string[] args)
     {
         
-        app.SetDefaultCommand<BagCommand>();
+        app.SetDefaultCommand<CreateCommand>();
 
         if (args == null || args.Length == 0)
         {
@@ -40,7 +40,7 @@ class BagitCLI
 
         app.Configure(config =>
         {
-            config.AddCommand<BagCommand>("create")
+            config.AddCommand<CreateCommand>("create")
                  .WithDescription("Create a BagIt bag from a directory");
             config.AddCommand<HelpCommand>("help")
                 .WithDescription("Display the help page");

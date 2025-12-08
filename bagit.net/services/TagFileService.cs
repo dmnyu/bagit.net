@@ -348,11 +348,86 @@ namespace bagit.net.services
         }
         public void SetTag(string key, string value, string bagRoot)
         {
-            throw new NotImplementedException();
+            var bagInfo = Path.Combine(bagRoot, "bag-info.txt");
+            if (!Path.Exists(bagInfo))
+            {
+                _messageService.Add(new MessageRecord(MessageLevel.ERROR, $"{bagInfo} does not exist"));
+                return;
+            }
+
+            _messageService.Add(new MessageRecord(MessageLevel.INFO, $"Setting {key}:{value} in {bagInfo}"));
+            var tags = GetTags(bagInfo);
+            tags[key] = new List<String>() { value };
+            //create temp tagFile
+
+            var sb = new StringBuilder();
+            foreach (var tag in tags)
+            {
+                foreach (var val in tag.Value)
+                {
+                    sb.Append($"{tag.Key}: {val}\n");
+                }
+            }
+
+            var tmpFile = _fileManagerService.CreateTempFile(bagRoot);
+            //write to temp tagfile //do this in the file service
+            _fileManagerService.WriteToFile(tmpFile, sb.ToString());
+            //delete bag-info
+            _fileManagerService.DeleteFile(bagInfo);
+            //move temp to bag-info.txt
+            _fileManagerService.MoveFile(tmpFile, bagInfo);
+            //write new tmp tag-manifest
+            _manifestService.UpdateTagManifest(bagRoot);
+
         }
         public void DeleteTag(string key, string bagRoot)
         {
-            throw new NotImplementedException();
+            var bagInfo = Path.Combine(bagRoot, "bag-info.txt");
+            if (!Path.Exists(bagInfo))
+            {
+                _messageService.Add(new MessageRecord(MessageLevel.ERROR, $"{bagInfo} does not exist"));
+                return;
+            }
+            _messageService.Add(new MessageRecord(MessageLevel.INFO, $"Deleting {key} in {bagInfo}"));
+            var tags = GetTags(bagInfo);
+            if (tags.ContainsKey(key))
+            {
+                tags.Remove(key);
+                var sb = new StringBuilder();
+                foreach (var tag in tags)
+                {
+                    foreach (var val in tag.Value)
+                    {
+                        sb.Append($"{tag.Key}: {val}\n");
+                    }
+                }
+                var tmpFile = _fileManagerService.CreateTempFile(bagRoot);
+                //write to temp tagfile //do this in the file service
+                _fileManagerService.WriteToFile(tmpFile, sb.ToString());
+                //delete bag-info
+                _fileManagerService.DeleteFile(bagInfo);
+                //move temp to bag-info.txt
+                _fileManagerService.MoveFile(tmpFile, bagInfo);
+                //write new tmp tag-manifest
+                _manifestService.UpdateTagManifest(bagRoot);
+            }
+            else
+            {
+                _messageService.Add(new MessageRecord(MessageLevel.WARNING, $"key `{key}` does not exist in `{bagInfo}`"));
+                return;
+            }
         }
+
+                public void ViewTagFile(string bagRoot)
+                {
+                    var bagInfo = Path.Combine(bagRoot, "bag-info.txt");
+                    Console.WriteLine("\n" + Path.GetFileName(bagInfo));
+                    Console.WriteLine("------------");
+                    foreach (var line in File.ReadAllLines(bagInfo))
+                    {
+                        Console.WriteLine(line);
+                    }
+                    Console.WriteLine();
+                }
     }
 }

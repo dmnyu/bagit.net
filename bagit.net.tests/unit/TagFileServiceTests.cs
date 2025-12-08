@@ -152,5 +152,34 @@ namespace bagit.net.tests.unit
             Assert.Equal(tags[key][0], value);
         }
 
+        [Fact]
+        [Trait("Category", "Unit")]
+        public void Test_Add_Multiple_Tags()
+        {
+            var validBag = Path.Combine(_testDir, "valid-bag");
+            _tagFileService.AddTag("External-Identifier", "ARC-2025-000123", validBag);
+            _tagFileService.AddTag("External-Identifier", "ARC-2025-000124", validBag);
+            var messages = _messageService.GetAll();
+            Assert.False(MessageHelpers.HasError(messages));
+            var bagInfo = Path.Combine(validBag, "bag-info.txt");
+            var tags = _tagFileService.GetTags(bagInfo);
+            Assert.Equal("ARC-2025-000123", tags["External-Identifier"][0]);
+            Assert.Equal("ARC-2025-000124", tags["External-Identifier"][1]);
+        }
+
+        [Fact]
+        [Trait("Category", "Unit")]
+        public void Test_Set_Tag()
+        {
+            var validBag = Path.Combine(_testDir, "valid-bag");
+            _tagFileService.AddTag("External-Identifier", "ARC-2025-000123", validBag);
+            _tagFileService.SetTag("External-Identifier", "ARC-2025-000124", validBag);
+            var messages = _messageService.GetAll();
+            Assert.False(MessageHelpers.HasError(messages));
+            var bagInfo = Path.Combine(validBag, "bag-info.txt");
+            var tags = _tagFileService.GetTags(bagInfo);
+            Assert.Equal("ARC-2025-000124", tags["External-Identifier"][0]);
+        }
+
     }
 }
