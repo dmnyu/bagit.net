@@ -93,16 +93,17 @@ let args = fsi.CommandLineArgs |> Array.skip 1
 // -------------------------------
 
 // 1. Clean the directories
-log "cleaning directories"
-runProcess "dotnet" "clean" projectDir
+if args |> Array.contains "--clean" then
+    log "cleaning directories"
+    runProcess "dotnet" "clean" projectDir
 
-let binPath = Path.Combine(projectDir, "bin")
-if Directory.Exists(binPath) then
-    Directory.Delete(binPath, true) 
+    let binPath = Path.Combine(projectDir, "bin")
+    if Directory.Exists(binPath) then
+        Directory.Delete(binPath, true) 
 
-let objPath = Path.Combine(projectDir, "obj")
-if Directory.Exists(objPath) then
-    Directory.Delete(objPath, true) 
+    let objPath = Path.Combine(projectDir, "obj")
+    if Directory.Exists(objPath) then
+        Directory.Delete(objPath, true) 
 
 // 2. Publish the project
 let selfContained =
