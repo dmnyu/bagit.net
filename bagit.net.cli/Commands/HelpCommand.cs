@@ -51,7 +51,7 @@ class HelpCommand : Command<HelpCommand.Settings>
 
         createOptions.AddRow("--algorithm", "checksum algorithm: md5, sha1, sha256, sha384, sha512 (default: sha256)");
         createOptions.AddRow("--log", "path/to/logfile (default: stdout)");
-        createOptions.AddRow("--tag-file", "path/to/tag-file (metadata to be added to bag=info.txt on creation");
+        createOptions.AddRow("--tag-file", "path/to/tag-file (metadata to be added to bag-info.txt on creation");
 
         AnsiConsole.Write(createOptions);
         AnsiConsole.WriteLine();
