@@ -143,7 +143,7 @@ if args |> Array.contains "--archive" then
     log "creating zip archive"
     zipDirectory distPath zipFilePath
 
-// 7. install if there is a --install flag  // skip the script name
+// 7. install if there is a --install flag
 if args |> Array.exists ((=) "--install") then
     log "Installing binary"
     let binPath = $"bagit.net.cli\\dist\\{version}\\windows\\bagit.net"
