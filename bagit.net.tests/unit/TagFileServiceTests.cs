@@ -132,7 +132,7 @@ namespace bagit.net.tests.unit
         [InlineData("Organization-Address", "123 Preservation Way, Archive City, NY 10001")]
         [InlineData("Contact-Name", "Jane Archivist")]
         [InlineData("Contact-Phone", "+1-212-555-0123")]
-        [InlineData("Contact-Email", "jane.archivist @example.org")]
+        [InlineData("Contact-Email", "jane.archivist@example.org")]
         [InlineData("External-Description", "Digitized photographs from the 1940s, scanned at 600dpi.")]
         [InlineData("External-Identifier", "ARC-2025-000123")]
         [InlineData("Bag-Group-Identifier", "WWII-Photo-Collection")]
