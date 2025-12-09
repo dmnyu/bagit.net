@@ -354,7 +354,6 @@ namespace bagit.net.services
 
             //create temp tagFile
             var tmpFile = _fileManagerService.CreateTempFile(bagRoot);
-            //write to temp tagfile //do this in the file service
             _fileManagerService.WriteToFile(tmpFile, sb.ToString());
             //delete bag-info
             _fileManagerService.DeleteFile(bagInfo);
