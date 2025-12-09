@@ -93,6 +93,17 @@ let args = fsi.CommandLineArgs |> Array.skip 1  // skip the script name
 // Steps
 // -------------------------------
 
+// 1. Clean the project dir
+log "cleaning directories"
+
+let binPath = Path.Combine(projectDir, "bin")
+if Directory.Exists(binPath) then
+    Directory.Delete(binPath, true) 
+
+let objPath = Path.Combine(projectDir, "obj")
+if Directory.Exists(objPath) then
+    Directory.Delete(objPath, true) 
+
 // 1. Publish the project
 let selfContained =
     if args |> Array.contains "--include-framework" then "true"
@@ -102,7 +113,7 @@ if selfContained = "true" then log "publishing with dotnet framework"
 else log "publishing without dotnet framework"
 
 let publishArgs =
-    $"publish -c Release -r win-x64 /p:SelfContained={selfContained} /p:PublishSingleFile=true"
+    $"publish -c Release -r linux-x64 /p:SelfContained={selfContained} /p:PublishSingleFile=true"
 
 runProcess "dotnet" publishArgs projectDir
 

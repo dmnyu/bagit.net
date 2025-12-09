@@ -18,6 +18,12 @@ namespace bagit.net.cli.lib
 
         public void Add(string bagPath, string kv)
         {
+            if (string.IsNullOrEmpty(Path.GetFullPath(bagPath)))
+            {
+                _messageService.Add(new MessageRecord(MessageLevel.ERROR, $"Cannot determine directory for bag path `{bagPath}`."));
+                return;
+            }
+
             var (valid, key, value) = parseKeyValue(kv);
             if (!valid || key is null || value is null) 
             {
@@ -31,6 +37,12 @@ namespace bagit.net.cli.lib
 
         public void Set(string bagPath, string kv)
         {
+            if (string.IsNullOrEmpty(Path.GetFullPath(bagPath)))
+            {
+                _messageService.Add(new MessageRecord(MessageLevel.ERROR, $"Cannot determine directory for bag path `{bagPath}`."));
+                return;
+            }
+
             var (valid, key, value) = parseKeyValue(kv);
             if (!valid || key is null || value is null)
             {
@@ -38,25 +50,19 @@ namespace bagit.net.cli.lib
                 return;
             }
 
-            var dir = Path.GetDirectoryName(bagPath);
-            if (string.IsNullOrEmpty(dir))
-            {
-                _messageService.Add(new MessageRecord(MessageLevel.ERROR, $"Cannot determine directory for bag path `{bagPath}`."));
-                return;
-            }
             var bagInfo = Path.Combine(bagPath, "bag-info.txt");
             _tagFileService.SetTag(key, value, bagPath);
         }
 
         public void Delete(string bagPath, string key)
         {
-            var dir = Path.GetDirectoryName(bagPath);
-            if (string.IsNullOrEmpty(dir))
+            if (string.IsNullOrEmpty(Path.GetFullPath(bagPath)))
             {
                 _messageService.Add(new MessageRecord(MessageLevel.ERROR, $"Cannot determine directory for bag path `{bagPath}`."));
                 return;
             }
-            var bagInfo = Path.Combine(dir, "bag-info.txt");
+
+            var bagInfo = Path.Combine(bagPath, "bag-info.txt");
             _messageService.Add(new MessageRecord(MessageLevel.INFO, $"deleting `{key}` from {bagInfo}"));
             _tagFileService.DeleteTag(key, bagPath);
         }
