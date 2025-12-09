@@ -29,7 +29,8 @@ These are ideas for after the 0.4.x line:
 - Partial rehashing (only changed files).
 - Support for bag serialization (ZIP, TAR).
 - Plug‑in architecture for custom checksum algorithms.
-- .NET Aspire or MAUI GUI frontend.
+- Avalonia frontend for Windows/Linux/Mac
+- fetch files
 
 ---
 
