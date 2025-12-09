@@ -152,7 +152,7 @@ bagit.net --help
 ---
 
 ## Additional Notes
-- The CLI is **self-contained**, so no .NET installation is required for end-users.  
+- The CLI **requires the .NET 9 runtime** to be installed on your system.  
 - On Linux and MacOS, the default install path is `/usr/local/bin/bagit.net`.  
 - On Windows, the default install path is `%LOCALAPPDATA%\bagit.net\bagit.net.exe`.  
 - For CI/CD or scripting, you can run the CLI directly from the extracted directory without installing.
