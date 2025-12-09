@@ -47,20 +47,20 @@ namespace bagit.net.tests.unit
         [InlineData(ChecksumAlgorithm.SHA384, "manifest-sha384.txt")]
         [InlineData(ChecksumAlgorithm.SHA512, "manifest-sha512.txt")]
         [Trait("Category", "Unit")]
-        public void Test_Create_Payload_Manifest(ChecksumAlgorithm algorithm, string manifestName)
+        public async Task Test_Create_Payload_Manifest(ChecksumAlgorithm algorithm, string manifestName)
         {
             var dataBag = Path.Combine(_tmpDir, "data-only");
-            _manifestService.CreatePayloadManifest(dataBag, new List<ChecksumAlgorithm>() { algorithm });
+            await _manifestService.CreatePayloadManifest(dataBag, new List<ChecksumAlgorithm> { algorithm });
             Assert.True(File.Exists(Path.Combine(dataBag, manifestName)));
 
         }
 
         [Fact]
         [Trait("Category", "Unit")]
-        public void Test_Create_Multiple_Payload_Manifests()
+        public async Task Test_Create_Multiple_Payload_Manifests()
         {
             var dataBag = Path.Combine(_tmpDir, "data-only");
-            _manifestService.CreatePayloadManifest(dataBag, _algorithms);
+            await _manifestService.CreatePayloadManifest(dataBag, _algorithms);
             foreach (var algorithm in _algorithms)
             {
                 var algorithmCode = _checksumService.GetAlgorithmCode(algorithm);

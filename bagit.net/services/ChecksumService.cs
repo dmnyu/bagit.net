@@ -15,7 +15,7 @@ namespace bagit.net.services
             _messageService = messageService;
         }
 
-        public string CalculateChecksum(string? filePath, ChecksumAlgorithm algorithm)
+        public async Task<string> CalculateChecksum(string? filePath, ChecksumAlgorithm algorithm)
         {
             ArgumentNullException.ThrowIfNull(filePath);
             if (!File.Exists(filePath))
@@ -24,7 +24,7 @@ namespace bagit.net.services
                 return string.Empty;
             }
 
-            HashAlgorithm hashAlgorithm = algorithm switch
+            using HashAlgorithm hashAlgorithm = algorithm switch
             {
                 ChecksumAlgorithm.MD5 => MD5.Create(),
                 ChecksumAlgorithm.SHA1 => SHA1.Create(),
@@ -34,12 +34,21 @@ namespace bagit.net.services
                 _ => throw new ArgumentOutOfRangeException(nameof(algorithm))
             };
 
-            using (hashAlgorithm)
-            using (var fileStream = File.OpenRead(filePath))
+            const int bufferSize = 81920; // 80 KB buffer
+            byte[] buffer = new byte[bufferSize];
+
+            using FileStream fileStream = File.OpenRead(filePath);
+
+            int bytesRead;
+            while ((bytesRead = await fileStream.ReadAsync(buffer)) > 0)
             {
-                byte[] hashBytes = hashAlgorithm.ComputeHash(fileStream);
-                return Convert.ToHexString(hashBytes).ToLowerInvariant();
+                hashAlgorithm.TransformBlock(buffer, 0, bytesRead, null, 0);
             }
+
+            // Finalize the hash
+            hashAlgorithm.TransformFinalBlock(Array.Empty<byte>(), 0, 0);
+
+            return Convert.ToHexString(hashAlgorithm.Hash!).ToLowerInvariant();
         }
 
         public bool CompareChecksum(string? path, string checksum, ChecksumAlgorithm algorithm)
@@ -50,9 +59,10 @@ namespace bagit.net.services
             if(!isValid)
                 return false;
 
-            var calculatedMD5 = CalculateChecksum(path, algorithm);
+            var calculatedChecksumTask = CalculateChecksum(path, algorithm);
+            var calculatedChecksum = calculatedChecksumTask.GetAwaiter().GetResult();
 
-            return calculatedMD5.Equals(cleanedChecksum, StringComparison.OrdinalIgnoreCase);
+            return calculatedChecksum.Equals(cleanedChecksum, StringComparison.OrdinalIgnoreCase);
         }
 
         public string GetAlgorithmCode(ChecksumAlgorithm algorithm)

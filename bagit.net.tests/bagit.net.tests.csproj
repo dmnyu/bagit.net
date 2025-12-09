@@ -29,6 +29,7 @@
   </ItemGroup>
 
   <ItemGroup>
+    <Folder Include="bagit.net.tests.benchmarks\" />
     <Folder Include="TestData\bag-incomplete\data\subdir\" />
     <Folder Include="TestData\golden-files\" />
   </ItemGroup>

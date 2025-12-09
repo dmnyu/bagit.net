@@ -31,7 +31,7 @@ namespace bagit.net.tests.unit
         public void Test_Calculate_Checksum()
         {
             var goldenFile = Path.Combine(_tmpDir, "golden-files", "golden-file.txt");
-            var calculatedChecksum = _checksumService.CalculateChecksum(goldenFile, ChecksumAlgorithm.MD5);
+            var calculatedChecksum = _checksumService.CalculateChecksum(goldenFile, ChecksumAlgorithm.MD5).GetAwaiter().GetResult();
             Assert.Equal("82715cc04f1900c87118d8780fc0b04a", calculatedChecksum);
         }
 

@@ -26,7 +26,7 @@ namespace bagit.net.services
             _messageService = messageService;
         }
 
-        public void CreatePayloadManifest(string bagRoot, IEnumerable<ChecksumAlgorithm> algorithms)
+        public async Task CreatePayloadManifest(string bagRoot, IEnumerable<ChecksumAlgorithm> algorithms)
         {
 
             var checksumManifests = algorithms
@@ -36,19 +36,32 @@ namespace bagit.net.services
                     alg => new StringBuilder()
                 );
 
-
-            
+            var lockObjects = algorithms.ToDictionary(alg => _checksumService.GetAlgorithmCode(alg), alg => new object());
+            var semaphore = new SemaphoreSlim(8);
             var fileEntries = GetPayloadFiles(bagRoot);
-            foreach (var entry in fileEntries)
+
+            var tasks = fileEntries.Select(async entry =>
             {
-                _messageService.Add(new MessageRecord(MessageLevel.INFO, $"Generating manifest lines for file {entry}"));
-                foreach (var algorithm in algorithms)
+                await semaphore.WaitAsync();
+                try
                 {
-                    var algorithmCode = _checksumService.GetAlgorithmCode(algorithm);
-                    var checksum = _checksumService.CalculateChecksum(Path.Combine(bagRoot, entry), algorithm);
-                    checksumManifests[algorithmCode].AppendLine($"{checksum} {entry}");
+                    _messageService.Add(new MessageRecord(MessageLevel.INFO, $"Generating manifest lines for file {entry}"));
+                    foreach (var algorithm in algorithms)
+                    {
+                        var algorithmCode = _checksumService.GetAlgorithmCode(algorithm);
+                        var checksum = await _checksumService.CalculateChecksum(Path.Combine(bagRoot, entry), algorithm);
+                        lock (lockObjects[algorithmCode])
+                        {
+                            checksumManifests[algorithmCode].AppendLine($"{checksum} {entry}");
+                        }
+                    }
                 }
-            }
+                finally
+                {
+                    semaphore.Release();
+                }
+            });
+            await Task.WhenAll(tasks);
 
             foreach (var algorithm in algorithms)
             {
@@ -56,7 +69,6 @@ namespace bagit.net.services
                 var manifestFilename = Path.Combine(bagRoot, $"manifest-{algorithmCode}.txt");
                 _fileManagerService.WriteToFile(manifestFilename, checksumManifests[algorithmCode].ToString());
             }
-            
 
         }
 
@@ -106,7 +118,7 @@ namespace bagit.net.services
                         if (Path.GetFileName(entry) != Path.GetFileName(tmpFile) && Path.GetFileName(entry) != Path.GetFileName(rootFile))
                         {
                             var checksum = _checksumService.CalculateChecksum(Path.Combine(bagRoot, entry), algorithm);
-                            sb.Append($"{checksum.Trim()} {entry.Trim()}\n");
+                            sb.Append($"{checksum} {entry}\n");
                         }
                     }
                     _fileManagerService.WriteToFile(tmpFile, sb.ToString());
