@@ -23,7 +23,7 @@ Create a BagIt-formatted bag from a directory.
 |--------|-------------|
 | `--algorithm` | Specify the checksum algorithm to use: `md5`, `sha1`, `sha256` (default), `sha384`, or `sha512`. |
 | `--log` | Specify the location to write logging (default: stdout). |
-|`--tag-manifest`|Specify the location of an external tag-file to include in bag-info.txt |
+| `--tag-file` | Specify the location of an external tag-file to include in bag-info.txt |
 
 **Usage:**
 ```bash
