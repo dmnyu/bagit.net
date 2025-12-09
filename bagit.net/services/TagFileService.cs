@@ -288,7 +288,7 @@ namespace bagit.net.services
             return _tags;
         }
 
-        //move this to filemanagerservice
+        // TODO: move this to FileManagerService
         public void ScanFileForInvalidControlChars(string path)
         {
             int lineNum = 0;
