@@ -5,25 +5,10 @@ This roadmap outlines the planned feature development and release milestones for
 
 ---
 
-## **0.2.7 — Tag File Editing**
-**Objective:** Add full support for reading, modifying, and generating tag files.
-
-**Features:**
-- Complete model for `bag-info.txt` and other tag files.
-- TagManager and ManageCommand classes CLI
-- Add, edit, or remove metadata fields.
-- Deterministic output ordering.
-- CLI support for editing metadata during creation or via a dedicated command:
-  - `--set "Field=Value"`
-  - `--add "Field=Value"`
-  - `--delete "Field"`
-  -	`--delete "Field=Value"`
-
----
-
 ## **0.2.7 - Multiple Checksum Support**
+**Objective:** Allow multiple checksum algorithms be declared when creating a bag and create manifest files for each algorithm.
 
-## **0.3.0 — Multithreaded Checksum Calculation**
+## **0.2.8 — Multithreaded Checksum Calculation**
 **Objective:** Improve performance of manifest generation using parallelism.
 
 **Features:**
@@ -50,6 +35,22 @@ These are ideas for after the 0.4.x line:
 
 ## Previous updates: ##
 
+---
+
+
+## **0.2.6 — Tag File Editing**
+**Objective:** Add full support for reading, modifying, and generating tag files.
+
+**Features:**
+- Complete model for `bag-info.txt` and other tag files.
+- TagManager and ManageCommand classes CLI
+- Add, edit, or remove metadata fields.
+- Deterministic output ordering.
+- CLI support for editing metadata during creation or via a dedicated command:
+  - `--set "Field=Value"`
+  - `--add "Field=Value"`
+  - `--delete "Field"`
+ 
 ---
 
 ## **0.2.5 - Error Handling**
