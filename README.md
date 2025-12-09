@@ -108,6 +108,9 @@ bagit.net help
 
 ## Binary Installation
 
+### Prerequisites
+- [.Net 9.x Runtime](https://dotnet.microsoft.com/en-us/download/dotnet/9.0)
+
 ### Linux
 ```bash
 wget https://github.com/dmnyu/bagit.net/releases/download/v0.2.6-alpha/bagit.net.cli-v0.2.6-alpha-linux-x64.tgz

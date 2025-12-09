@@ -92,8 +92,6 @@ let args = fsi.CommandLineArgs |> Array.skip 1
 // Steps
 // -------------------------------
 
-
-
 // 1. Clean the directories
 log "cleaning directories"
 runProcess "dotnet" "clean" projectDir
@@ -107,7 +105,6 @@ if Directory.Exists(objPath) then
     Directory.Delete(objPath, true) 
 
 // 2. Publish the project
-log "publishing project"
 let selfContained =
     if args |> Array.contains "--include-framework" then "true"
     else "false"
@@ -136,7 +133,7 @@ let zipFilePath = Path.Combine(archivePath, $"bagit.net.cli-{version}-windows-x6
 ensureDir distPath
 ensureDir archivePath
 
-// .5 Copy exe and install script
+// 5. Copy exe and install script
 log "copying bin and install script to dist directory"
 copyFile (Path.Combine(publishDir, exeName)) (Path.Combine(distPath, exeDestName))
 copyFile installScriptSource installScriptDest
