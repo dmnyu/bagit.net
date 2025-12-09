@@ -2,17 +2,6 @@
 
 This roadmap outlines the planned feature development and release milestones for **bagit.net**, a C# implementation of the BagIt specification (RFC 8493). It covers versions **0.2.0** through **0.4.0**, with clear goals and scope for each.
 
----
-
-## **0.2.5 - Error Handling**
-**Objective:** 
-- remove all logging from core library
-- have validation and creation functions return a List of Exception Records instead of throwing
-- log the exception out side of the core library
-
----
-
-## **0.2.6 - Multiple Checksum Support**
 
 ---
 
@@ -21,17 +10,18 @@ This roadmap outlines the planned feature development and release milestones for
 
 **Features:**
 - Complete model for `bag-info.txt` and other tag files.
-- Parse folded lines and multi‑value fields per RFC 8493.
+- TagManager and ManageCommand classes CLI
 - Add, edit, or remove metadata fields.
 - Deterministic output ordering.
 - CLI support for editing metadata during creation or via a dedicated command:
   - `--set "Field=Value"`
   - `--add "Field=Value"`
-
-**Notes:**
-This unlocks bagit.net as a metadata authoring and bag‑inspection tool.
+  - `--delete "Field"`
+  -	`--delete "Field=Value"`
 
 ---
+
+## **0.2.7 - Multiple Checksum Support**
 
 ## **0.3.0 — Multithreaded Checksum Calculation**
 **Objective:** Improve performance of manifest generation using parallelism.
@@ -59,6 +49,15 @@ These are ideas for after the 0.4.x line:
 ---
 
 ## Previous updates: ##
+
+---
+
+## **0.2.5 - Error Handling**
+**Objective:** 
+- remove all logging from core library
+- have validation and creation functions return a List of Exception Records instead of throwing
+- log the exception out side of the core library
+- quiet mode to only display errors
 
 ---
 

@@ -11,5 +11,6 @@ namespace bagit.net.interfaces
         void ValidateManifestFile(string manifestFile);
         void ValidateManifestFilesCompleteness(string bagRoot);
         void ValidateManifestFileCompleteness(string manifestFile);
+        void UpdateTagManifest(string bagRoot);
     }
 }

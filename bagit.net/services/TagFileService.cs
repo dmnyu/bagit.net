@@ -1,23 +1,34 @@
 ﻿using bagit.net.domain;
 using bagit.net.interfaces;
-using Microsoft.Extensions.Logging;
 using System.Globalization;
 using System.Text;
 using System.Text.RegularExpressions;
 
 namespace bagit.net.services
 {
+
     public class TagFileService : ITagFileService
     {
         private readonly IFileManagerService _fileManagerService;
         private readonly IMessageService _messageService;
+        private readonly IManifestService _manifestService;
         private static readonly Regex _oxumPattern = new(@"^\d+\.\d+$", RegexOptions.Compiled);
+        private readonly HashSet<string> nonRepeatableKeys = new HashSet<string>(StringComparer.OrdinalIgnoreCase)
+        {
+            "BagIt-Version",
+            "Bagging-Date",
+            "Payload-Oxum",
+            "Bag-Software-Agent"
+        };
 
-        public TagFileService(IFileManagerService fileManagerService, IMessageService messageService)
+        public TagFileService(IFileManagerService fileManagerService, IMessageService messageService, IManifestService manifestService)
         {
             _fileManagerService = fileManagerService;
             _messageService = messageService;
+            _manifestService = manifestService;
         }
+
+
 
         public Dictionary<string, string> GetTagFileAsDict(string tagFilePath)
         {
@@ -39,7 +50,7 @@ namespace bagit.net.services
             return tagDictionary;
         }
 
-        public void CreateBagInfo(string bagDir)
+        public void CreateBagInfo(string bagDir, string? tagFileLocation)
         {
             var oxum = CalculateOxum(bagDir);
             var sb = new StringBuilder();
@@ -48,6 +59,20 @@ namespace bagit.net.services
             sb.Append($"BagIt-Version: {Bagit.BAGIT_VERSION}\n");
             sb.Append($"Bagging-Date: {DateTime.UtcNow:yyyy-MM-dd}\n");
             sb.Append($"Payload-Oxum: {oxum}\n");
+
+            if( tagFileLocation != null )
+            {
+                var tagFileName = Path.GetFileName(tagFileLocation);
+                _messageService.Add(new MessageRecord(MessageLevel.INFO, $"Adding metadata file {tagFileName} to bag-info.txt"));
+                var tags = GetTags(tagFileLocation);
+                foreach( var tag in tags)
+                {
+                    foreach(var val in tag.Value)
+                    {
+                        sb.Append($"{tag.Key}: {val}\n");
+                    }
+                }
+            }
 
             var bagInfoFile = Path.Combine(bagDir, "bag-info.txt");
             File.WriteAllText(bagInfoFile, sb.ToString(), new UTF8Encoding(encoderShouldEmitUTF8Identifier: false));
@@ -263,6 +288,7 @@ namespace bagit.net.services
             return _tags;
         }
 
+        // TODO: move this to FileManagerService
         public void ScanFileForInvalidControlChars(string path)
         {
             int lineNum = 0;
@@ -282,5 +308,142 @@ namespace bagit.net.services
                 }
             }
         }
+
+        public void AddTag(string key, string value, string bagRoot)
+        {
+            var bagInfo = Path.Combine(bagRoot, "bag-info.txt");
+            if(!Path.Exists(bagInfo))
+            {
+                _messageService.Add(new MessageRecord(MessageLevel.ERROR, $"{bagInfo} does not exist"));
+                return;
+            }
+
+            _messageService.Add(new MessageRecord(MessageLevel.INFO, $"Adding {key}:{value} to {bagInfo}"));
+            
+            //get the file as tags
+            var tags = GetTags(bagInfo);
+            //check that the key is a not a non-repeatable field
+            if (nonRepeatableKeys.Contains(key) && tags.ContainsKey(key))
+            {
+                _messageService.Add(new MessageRecord(MessageLevel.ERROR, $"Cannot add multiple values for the non-repeatable key: {key}"));
+                return;
+            }
+            //check that the keyvalue pair doesn't already exist
+            if (tags.ContainsKey(key)) {
+                if (tags[key].Contains(value))
+                {
+                    _messageService.Add(new MessageRecord(MessageLevel.ERROR, $"bag-info.txt already contains the value: {value} for key: {key}"));
+                    return;
+                }
+                tags[key].Add(value);
+            }
+            else
+            {
+                tags[key] = new List<string>() { value };
+            }
+
+            //convert tags to string
+            var sb = new StringBuilder();
+            foreach (var tag in tags)
+            {
+                foreach (var val in tag.Value)
+                {
+                    sb.Append($"{tag.Key}: {val}\n");
+                }
+            }
+
+            //create temp tagFile
+            var tmpFile = _fileManagerService.CreateTempFile(bagRoot);
+            _fileManagerService.WriteToFile(tmpFile, sb.ToString());
+            //delete bag-info
+            _fileManagerService.DeleteFile(bagInfo);
+            //move temp to bag-info.txt
+            _fileManagerService.MoveFile(tmpFile, bagInfo);
+            //write new tmp tag-manifest
+            _manifestService.UpdateTagManifest(bagRoot);
+
+        }
+        public void SetTag(string key, string value, string bagRoot)
+        {
+            var bagInfo = Path.Combine(bagRoot, "bag-info.txt");
+            if (!Path.Exists(bagInfo))
+            {
+                _messageService.Add(new MessageRecord(MessageLevel.ERROR, $"{bagInfo} does not exist"));
+                return;
+            }
+
+            _messageService.Add(new MessageRecord(MessageLevel.INFO, $"Setting {key}:{value} in {bagInfo}"));
+            var tags = GetTags(bagInfo);
+            tags[key] = new List<String>() { value };
+            //create temp tagFile
+
+            var sb = new StringBuilder();
+            foreach (var tag in tags)
+            {
+                foreach (var val in tag.Value)
+                {
+                    sb.Append($"{tag.Key}: {val}\n");
+                }
+            }
+
+            var tmpFile = _fileManagerService.CreateTempFile(bagRoot);
+            //write to temp tagfile
+            _fileManagerService.WriteToFile(tmpFile, sb.ToString());
+            //delete bag-info
+            _fileManagerService.DeleteFile(bagInfo);
+            //move temp to bag-info.txt
+            _fileManagerService.MoveFile(tmpFile, bagInfo);
+            //write new tmp tag-manifest
+            _manifestService.UpdateTagManifest(bagRoot);
+
+        }
+        public void DeleteTag(string key, string bagRoot)
+        {
+            var bagInfo = Path.Combine(bagRoot, "bag-info.txt");
+            if (!Path.Exists(bagInfo))
+            {
+                _messageService.Add(new MessageRecord(MessageLevel.ERROR, $"{bagInfo} does not exist"));
+                return;
+            }
+            _messageService.Add(new MessageRecord(MessageLevel.INFO, $"Deleting {key} in {bagInfo}"));
+            var tags = GetTags(bagInfo);
+            if (tags.ContainsKey(key))
+            {
+                tags.Remove(key);
+                var sb = new StringBuilder();
+                foreach (var tag in tags)
+                {
+                    foreach (var val in tag.Value)
+                    {
+                        sb.Append($"{tag.Key}: {val}\n");
+                    }
+                }
+                var tmpFile = _fileManagerService.CreateTempFile(bagRoot);
+                _fileManagerService.WriteToFile(tmpFile, sb.ToString());
+                //delete bag-info
+                _fileManagerService.DeleteFile(bagInfo);
+                //move temp to bag-info.txt
+                _fileManagerService.MoveFile(tmpFile, bagInfo);
+                //write new tmp tag-manifest
+                _manifestService.UpdateTagManifest(bagRoot);
+            }
+            else
+            {
+                _messageService.Add(new MessageRecord(MessageLevel.WARNING, $"key `{key}` does not exist in `{bagInfo}`"));
+                return;
+            }
+        }
+
+                public void ViewTagFile(string bagRoot)
+                {
+                    var bagInfo = Path.Combine(bagRoot, "bag-info.txt");
+                    Console.WriteLine("\n" + Path.GetFileName(bagInfo));
+                    Console.WriteLine("------------");
+                    foreach (var line in File.ReadAllLines(bagInfo))
+                    {
+                        Console.WriteLine(line);
+                    }
+                    Console.WriteLine();
+                }
     }
 }

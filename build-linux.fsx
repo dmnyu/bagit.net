@@ -87,13 +87,37 @@ let installScriptSource = Path.Combine(projectDir, "dist", "install scripts", "i
 let publishDir = Path.Combine(projectDir, "bin", "Release", "net9.0", "linux-x64", "publish")
 let exeName = "bagit.net.cli"
 let exeDestName = "bagit.net"
+let args = fsi.CommandLineArgs |> Array.skip 1  // skip the script name
 
 // -------------------------------
 // Steps
 // -------------------------------
 
+// 1. Clean the directories
+if args |> Array.contains "--clean" then
+    log "cleaning directories"
+    runProcess "dotnet" "clean" projectDir
+
+    let binPath = Path.Combine(projectDir, "bin")
+    if Directory.Exists(binPath) then
+        Directory.Delete(binPath, true) 
+
+    let objPath = Path.Combine(projectDir, "obj")
+    if Directory.Exists(objPath) then
+        Directory.Delete(objPath, true) 
+
 // 1. Publish the project
-runProcess "dotnet" "publish -c Release -r linux-x64 --self-contained true /p:PublishSingleFile=true" projectDir
+let selfContained =
+    if args |> Array.contains "--include-framework" then "true"
+    else "false"
+
+if selfContained = "true" then log "publishing with dotnet framework"
+else log "publishing without dotnet framework"
+
+let publishArgs =
+    $"publish -c Release -r linux-x64 /p:SelfContained={selfContained} /p:PublishSingleFile=true"
+
+runProcess "dotnet" publishArgs projectDir
 
 // 2. Get the version
 let exePath = @"bagit.net.cli/bin/Release/net9.0/linux-x64/publish/bagit.net.cli"
@@ -122,7 +146,6 @@ createTgz distPath tgFilePath
 log "Build completed successfully."
 
 //install if there is a --install flag
-let args = fsi.CommandLineArgs |> Array.skip 1  // skip the script name
 if args |> Array.exists ((=) "--install") then
     log "Installing binary"
     let relativeBinPath = $"./bagit.net.cli/dist/{version}/linux/bagit.net"

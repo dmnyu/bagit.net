@@ -24,15 +24,15 @@ namespace bagit.net.cli.Commands
 
             [CommandArgument(0, "[directory]")]
             [Description("Path to the bag directory to validate.")]
-            public string? Directory { get; set; }
+            public required string Directory { get; set; }
         }
 
         public override int Execute(CommandContext context, Settings settings, CancellationToken cancellationToken)
         {
             try
             {
-                var serviceProvider = ServiceConfigurator.BuildServiceProvider<Validator>(settings.logFile);
-                var validator = serviceProvider.GetRequiredService<Validator>();
+                var serviceProvider = ServiceConfigurator.BuildServiceProvider<BagValidator>(settings.logFile);
+                var validator = serviceProvider.GetRequiredService<BagValidator>();
                 validator.ValidateBag(settings.Directory, settings.Fast, settings.Completeness, settings.Quiet, settings.logFile, cancellationToken);
             }
             catch (Exception ex) {

@@ -4,7 +4,7 @@
 It allows you to create **BagIt bags**—structured file collections with checksums for reliable storage and transfer of digital content.  
 It currently consists of a core library (`bagit.net`) and a CLI application (`bagit.net.cli`) for Linux, MacOS, and Windows.
 
-[![Release](https://img.shields.io/badge/release-v0.2.5--alpha-blue)](https://github.com/dmnyu/bagit.net/releases/v0.2.5-alpha)
+[![Release](https://img.shields.io/badge/release-v0.2.6--alpha-blue)](https://github.com/dmnyu/bagit.net/releases/v0.2.6-alpha)
 ![BagIt.NET CI](https://github.com/dmnyu/bagit.net/actions/workflows/ci.yml/badge.svg)
 
 > ⚠️ **Note:** This project is in early development. It currently supports the creation and validation of **BagIt-formatted bags**.
@@ -23,6 +23,7 @@ Create a BagIt-formatted bag from a directory.
 |--------|-------------|
 | `--algorithm` | Specify the checksum algorithm to use: `md5`, `sha1`, `sha256` (default), `sha384`, or `sha512`. |
 | `--log` | Specify the location to write logging (default: stdout). |
+| `--tag-file` | Specify the location of an external tag-file to include in bag-info.txt |
 
 **Usage:**
 ```bash
@@ -34,6 +35,9 @@ bagit.net create --algorithm md5 /path/to/directory
 
 # Log to a file
 bagit.net create --log bagit.net.log /path/to/directory
+
+#Include tag metadata from external file in bag-info.txt
+bagit.net create --tag-file /path/to/tag-file.txt /path/to/directory
 ```
 
 ---
@@ -50,19 +54,45 @@ Validate a BagIt-formatted bag.
 **Usage:**
 ```bash
 # Validate a bag
-bagit.net validate /path/to/directory
+bagit.net validate /path/to/bag
 
 # Validate a bag with logging to file
-bagit.net validate --log bagit.net.log /path/to/directory
+bagit.net validate --log bagit.net.log /path/to/bag
 
 # Fast validation
-bagit.net validate --fast /path/to/directory
+bagit.net validate --fast /path/to/bag
 
 # Completeness Only validation
-bagit.net validate --complete /path/to/directory
+bagit.net validate --complete /path/to/bag
 ```
 >*note: setting both --fast and --complete flags will cause the application to exit* 
 
+---
+
+#### manage
+manage tag manifests in existing bag.
+
+| Option | Description |
+|--------|-------------|
+|`--add`|add a new key and value to bag-info.txt|
+|`--set`|replace the value of a key in bag-info.txt|
+|`--delete`|remove a line from bag-info.txt by the key|
+|`--view`|display the contents of bag-it.txt|
+
+**Usage:**
+```bash
+#add a key-value pair to bagit.txt
+bagit.net manage --add "External-Identifier=ID001" /path/to/bag
+
+#replace a value for a given key in bagit.txt
+bagit.net manage --set "External-Identifier=ID002" /path/to/bag
+
+#remove a key and value
+bagit.net manage --delete "External-Identifier" /path/to/bag
+
+#print contents of bag-info.txt to stdout
+bagit.net manage --view /path/to/bag
+```
 ---
 
 #### help
@@ -78,10 +108,13 @@ bagit.net help
 
 ## Binary Installation
 
+### Prerequisites
+- [.Net 9.x Runtime](https://dotnet.microsoft.com/en-us/download/dotnet/9.0)
+
 ### Linux
 ```bash
-wget https://github.com/dmnyu/bagit.net/releases/download/v0.2.5-alpha/bagit.net.cli-v0.2.5-alpha-linux-x64.tgz
-tar xvzf bagit.net.cli-v0.2.5-alpha-linux-x64.tgz
+wget https://github.com/dmnyu/bagit.net/releases/download/v0.2.6-alpha/bagit.net.cli-v0.2.6-alpha-linux-x64.tgz
+tar xvzf bagit.net.cli-v0.2.6-alpha-linux-x64.tgz
 cd bagit.net
 sudo ./install.sh
 bagit.net --help
@@ -95,8 +128,8 @@ On RHEL/CentOS systems with SELinux or `noexec` restrictions on `/tmp`, these bi
 
 ### Windows
 ```powershell
-Invoke-WebRequest -Uri https://github.com/dmnyu/bagit.net/releases/download/v0.2.5-alpha/bagit.net.cli-v0.2.5-alpha-win-x64.zip -OutFile bagit.net.cli-v0.2.5-alpha-win-x64.zip
-Expand-Archive bagit.net.cli-v0.2.5-alpha-win-x64.zip -DestinationPath .
+Invoke-WebRequest -Uri https://github.com/dmnyu/bagit.net/releases/download/v0.2.6-alpha/bagit.net.cli-v0.2.6-alpha-win-x64.zip -OutFile bagit.net.cli-v0.2.6-alpha-win-x64.zip
+Expand-Archive bagit.net.cli-v0.2.6-alpha-win-x64.zip -DestinationPath .
 cd .\bagit.net
 .\bagit.net.exe --help
 .\install.ps1
@@ -108,8 +141,8 @@ cd .\bagit.net
 
 ### MacOS
 ```bash
-wget https://github.com/dmnyu/bagit.net/releases/download/v0.2.5-alpha/bagit.net.cli-v0.2.5-alpha-macos-arm64.tgz
-tar xvzf bagit.net.cli-v0.2.5-alpha-macos-arm64.tgz
+wget https://github.com/dmnyu/bagit.net/releases/download/v0.2.6-alpha/bagit.net.cli-v0.2.6-alpha-macos-arm64.tgz
+tar xvzf bagit.net.cli-v0.2.6-alpha-macos-arm64.tgz
 cd bagit.net
 sudo ./install.sh
 bagit.net --help
@@ -119,8 +152,7 @@ bagit.net --help
 ---
 
 ## Additional Notes
-
-- The CLI is **self-contained**, so no .NET installation is required for end-users.  
+- The CLI **requires the .NET 9 runtime** to be installed on your system.  
 - On Linux and MacOS, the default install path is `/usr/local/bin/bagit.net`.  
 - On Windows, the default install path is `%LOCALAPPDATA%\bagit.net\bagit.net.exe`.  
 - For CI/CD or scripting, you can run the CLI directly from the extracted directory without installing.

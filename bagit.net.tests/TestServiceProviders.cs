@@ -32,6 +32,7 @@ namespace bagit.net.tests
             services.AddSingleton<IManifestService, ManifestService>();
             services.AddSingleton<IChecksumService, ChecksumService>();
             services.AddSingleton<IMessageService, MessageService>();
+            services.AddSingleton<IFileManagerService, FileManagerService>();
             return services.BuildServiceProvider();
         }
     }
@@ -46,6 +47,8 @@ namespace bagit.net.tests
             services.AddSingleton<ITagFileService, TagFileService>();
             services.AddSingleton<IFileManagerService, FileManagerService>();
             services.AddSingleton<IMessageService, MessageService>();
+            services.AddSingleton<IManifestService, ManifestService>();
+            services.AddSingleton<IChecksumService, ChecksumService>();
             return services.BuildServiceProvider();
         }
     }
@@ -80,24 +83,23 @@ namespace bagit.net.tests
         }
     }
 
-    public static class CreateServiceConfigurator
+    public static class DefaultServiceConfigurator
     {
         public static ServiceProvider BuildServiceProvider()
         {
             var services = new ServiceCollection();
             var logger = DefaultLogger.GetDefaultLogger();
             services.AddLogging(builder => builder.AddSerilog(logger, dispose: true));
+            services.AddSingleton<IChecksumService, ChecksumService>();
             services.AddSingleton<ICreationService, CreationService>();
-            services.AddSingleton<IValidationService, ValidationService>();
-            services.AddSingleton<ITagFileService, TagFileService>();
             services.AddSingleton<IFileManagerService, FileManagerService>();
             services.AddSingleton<IManifestService, ManifestService>();
-            services.AddSingleton<IChecksumService, ChecksumService>();
             services.AddSingleton<IMessageService, MessageService>();
+            services.AddSingleton<ITagFileService, TagFileService>();
+            services.AddSingleton<IValidationService, ValidationService>();
             return services.BuildServiceProvider();
         }
     }
-
 
     static class DefaultLogger
     {

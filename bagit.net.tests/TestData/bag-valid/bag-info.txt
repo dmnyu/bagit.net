@@ -1,0 +1,4 @@
+Bag-Software-Agent: bagit.net v0.2.6-alpha
+BagIt-Version: 1.0
+Bagging-Date: 2025-12-08
+Payload-Oxum: 9.2
