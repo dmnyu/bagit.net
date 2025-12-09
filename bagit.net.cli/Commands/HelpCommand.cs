@@ -105,7 +105,7 @@ class HelpCommand : Command<HelpCommand.Settings>
         manageOptions.AddRow("--add", "add a new key and value to bag-info.txt");
         manageOptions.AddRow("--set", "replace the value of a key in bag-info.txt");
         manageOptions.AddRow("--delete", "remove a line from bag-info.txt by the key");
-        manageOptions.AddRow("--view", "display the contents of bag-it.txt");
+        manageOptions.AddRow("--view", "display the contents of bag-info.txt");
         AnsiConsole.Write(manageOptions);
         AnsiConsole.WriteLine();
         AnsiConsole.WriteLine();
