@@ -2,6 +2,7 @@
 using bagit.net.interfaces;
 using Microsoft.Extensions.Logging;
 using Spectre.Console;
+using System.Security.Cryptography;
 
 namespace bagit.net.cli.lib
 {
@@ -38,23 +39,26 @@ namespace bagit.net.cli.lib
                 return 1;
             }
 
-            //get the algorithm
-            ChecksumAlgorithm algorithm;
+
+            //get the algorithms
+            IEnumerable<ChecksumAlgorithm> algorithms;
             if (string.IsNullOrWhiteSpace(checkSumAlgorithm))
             {
-                algorithm = ChecksumAlgorithm.SHA256;
-            }
-            else if (ChecksumAlgorithmMap.Algorithms.ContainsKey(checkSumAlgorithm))
-            {
-                algorithm = ChecksumAlgorithmMap.Algorithms[checkSumAlgorithm];
+                algorithms = new List<ChecksumAlgorithm>() { ChecksumAlgorithm.SHA256 };
             }
             else
             {
+                algorithms = GetAlgorithms(checkSumAlgorithm);
+            }
+
+            if (!algorithms.Any())
+            {
                 AnsiConsole.MarkupLine("[red][bold]ERROR:[/][/]");
-                AnsiConsole.MarkupLine($"[red]checksum algorithm {checkSumAlgorithm} is not supported[/]\n");
+                AnsiConsole.MarkupLine($"[red]no supported checksum algorithms found[/]\n");
                 BagitCLI.app.Run(new string[] { "help" }, cancellationToken);
                 return 1;
             }
+
 
             //get logging option
             if (!string.IsNullOrWhiteSpace(logFile))
@@ -63,10 +67,35 @@ namespace bagit.net.cli.lib
                 AnsiConsole.MarkupLine($"Logging to {logFile}");
             }
 
-            _creationService.CreateBag(bagPath, algorithm, tagFile);
+            
+            _creationService.CreateBag(bagPath, algorithms, tagFile);
             var messages = _messageService.GetAll();
             Logging.LogEvents(messages, quiet, _logger);
+            
             return 0;
+        }
+
+        private IEnumerable<ChecksumAlgorithm> GetAlgorithms(string algorithmCmd)
+        {
+            var algorithms = new List<ChecksumAlgorithm>();
+            var algorithmSplit = algorithmCmd.Split(",");
+            if (algorithmSplit.Length == 0) {
+                var ca = algorithmCmd.ToLower().Trim();
+                if (ChecksumAlgorithmMap.Algorithms.ContainsKey(ca))
+                {
+                    algorithms.Add(ChecksumAlgorithmMap.Algorithms[ca]);
+                }
+            }
+            foreach(var candidateAlgorithm in algorithmSplit)
+            {
+                var ca = candidateAlgorithm.ToLower().Trim();
+                if (ChecksumAlgorithmMap.Algorithms.ContainsKey(ca))
+                {
+                    algorithms.Add(ChecksumAlgorithmMap.Algorithms[ca]);
+                }
+
+            }
+            return algorithms;
         }
     }
 }

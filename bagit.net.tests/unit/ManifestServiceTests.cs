@@ -1,6 +1,8 @@
 ﻿using bagit.net.domain;
 using bagit.net.interfaces;
+using bagit.net.services;
 using Microsoft.Extensions.DependencyInjection;
+using System.Security.Cryptography;
 using Xunit.Abstractions;
 
 namespace bagit.net.tests.unit
@@ -11,15 +13,24 @@ namespace bagit.net.tests.unit
         private readonly ServiceProvider _serviceProvider;
         private readonly IManifestService _manifestService;
         private readonly IMessageService _messageService;
+        private readonly IChecksumService _checksumService;
         private readonly ITestOutputHelper _output;
+        private readonly IEnumerable<ChecksumAlgorithm> _algorithms;
         public ManifestServiceTests(ITestOutputHelper output)
         {
             _tmpDir = TestHelpers.PrepareTempTestData();
             _serviceProvider = ManifestServiceConfigurator.BuildServiceProvider();
             _manifestService = _serviceProvider.GetRequiredService<IManifestService>();
             _messageService = _serviceProvider.GetRequiredService<IMessageService>();
+            _checksumService = _serviceProvider.GetRequiredService<IChecksumService>();
             _messageService.Clear();
             _output = output;
+            _algorithms = new List<ChecksumAlgorithm>() { 
+                ChecksumAlgorithm.MD5, 
+                ChecksumAlgorithm.SHA1, 
+                ChecksumAlgorithm.SHA256, 
+                ChecksumAlgorithm.SHA384, 
+                ChecksumAlgorithm.SHA512 };
         }
 
         public void Dispose()
@@ -39,8 +50,25 @@ namespace bagit.net.tests.unit
         public void Test_Create_Payload_Manifest(ChecksumAlgorithm algorithm, string manifestName)
         {
             var dataBag = Path.Combine(_tmpDir, "data-only");
-            _manifestService.CreatePayloadManifest(dataBag, algorithm);
+            _manifestService.CreatePayloadManifest(dataBag, new List<ChecksumAlgorithm>() { algorithm });
             Assert.True(File.Exists(Path.Combine(dataBag, manifestName)));
+
+        }
+
+        [Fact]
+        [Trait("Category", "Unit")]
+        public void Test_Create_Multiple_Payload_Manifests()
+        {
+            var dataBag = Path.Combine(_tmpDir, "data-only");
+            _manifestService.CreatePayloadManifest(dataBag, _algorithms);
+            foreach (var algorithm in _algorithms)
+            {
+                var algorithmCode = _checksumService.GetAlgorithmCode(algorithm);
+                var manifestPath = Path.Combine(dataBag, $"manifest-{algorithmCode}.txt");
+                Assert.True(File.Exists(manifestPath));
+                var lines = File.ReadAllLines(manifestPath);
+                Assert.True(lines.Length > 0, $"Manifest {manifestPath} should have at least one line.");
+            }
         }
 
         [Theory]
@@ -53,8 +81,27 @@ namespace bagit.net.tests.unit
         public void Test_Create_Tag_Manifest(ChecksumAlgorithm algorithm, string manifestName)
         {
             var dataBag = Path.Combine(_tmpDir, "no-tag-manifest");
-            _manifestService.CreateTagManifestFile(dataBag, algorithm);
-            Assert.True(File.Exists(Path.Combine(dataBag, manifestName)));
+            _manifestService.CreateTagManifestFile(dataBag, new List<ChecksumAlgorithm>() { algorithm });
+            var tagManifestPath = Path.Combine(dataBag, manifestName);
+            Assert.True(File.Exists(tagManifestPath));
+            var lines = File.ReadAllLines(tagManifestPath);
+            Assert.True(lines.Length > 0);
+        }
+
+        [Fact]
+        [Trait("Category", "Unit")]
+        public void Test_Create_Multiple_Tag_Manifests()
+        {
+            var dataBag = Path.Combine(_tmpDir, "bag-valid");
+            _manifestService.CreateTagManifestFile(dataBag, _algorithms);
+            foreach (var algorithm in _algorithms)
+            {
+                var algorithmCode = _checksumService.GetAlgorithmCode(algorithm);
+                var tagmanifestPath = Path.Combine(dataBag, $"tagmanifest-{algorithmCode}.txt");
+                Assert.True(File.Exists(tagmanifestPath));
+                var lines = File.ReadAllLines(tagmanifestPath);
+                Assert.True(lines.Length > 0);
+            }
         }
 
         [Theory]

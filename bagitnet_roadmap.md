@@ -2,16 +2,13 @@
 
 This roadmap outlines the planned feature development and release milestones for **bagit.net**, a C# implementation of the BagIt specification (RFC 8493). It covers versions **0.2.0** through **0.4.0**, with clear goals and scope for each.
 
-
 ---
 
-## **0.2.7 - Multiple Checksum Support**
-**Objective:** Allow multiple checksum algorithms be declared when creating a bag and create manifest files for each algorithm.
-
-## **0.2.8 — Multithreaded Checksum Calculation**
-**Objective:** Improve performance of manifest generation using parallelism.
+## **0.2.7 - Multiple Checksum Support  Multithreaded Checksum Calculation**
+**Objective:** Allow multiple checksum algorithms be declared when creating a bag and create manifest files for each algorithm. Improve performance of manifest generation using parallelism.
 
 **Features:**
+- Support for multiple checksums during bag creation
 - Parallel hashing across payload files.
 - Configurable degree of parallelism (`--threads N`).
 - Streamed hashing to minimize memory usage.
@@ -25,11 +22,12 @@ This release focuses on speed and scalability, especially for large bags.
 
 ## Future Considerations (Post‑0.3)
 These are ideas for after the 0.4.x line:
+- Bag transfer to http endpoint
 - Bag repair tools (e.g., regenerate missing checksums).
 - Partial rehashing (only changed files).
 - Support for bag serialization (ZIP, TAR).
 - Plug‑in architecture for custom checksum algorithms.
-- .NET Aspire or MAUI GUI frontend.
+- Avalonia GUI
 
 ---
 

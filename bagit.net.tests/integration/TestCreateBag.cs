@@ -43,7 +43,7 @@ namespace bagit.net.tests.integration
         [Trait("Category", "Integration")]
         public void Create_Bag()
         {
-            _creationService.CreateBag(Path.Combine(_tmpDir, "dir"), ChecksumAlgorithm.MD5, null);
+            _creationService.CreateBag(Path.Combine(_tmpDir, "dir"), new List<ChecksumAlgorithm>() { ChecksumAlgorithm.MD5 }, null);
             var messages = _messageService.GetAll();
             Assert.False(MessageHelpers.HasError(messages));
             foreach (var message in messages)
@@ -54,7 +54,7 @@ namespace bagit.net.tests.integration
         [Trait("Category", "Integration")]
         public void Create_Bag_With_Metdata()
         {
-            _creationService.CreateBag(Path.Combine(_tmpDir, "dir"), ChecksumAlgorithm.MD5, Path.Combine(_tmpDir, "metadata.txt"));
+            _creationService.CreateBag(Path.Combine(_tmpDir, "dir"), new List<ChecksumAlgorithm>() { ChecksumAlgorithm.MD5 }, Path.Combine(_tmpDir, "metadata.txt"));
             var messages = _messageService.GetAll();
             Assert.False(MessageHelpers.HasError(messages));
             foreach (var message in messages)
@@ -65,7 +65,7 @@ namespace bagit.net.tests.integration
         [Trait("Category", "Integration")]
         public void CreateBag_Throws_On_Invalid_Directories()
         {
-            _creationService.CreateBag(Path.Combine(_tmpDir, "Foo"), ChecksumAlgorithm.MD5, null);
+            _creationService.CreateBag(Path.Combine(_tmpDir, "Foo"), new List<ChecksumAlgorithm>() { ChecksumAlgorithm.MD5 }, null);
             var messages = _messageService.GetAll();
             Assert.True(MessageHelpers.HasError(messages));
             foreach (var message in messages)

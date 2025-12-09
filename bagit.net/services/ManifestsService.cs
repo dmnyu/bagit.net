@@ -1,8 +1,9 @@
-﻿using System.Runtime.InteropServices;
+﻿using bagit.net.domain;
+using bagit.net.interfaces;
+using System.Runtime.InteropServices;
+using System.Security.Cryptography;
 using System.Text;
 using System.Text.RegularExpressions;
-using bagit.net.interfaces;
-using bagit.net.domain;
 
 namespace bagit.net.services
 {
@@ -25,38 +26,67 @@ namespace bagit.net.services
             _messageService = messageService;
         }
 
-        public void CreatePayloadManifest(string bagRoot, ChecksumAlgorithm algorithm)
+        public void CreatePayloadManifest(string bagRoot, IEnumerable<ChecksumAlgorithm> algorithms)
         {
-            var algorithmCode = _checksumService.GetAlgorithmCode(algorithm);
-            _messageService.Add(new MessageRecord(MessageLevel.INFO, $"Generating manifests using {algorithmCode}"));
-            var manifestContent = new StringBuilder();
+
+            var checksumManifests = algorithms
+                .Distinct()
+                .ToDictionary(
+                    alg => _checksumService.GetAlgorithmCode(alg),
+                    alg => new StringBuilder()
+                );
+
+
+            
             var fileEntries = GetPayloadFiles(bagRoot);
             foreach (var entry in fileEntries)
             {
                 _messageService.Add(new MessageRecord(MessageLevel.INFO, $"Generating manifest lines for file {entry}"));
-                var checksum = _checksumService.CalculateChecksum(Path.Combine(bagRoot, entry), algorithm);
-                manifestContent.Append($"{checksum.Trim()} {entry.Trim()}\n");
+                foreach (var algorithm in algorithms)
+                {
+                    var algorithmCode = _checksumService.GetAlgorithmCode(algorithm);
+                    var checksum = _checksumService.CalculateChecksum(Path.Combine(bagRoot, entry), algorithm);
+                    checksumManifests[algorithmCode].AppendLine($"{checksum} {entry}");
+                }
             }
 
-            var manifestFilename = Path.Combine(bagRoot, $"manifest-{algorithmCode}.txt");
-            File.WriteAllText(manifestFilename, manifestContent.ToString(), new UTF8Encoding(encoderShouldEmitUTF8Identifier: false));
+            foreach (var algorithm in algorithms)
+            {
+                var algorithmCode = _checksumService.GetAlgorithmCode(algorithm);
+                var manifestFilename = Path.Combine(bagRoot, $"manifest-{algorithmCode}.txt");
+                _fileManagerService.WriteToFile(manifestFilename, checksumManifests[algorithmCode].ToString());
+            }
+            
+
         }
 
-        public void CreateTagManifestFile(string bagRoot, ChecksumAlgorithm algorithm)
+        public void CreateTagManifestFile(string bagRoot, IEnumerable<ChecksumAlgorithm> algorithms)
         {
-            var algorithmCode = _checksumService.GetAlgorithmCode(algorithm);
-            var manifestFilename = Path.Combine(bagRoot, $"tagmanifest-{algorithmCode}.txt");
-            _messageService.Add(new MessageRecord(MessageLevel.INFO, $"Creating {manifestFilename}"));
-            
-            StringBuilder sb  = new StringBuilder();
+
+            var checksumManifests = algorithms
+                .Distinct()
+                .ToDictionary(
+                    alg => _checksumService.GetAlgorithmCode(alg),
+                    alg => new StringBuilder()
+            );
+
             var fileEntries = GetRootFiles(bagRoot);
+
             foreach (var entry in fileEntries)
             {
-                var checksum = _checksumService.CalculateChecksum(Path.Combine(bagRoot, entry), algorithm);
-                sb.Append($"{checksum.Trim()} {entry.Trim()}\n");
+                foreach (var algorithm in algorithms)
+                {
+                    var algorithmCode = _checksumService.GetAlgorithmCode(algorithm);
+                    var checksum = _checksumService.CalculateChecksum(Path.Combine(bagRoot, entry), algorithm);
+                    checksumManifests[algorithmCode].AppendLine($"{checksum} {entry}");
+                }
             }
 
-            _fileManagerService.WriteToFile(manifestFilename, sb.ToString());
+            foreach (var algorithm in algorithms) {
+                var algorithmCode = _checksumService.GetAlgorithmCode(algorithm);
+                var manifestFilename = Path.Combine(bagRoot, $"tagmanifest-{algorithmCode}.txt");
+                _fileManagerService.WriteToFile(manifestFilename, checksumManifests[algorithmCode].ToString());
+            }
         }
 
         public void UpdateTagManifest(string bagRoot)
