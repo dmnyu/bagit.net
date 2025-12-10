@@ -26,7 +26,7 @@ namespace bagit.net.services
             _messageService = messageService;
         }
 
-        public async Task CreatePayloadManifest(string bagRoot, IEnumerable<ChecksumAlgorithm> algorithms)
+        public async Task CreatePayloadManifest(string bagRoot, IEnumerable<ChecksumAlgorithm> algorithms, int processes)
         {
 
             var checksumManifests = algorithms
@@ -37,7 +37,7 @@ namespace bagit.net.services
                 );
 
             var lockObjects = algorithms.ToDictionary(alg => _checksumService.GetAlgorithmCode(alg), alg => new object());
-            var semaphore = new SemaphoreSlim(8);
+            var semaphore = new SemaphoreSlim(processes);
             var fileEntries = GetPayloadFiles(bagRoot);
 
             var tasks = fileEntries.Select(async entry =>

@@ -1,8 +1,6 @@
 ﻿using bagit.net.domain;
 using bagit.net.interfaces;
-using bagit.net.services;
 using Microsoft.Extensions.DependencyInjection;
-using System.Security.Cryptography;
 using Xunit.Abstractions;
 
 namespace bagit.net.tests.unit
@@ -16,6 +14,7 @@ namespace bagit.net.tests.unit
         private readonly IChecksumService _checksumService;
         private readonly ITestOutputHelper _output;
         private readonly IEnumerable<ChecksumAlgorithm> _algorithms;
+        private readonly int _processes = 1;
         public ManifestServiceTests(ITestOutputHelper output)
         {
             _tmpDir = TestHelpers.PrepareTempTestData();
@@ -50,7 +49,7 @@ namespace bagit.net.tests.unit
         public async Task Test_Create_Payload_Manifest(ChecksumAlgorithm algorithm, string manifestName)
         {
             var dataBag = Path.Combine(_tmpDir, "data-only");
-            await _manifestService.CreatePayloadManifest(dataBag, new List<ChecksumAlgorithm> { algorithm });
+            await _manifestService.CreatePayloadManifest(dataBag, new List<ChecksumAlgorithm> { algorithm }, _processes);
             Assert.True(File.Exists(Path.Combine(dataBag, manifestName)));
 
         }
@@ -60,7 +59,7 @@ namespace bagit.net.tests.unit
         public async Task Test_Create_Multiple_Payload_Manifests()
         {
             var dataBag = Path.Combine(_tmpDir, "data-only");
-            await _manifestService.CreatePayloadManifest(dataBag, _algorithms);
+            await _manifestService.CreatePayloadManifest(dataBag, _algorithms, _processes);
             foreach (var algorithm in _algorithms)
             {
                 var algorithmCode = _checksumService.GetAlgorithmCode(algorithm);

@@ -68,7 +68,7 @@ namespace bagit.net.cli.lib
             }
 
             
-            _creationService.CreateBag(bagPath, algorithms, tagFile);
+            _creationService.CreateBag(bagPath, algorithms, tagFile, 1);
             var messages = _messageService.GetAll();
             Logging.LogEvents(messages, quiet, _logger);
             
