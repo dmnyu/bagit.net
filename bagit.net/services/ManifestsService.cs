@@ -18,8 +18,8 @@ namespace bagit.net.services
         private static readonly Regex _nonCREndingsRegex = new(@"\r(?!\n)");
         public static readonly Regex _checkSumRegex = new(@"-(md5|sha1|sha256|sha384|sha512)\b", RegexOptions.Compiled);
         public static readonly Regex _tagmanifestRegex = new(@"tagmanifest-(md5|sha1|sha256|sha384|sha512).txt$", RegexOptions.Compiled);
-       
-    
+
+
         public ManifestService(IChecksumService checksumService, IMessageService messageService, IFileManagerService fileManagerService)
         {
             _checksumService = checksumService;
@@ -30,6 +30,8 @@ namespace bagit.net.services
 
     public async Task CreatePayloadManifest(string bagRoot, IEnumerable<ChecksumAlgorithm> algorithms, int processes)
     {
+        
+        _messageService.Add(new MessageRecord(MessageLevel.INFO, $"Using {processes} processes to generate manifests: {string.Join(",", algorithms)}"));
         // Prepare per-algorithm StringBuilders and lock objects
         var checksumManifests = algorithms
             .Distinct()

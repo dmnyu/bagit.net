@@ -4,9 +4,12 @@ using Microsoft.Extensions.Logging;
 
 namespace bagit.net.services
 {
+    
+
     public class MessageService : IMessageService
     {
         private readonly ILogger _logger;
+        private readonly object _lock = new();
         public MessageService(ILogger<MessageService> logger) {
             _logger = logger;
         }
@@ -14,10 +17,17 @@ namespace bagit.net.services
         private readonly List<MessageRecord> _messages = new();
         public void Add(MessageRecord message)
         {
-            _messages.Add(message);
-            LogEvent(message);
+            lock (_lock)
+            {
+                _messages.Add(message);
+                LogEvent(message);
+            }
         }
-        public void AddRange(IEnumerable<MessageRecord> messages) => _messages.AddRange(messages);
+        public void AddRange(IEnumerable<MessageRecord> messages) {
+            _messages.AddRange(messages);
+            LogEvents(messages);
+        
+        }
         public IReadOnlyList<MessageRecord> GetAll() => _messages.AsReadOnly();
         public void Clear() => _messages.Clear();
 
