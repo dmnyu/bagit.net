@@ -16,7 +16,7 @@ namespace bagit.net.services
             _manifestService = manifestService;
             _fileManagerService = fileManagerService;
         }
-        public void CreateBag(string dirLocation, IEnumerable<ChecksumAlgorithm> algorithms, string? tagFileLocation = null, int processes = 1)
+        public async Task CreateBag(string dirLocation, IEnumerable<ChecksumAlgorithm> algorithms, string? tagFileLocation = null, int processes = 1)
         {
             _messageService.Add(new MessageRecord(MessageLevel.INFO, $"Using bagit.net v{Bagit.VERSION}"));
             if (dirLocation == null)
@@ -39,7 +39,7 @@ namespace bagit.net.services
             _fileManagerService.MoveContentsOfDirectory(dirLocation, tempDataDir);
             _messageService.Add(new MessageRecord(MessageLevel.INFO, $"Moving {tempDataDir} to data"));
             _fileManagerService.MoveDirectory(tempDataDir, Path.Combine(dirLocation, "data"));
-            _manifestService.CreatePayloadManifest(dirLocation, algorithms, processes);
+            await _manifestService.CreatePayloadManifest(dirLocation, algorithms, processes);
             _messageService.Add(new MessageRecord(MessageLevel.INFO, "Creating bagit.txt"));
             _tagFileService.CreateBagItTXT(dirLocation);
             _messageService.Add(new MessageRecord(MessageLevel.INFO, "Creating bag-info.txt"));

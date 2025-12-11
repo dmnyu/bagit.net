@@ -9,29 +9,29 @@ namespace bagit.net.tests.unit
     {
         readonly ServiceProvider _serviceProvider;
         readonly IChecksumService _checksumService;
-        readonly string _tmpDir;
+        readonly string _testDir;
 
         public ChecksumServiceUnitTests()
         {
             _serviceProvider = ChecksumServiceConfigurator.BuildServiceProvider();
             _checksumService = _serviceProvider.GetRequiredService<IChecksumService>();
-            _tmpDir = TestHelpers.PrepareTempTestData();
+            _testDir = TestHelpers.PrepareTempTestData();
         }
 
         public void Dispose() {
             _serviceProvider.Dispose();
-            if (Directory.Exists(_tmpDir))
+            if (Directory.Exists(_testDir))
             {
-                Directory.Delete(_tmpDir, true);
+                Directory.Delete(_testDir, true);
             }
         }
 
         [Fact]
         [Trait("Category", "Unit")]
-        public void Test_Calculate_Checksum()
+        public async Task Test_Calculate_Checksum()
         {
-            var goldenFile = Path.Combine(_tmpDir, "golden-files", "golden-file.txt");
-            var calculatedChecksum = _checksumService.CalculateChecksum(goldenFile, ChecksumAlgorithm.MD5).GetAwaiter().GetResult();
+            var goldenFile = Path.Combine(_testDir, "golden-files", "golden-file.txt");
+            var calculatedChecksum = await _checksumService.CalculateChecksum(goldenFile, ChecksumAlgorithm.MD5);
             Assert.Equal("82715cc04f1900c87118d8780fc0b04a", calculatedChecksum);
         }
 
@@ -45,7 +45,7 @@ namespace bagit.net.tests.unit
 
         public void Test_Compare_Checksums_For_Empty_File(ChecksumAlgorithm algorithm, string expectedChecksum)
         {
-            var emptyFile = Path.Combine(_tmpDir, "empty.txt");
+            var emptyFile = Path.Combine(_testDir, "empty.txt");
             File.WriteAllBytes(emptyFile, Array.Empty<byte>());
             AssertFileChecksum(emptyFile, expectedChecksum, algorithm);
         }
@@ -59,7 +59,7 @@ namespace bagit.net.tests.unit
         [InlineData(ChecksumAlgorithm.SHA512, "07893577f0b21751081feb2817bc817bdf7d8084aca7e40a8a727be89d731c05be418974d2ee4834bf6722775e9712a5d4dd2661cd666549eb571c8643443942")]
         public void Test_Compare_Checksums_For_Golden_File(ChecksumAlgorithm algorithm, string expectedChecksum)
         {
-            var goldenFile = Path.Combine(_tmpDir, "golden-files", "golden-file.txt");
+            var goldenFile = Path.Combine(_testDir, "golden-files", "golden-file.txt");
             AssertFileChecksum(goldenFile, expectedChecksum, algorithm);
         }
 

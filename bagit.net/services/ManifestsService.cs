@@ -1,5 +1,6 @@
 ﻿using bagit.net.domain;
 using bagit.net.interfaces;
+using System.Collections.Concurrent;
 using System.Runtime.InteropServices;
 using System.Security.Cryptography;
 using System.Text;
@@ -26,53 +27,66 @@ namespace bagit.net.services
             _messageService = messageService;
         }
 
-        public async Task CreatePayloadManifest(string bagRoot, IEnumerable<ChecksumAlgorithm> algorithms, int processes)
+
+    public async Task CreatePayloadManifest(string bagRoot, IEnumerable<ChecksumAlgorithm> algorithms, int processes)
+    {
+        // Prepare per-algorithm StringBuilders and lock objects
+        var checksumManifests = algorithms
+            .Distinct()
+            .ToDictionary(
+                alg => _checksumService.GetAlgorithmCode(alg),
+                alg => new StringBuilder()
+            );
+
+        var lockObjects = algorithms.ToDictionary(
+            alg => _checksumService.GetAlgorithmCode(alg),
+            alg => new object()
+        );
+
+        var semaphore = new SemaphoreSlim(processes);
+        var fileEntries = GetPayloadFiles(bagRoot);
+
+        // Start a task for each file
+        var tasks = fileEntries.Select(async entry =>
         {
-
-            var checksumManifests = algorithms
-                .Distinct()
-                .ToDictionary(
-                    alg => _checksumService.GetAlgorithmCode(alg),
-                    alg => new StringBuilder()
-                );
-
-            var lockObjects = algorithms.ToDictionary(alg => _checksumService.GetAlgorithmCode(alg), alg => new object());
-            var semaphore = new SemaphoreSlim(processes);
-            var fileEntries = GetPayloadFiles(bagRoot);
-
-            var tasks = fileEntries.Select(async entry =>
+            var currentEntry = entry; // local copy to avoid async capture issues
+            await semaphore.WaitAsync();
+            try
             {
-                await semaphore.WaitAsync();
-                try
+                _messageService.Add(new MessageRecord(MessageLevel.INFO, $"Generating manifest lines for file {currentEntry}"));
+
+                foreach (var algorithm in algorithms)
                 {
-                    _messageService.Add(new MessageRecord(MessageLevel.INFO, $"Generating manifest lines for file {entry}"));
-                    foreach (var algorithm in algorithms)
+                    var algorithmCode = _checksumService.GetAlgorithmCode(algorithm);
+                    var checksum = await _checksumService.CalculateChecksum(Path.Combine(bagRoot, currentEntry), algorithm);
+
+                    // Append checksum line safely
+                    lock (lockObjects[algorithmCode])
                     {
-                        var algorithmCode = _checksumService.GetAlgorithmCode(algorithm);
-                        var checksum = await _checksumService.CalculateChecksum(Path.Combine(bagRoot, entry), algorithm);
-                        lock (lockObjects[algorithmCode])
-                        {
-                            checksumManifests[algorithmCode].AppendLine($"{checksum} {entry}");
-                        }
+                        checksumManifests[algorithmCode].AppendLine($"{checksum} {currentEntry}");
                     }
                 }
-                finally
-                {
-                    semaphore.Release();
-                }
-            });
-            await Task.WhenAll(tasks);
-
-            foreach (var algorithm in algorithms)
-            {
-                var algorithmCode = _checksumService.GetAlgorithmCode(algorithm);
-                var manifestFilename = Path.Combine(bagRoot, $"manifest-{algorithmCode}.txt");
-                _fileManagerService.WriteToFile(manifestFilename, checksumManifests[algorithmCode].ToString());
             }
+            finally
+            {
+                semaphore.Release();
+            }
+        });
 
+        // Wait for all files to finish
+        await Task.WhenAll(tasks);
+
+        // Write out each manifest
+        foreach (var kvp in checksumManifests)
+        {
+            var manifestPath = Path.Combine(bagRoot, $"manifest-{kvp.Key}.txt");
+            await File.WriteAllTextAsync(manifestPath, kvp.Value.ToString());
         }
+    }
 
-        public void CreateTagManifestFile(string bagRoot, IEnumerable<ChecksumAlgorithm> algorithms)
+
+
+    public void CreateTagManifestFile(string bagRoot, IEnumerable<ChecksumAlgorithm> algorithms)
         {
 
             var checksumManifests = algorithms
@@ -89,7 +103,7 @@ namespace bagit.net.services
                 foreach (var algorithm in algorithms)
                 {
                     var algorithmCode = _checksumService.GetAlgorithmCode(algorithm);
-                    var checksum = _checksumService.CalculateChecksum(Path.Combine(bagRoot, entry), algorithm);
+                    var checksum = _checksumService.CalculateChecksum(Path.Combine(bagRoot, entry), algorithm).GetAwaiter().GetResult();
                     checksumManifests[algorithmCode].AppendLine($"{checksum} {entry}");
                 }
             }

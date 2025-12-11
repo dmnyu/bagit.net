@@ -54,5 +54,10 @@
             return false;
         }
     }
+
+    public static class MessageContext
+    {
+        public static readonly AsyncLocal<bool> Quiet = new();
+    }
 }
 
