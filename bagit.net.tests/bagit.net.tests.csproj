@@ -32,6 +32,7 @@
     <Folder Include="bagit.net.tests.benchmarks\" />
     <Folder Include="TestData\bag-incomplete\data\subdir\" />
     <Folder Include="TestData\golden-files\" />
+    <Folder Include="TestData\foo\" />
   </ItemGroup>
 
 </Project>
