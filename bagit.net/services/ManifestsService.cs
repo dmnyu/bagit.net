@@ -86,8 +86,6 @@ namespace bagit.net.services
         }
     }
 
-
-
     public void CreateTagManifestFile(string bagRoot, IEnumerable<ChecksumAlgorithm> algorithms)
         {
 
@@ -184,40 +182,6 @@ namespace bagit.net.services
                 .ToList();
         }
 
-        public void ValidateManifestFiles(string bagPath)
-        {
-            foreach (var f in Directory.EnumerateFiles(bagPath))
-            {
-                if (_manifestRegex.IsMatch(Path.GetFileName(f)))
-                    ValidateManifestFile(f);
-            }
-        }
-
-        public void ValidateManifestFile(string manifestFile)
-        {
-            var messages = new List<MessageRecord>();
-            string? bagRoot = Path.GetDirectoryName(manifestFile);
-            string fn = Path.GetFileName(manifestFile);
-            ChecksumAlgorithm algorithm = GetManifestAlgorithm(fn);
-
-            ValidateManifestLineEndings(manifestFile);
-
-            // Fix: Ensure bagRoot is not null before passing to ValidateManifestLine
-            if (bagRoot == null)
-            {
-                _messageService.Add(new MessageRecord(MessageLevel.ERROR, $"Cannot determine directory for manifest file '{manifestFile}'."));
-                return;
-            }
-
-            foreach (var line in File.ReadLines(manifestFile))
-            {
-                if (string.IsNullOrWhiteSpace(line))
-                    continue;
-
-                ValidateManifestLine(line, bagRoot, fn, algorithm);
-            }
-        }
-
         internal ChecksumAlgorithm GetManifestAlgorithm(string manifestFilename)
         {
             Match match = _checkSumRegex.Match(manifestFilename);
@@ -227,10 +191,70 @@ namespace bagit.net.services
             return ChecksumAlgorithmMap.Algorithms[match.Groups[1].Value.ToLowerInvariant()];
         }
 
-        internal void ValidateManifestLine(string line, string manifestDir, string manifestFileName, ChecksumAlgorithm algorithm)
-        {
-            
+        // Validation methods
 
+
+        public async Task ValidateManifestFiles(string bagPath, int processes)
+        {
+            var files = Directory
+                .EnumerateFiles(bagPath)
+                .Where(f => _manifestRegex.IsMatch(Path.GetFileName(f)))
+                .ToList();
+
+            _messageService.Add(new MessageRecord(MessageLevel.INFO, $"validating checksums using {processes} processes"));
+
+            using var semaphore = new SemaphoreSlim(processes);
+
+            var tasks = files.Select(async file =>
+            {
+                await semaphore.WaitAsync();
+                try
+                {
+                    await ValidateManifestFile(file, processes);
+                }
+                finally
+                {
+                    semaphore.Release();
+                }
+            });
+
+            await Task.WhenAll(tasks);
+        }
+
+        public async Task ValidateManifestFile(string manifestFile, int processes)
+        {
+            string? bagRoot = Path.GetDirectoryName(manifestFile);
+            if (bagRoot == null)
+            {
+                _messageService.Add(new MessageRecord(MessageLevel.ERROR, $"Cannot determine directory for manifest '{manifestFile}'."));
+                return;
+            }
+
+            var lines = await File.ReadAllLinesAsync(manifestFile);
+
+            using var semaphore = new SemaphoreSlim(processes);
+
+            var tasks = lines
+                .Where(line => !string.IsNullOrWhiteSpace(line))
+                .Select(async line =>
+                {
+                    await semaphore.WaitAsync();
+                    try
+                    {
+                        await ValidateManifestLine(line, bagRoot, Path.GetFileName(manifestFile), GetManifestAlgorithm(manifestFile));
+                    }
+                    finally
+                    {
+                        semaphore.Release();
+                    }
+                });
+
+            await Task.WhenAll(tasks);
+        }
+
+
+        public async Task ValidateManifestLine(string line, string manifestDir, string manifestFileName, ChecksumAlgorithm algorithm)
+        {
             var parts = line.Split(' ', 2, StringSplitOptions.None);
             if (parts.Length != 2)
             {
@@ -241,7 +265,6 @@ namespace bagit.net.services
             string checksum = parts[0].Trim();
             string payloadFile = parts[1].Trim();
 
-            // Normalize path for Windows
             if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
             {
                 payloadFile = payloadFile
@@ -251,7 +274,6 @@ namespace bagit.net.services
 
             string fullPath = Path.Combine(manifestDir, payloadFile);
             string filename = Path.GetFileName(payloadFile);
-
 
             if (line.Length > 200)
                 _messageService.Add(new MessageRecord(MessageLevel.WARNING, $"Manifest line exceeds 200 characters, may be too long for some file systems: {line}"));
@@ -263,10 +285,12 @@ namespace bagit.net.services
                 _messageService.Add(new MessageRecord(MessageLevel.WARNING, $"{fullPath} is not NFC-Normalized"));
 
             _messageService.Add(new MessageRecord(MessageLevel.INFO, $"Verifying checksum for file {fullPath}"));
-            if (!_checksumService.CompareChecksum(fullPath, checksum, algorithm))
+
+            // This is the key: make checksum comparison async
+            bool valid = await _checksumService.CompareChecksum(fullPath, checksum, algorithm);
+            if (!valid)
                 _messageService.Add(new MessageRecord(MessageLevel.ERROR, $"Checksum mismatch for '{payloadFile}' in manifest '{manifestFileName}'. Expected: {checksum}"));
         }
-
 
         public void ValidateManifestLineEndings(string manifestFile)
         {

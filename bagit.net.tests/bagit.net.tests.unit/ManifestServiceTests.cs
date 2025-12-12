@@ -159,6 +159,16 @@ namespace bagit.net.tests.unit
             }
         }
 
+        [Fact]
+        [Trait("Category", "Unit")]
+        public void Test_Validate_Manifests_Multithread()
+        {
+            _testDir = TestHelpers.PrepareTempTestDataDir("bag-incomplete");
+            _manifestService.ValidateManifestFiles(_testDir, 6);
+            var messages = _messageService.GetAll();
+            Assert.Empty(messages);
+        }
+
     }
 
 }

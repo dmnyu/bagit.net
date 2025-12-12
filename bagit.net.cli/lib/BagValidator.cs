@@ -1,7 +1,9 @@
 ﻿using bagit.net.domain;
 using bagit.net.interfaces;
+using bagit.net.services;
 using Microsoft.Extensions.Logging;
 using Spectre.Console;
+using System.Formats.Tar;
 
 namespace bagit.net.cli.lib
 {
@@ -17,7 +19,7 @@ namespace bagit.net.cli.lib
             _messageService = messageService;
         }
 
-        public int ValidateBag(string? bagPath, bool fast, bool complete, bool quiet, string? logFile, CancellationToken cancellationToken)
+        public async Task<int> ValidateBag(string? bagPath, bool fast, bool complete, bool quiet, string? logFile, int? processes, CancellationToken cancellationToken)
         {
             _messageService.Add(new MessageRecord(MessageLevel.INFO, $"using bagit.net v{Bagit.VERSION}"));
 
@@ -76,14 +78,21 @@ namespace bagit.net.cli.lib
                 }
                 else
                 {
-                    _validationService.ValidateBag(bagPath);
-                    messages = _messageService.GetAll().ToList();
-                    if(!MessageHelpers.HasError(messages))
+                    int p = processes ?? 1;
+
+                    try
                     {
-                       messages.Add(new MessageRecord(MessageLevel.INFO, "bag is valid"));    
+                        await _validationService.ValidateBag(bagPath, p);
                     }
+                    catch (Exception ex)
+                    {
+                        _messageService.Add(new MessageRecord(MessageLevel.ERROR, $"Bag Creation failed: {ex}"));
+                    }
+
+                
+
                 }
-                Logging.LogEvents(messages, quiet, _logger);
+                
                 return 0;
 
             } catch (Exception ex) {

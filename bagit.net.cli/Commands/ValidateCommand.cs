@@ -6,7 +6,7 @@ using System.ComponentModel;
 
 namespace bagit.net.cli.Commands
 {
-    class ValidateCommand : Command<ValidateCommand.Settings>
+    class ValidateCommand : AsyncCommand<ValidateCommand.Settings>
     {
         public class Settings : CommandSettings
         {
@@ -22,24 +22,33 @@ namespace bagit.net.cli.Commands
             [CommandOption("--quiet")]
             public bool Quiet { get; set; }
 
+            [CommandOption("--processes")]
+            public int? Processes { get; set; }
+
             [CommandArgument(0, "[directory]")]
             [Description("Path to the bag directory to validate.")]
             public required string Directory { get; set; }
         }
 
-        public override int Execute(CommandContext context, Settings settings, CancellationToken cancellationToken)
+        public override async Task<int> ExecuteAsync(CommandContext context, Settings settings, CancellationToken cancellationToken)
         {
             try
             {
                 var serviceProvider = ServiceConfigurator.BuildServiceProvider<BagValidator>(settings.logFile);
                 var validator = serviceProvider.GetRequiredService<BagValidator>();
-                validator.ValidateBag(settings.Directory, settings.Fast, settings.Completeness, settings.Quiet, settings.logFile, cancellationToken);
+                return await validator.ValidateBag(
+                    settings.Directory, 
+                    settings.Fast, 
+                    settings.Completeness, 
+                    settings.Quiet, 
+                    settings.logFile,
+                    settings.Processes,
+                    cancellationToken);
             }
             catch (Exception ex) {
                 AnsiConsole.MarkupLine($"[red][bold]ERROR:[/] {ex.Message}");
                 return 1;
             }
-            return 0;
         }
     }
 }

@@ -61,7 +61,7 @@ namespace bagit.net.services
             return true;
         }
 
-        public void ValidateBag(string bagPath)
+        public async Task ValidateBag(string bagPath, int processes)
         {
             //Check that all required files  
             if(!HasRequiredFiles(bagPath))
@@ -73,17 +73,17 @@ namespace bagit.net.services
             //if there is a baginfo.txt
             var _bagInfo = Path.Combine(bagPath, "bag-info.txt");
             if(!File.Exists(_bagInfo))
-            {
-                _messageService.Add(new MessageRecord(MessageLevel.WARNING, ($"{bagPath} does not contain a bag-info.txt file")));
-            }
+                 _messageService.Add(new MessageRecord(MessageLevel.WARNING, ($"{bagPath} does not contain a bag-info.txt file")));
             else
-            {
                 _tagFileService.ValidateBagInfo(_bagInfo);
-            }
 
             //validate any manifests
-            _manifestService.ValidateManifestFiles(bagPath);
+            await _manifestService.ValidateManifestFiles(bagPath, processes);
 
+            if (!MessageHelpers.HasError(_messageService.GetAll()))
+                _messageService.Add(new MessageRecord(MessageLevel.INFO, "bag is valid"));
+            else
+                _messageService.Add(new MessageRecord(MessageLevel.ERROR, "bag is not valid"));
         }
 
         public void ValidateBagFast(string bagPath)

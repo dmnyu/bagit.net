@@ -61,7 +61,7 @@ namespace bagit.net.tests.integration
         public void Test_Validate_Bag()
         {
             _testDir = TestHelpers.PrepareTempTestDataDir("bag-valid");
-            _validationService.ValidateBag(_testDir);
+            _validationService.ValidateBag(_testDir, 1);
             Assert.False(MessageHelpers.HasError(_messageService.GetAll()));
             foreach(var message in _messageService.GetAll())
             {
