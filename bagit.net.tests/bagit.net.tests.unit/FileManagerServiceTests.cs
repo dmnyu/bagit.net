@@ -5,65 +5,64 @@ namespace bagit.net.tests.unit
 {
     public class FileManagerServiceTests : IDisposable
     {
-        private readonly string _tmpDir;
+        private string _testDir = string.Empty;
         private readonly ServiceProvider _serviceProvider;
         private readonly IFileManagerService _fileManagerService;
         public FileManagerServiceTests()
         {
-            _tmpDir = TestHelpers.PrepareTempTestData();
             _serviceProvider = FileManagerServiceConfigurator.BuildServiceProvider();
             _fileManagerService = _serviceProvider.GetRequiredService<IFileManagerService>();
         }
         public void Dispose()
         {
             _serviceProvider.Dispose();
-            if (Path.Exists(_tmpDir))
-                Directory.Delete(_tmpDir, true);
+            if (Path.Exists(_testDir))
+                Directory.Delete(_testDir, true);
         }
 
         [Fact]
         [Trait("Category", "Unit")]
         public void Test_Create_Temp_Directory()
         {
-            var _dir = Path.Combine(_tmpDir, "dir");
-            var _tempDir = _fileManagerService.CreateTempDirectory(_dir);
-            Assert.True(Directory.Exists(_tempDir));
+            var testDir = TestHelpers.PrepareTempTestDataDir("dir");
+            var tempDir = _fileManagerService.CreateTempDirectory(testDir);
+            Assert.True(Directory.Exists(tempDir));
         }
 
         [Fact]
         [Trait("Category", "Unit")]
         public void Test_Move_Contents_To_Temp_Directory()
         {
-            var _dir = Path.Combine(_tmpDir, "dir");
-            var _tempDir = _fileManagerService.CreateTempDirectory(_dir);
-            _fileManagerService.MoveContentsOfDirectory(_dir, _tempDir);
-            var _files = Directory.GetFiles(_dir);
-            Assert.Empty(_files);
-            var _directories = Directory.GetDirectories(_dir);
-            Assert.Single(_directories);
+            var _testDir = TestHelpers.PrepareTempTestDataDir("dir");
+            var tmpDir = _fileManagerService.CreateTempDirectory(_testDir);
+            _fileManagerService.MoveContentsOfDirectory(_testDir, tmpDir);
+            var files = Directory.GetFiles(_testDir);
+            Assert.Empty(files);
+            var directories = Directory.GetDirectories(tmpDir);
+            Assert.Single(directories);
         }
 
         [Fact]
         [Trait("Category", "Unit")]
         public void Test_Move_Temp_Dir_To_Data()
         {
-            var _dir = Path.Combine(_tmpDir, "dir");
-            var _tempDir = _fileManagerService.CreateTempDirectory(_dir);
-            _fileManagerService.MoveContentsOfDirectory(_dir, _tempDir);
-            var _dataDir = Path.Combine(_dir, "data");
-            _fileManagerService.MoveDirectory(_tempDir, _dataDir);
-            var _directories = Directory.GetDirectories(_dir);
-            Assert.Single(_directories);
-            Assert.Equal("data", Path.GetFileName(_directories[0]));
+            var _testDir = TestHelpers.PrepareTempTestDataDir ("dir");
+            var tmpDir = _fileManagerService.CreateTempDirectory(_testDir );
+            _fileManagerService.MoveContentsOfDirectory(_testDir, tmpDir);
+            var dataDir = Path.Combine(_testDir, "data");
+            _fileManagerService.MoveDirectory(tmpDir, dataDir);
+            var directories = Directory.GetDirectories(_testDir);
+            Assert.Single(directories);
+            Assert.Equal("data", Path.GetFileName(directories[0]));
         }
 
         [Fact]
         [Trait("Category", "Unit")]
         public void Test_Valid_UTF8()
         {
-            var _validDir = Path.Combine(_tmpDir, "valid-bag");
-            var _validFile = Path.Combine(_validDir, "bag-info.txt");
-            Assert.True(_fileManagerService.IsValidUTF8(_validFile));
+            var _testDir = TestHelpers.PrepareTempTestDataDir("valid-bag");
+            var validFile = Path.Combine(_testDir, "bag-info.txt");
+            Assert.True(_fileManagerService.IsValidUTF8(validFile));
         }
 
     }

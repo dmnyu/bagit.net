@@ -11,14 +11,13 @@ namespace bagit.net.tests.unit
         readonly ITagFileService _tagFileService;
         readonly IMessageService _messageService;
         private readonly ITestOutputHelper _output;
-        readonly string _testDir;
+        private string _testDir = string.Empty;
         public TagFileServiceTests(ITestOutputHelper output)
         {
             _serviceProvider = TagFileServiceConfigurator.BuildServiceProvider();
             _tagFileService = _serviceProvider.GetRequiredService<ITagFileService>();
             _messageService = _serviceProvider.GetRequiredService<IMessageService>();
             _output = output;
-            _testDir = TestHelpers.PrepareTempTestData();
         }
 
         public void Dispose()
@@ -32,17 +31,9 @@ namespace bagit.net.tests.unit
         [Trait("Category", "Unit")]
         public void Test_Get_Tag_File_Dictionary()
         {
-            var bagInfo = Path.Combine(_testDir, "bag-valid", "bag-info.txt");
+            _testDir = TestHelpers.PrepareTempTestDataDir("bag-valid");
+            var bagInfo = Path.Combine(_testDir, "bag-info.txt");
             var tagDict = _tagFileService.GetTagFileAsDict(bagInfo);
-            Assert.True(tagDict.Count > 1);
-        }
-
-        [Fact]
-        [Trait("Category", "Unit")]
-        public void Test_Get_Tag_File_List()
-        {
-            var bagInfo = Path.Combine(_testDir, "bag-valid", "bag-info.txt");
-            var tagDict = _tagFileService.GetTagFileAsList(bagInfo);
             Assert.True(tagDict.Count > 1);
         }
 
@@ -50,10 +41,10 @@ namespace bagit.net.tests.unit
         [Trait("Category", "Unit")]
         public void Test_Create_Bag_Info()
         {
-            var dataOnly = Path.Combine(_testDir, "data-only");
-            Exception ex = Record.Exception(() => _tagFileService.CreateBagInfo(dataOnly, null));
+            _testDir = TestHelpers.PrepareTempTestDataDir("data-only");
+            Exception ex = Record.Exception(() => _tagFileService.CreateBagInfo(_testDir, null));
             Assert.True(ex == null);
-            var bagInfo = Path.Combine(dataOnly, "bag-info.txt");
+            var bagInfo = Path.Combine(_testDir, "bag-info.txt");
             Assert.True(File.Exists(bagInfo));
             var tagDict = _tagFileService.GetTags(bagInfo);
             Assert.NotNull(tagDict["Payload-Oxum"]);
@@ -63,11 +54,12 @@ namespace bagit.net.tests.unit
         [Trait("Category", "Unit")]
         public void Test_Create_Bag_Info_With_Metadata()
         {
-            var dataOnly = Path.Combine(_testDir, "data-only");
-            var metadata = Path.Combine(_testDir, "metadata.txt");
-            Exception ex = Record.Exception(() => _tagFileService.CreateBagInfo(dataOnly, metadata));
+            _testDir = TestHelpers.PrepareTempTestDataDir("data-only");
+            var metadataDir = TestHelpers.PrepareTempTestDataDir("metadata");
+            var metadata = Path.Combine(metadataDir, "metadata.txt");
+            Exception ex = Record.Exception(() => _tagFileService.CreateBagInfo(_testDir, metadata));
             Assert.True(ex == null);
-            var bagInfo = Path.Combine(dataOnly, "bag-info.txt");
+            var bagInfo = Path.Combine(_testDir, "bag-info.txt");
             Assert.True(File.Exists(bagInfo));
             var tags = _tagFileService.GetTags(bagInfo);
             Assert.NotNull(tags["Payload-Oxum"]);
@@ -84,9 +76,9 @@ namespace bagit.net.tests.unit
         [Trait("Category", "Unit")]
         public void Test_Get_Oxum()
         {
-            var validBag = Path.Combine(_testDir, "bag-valid");
-            var calculatedOxum = _tagFileService.CalculateOxum(validBag);
-            var bagInfo = Path.Combine(validBag, "bag-info.txt");
+            _testDir = TestHelpers.PrepareTempTestDataDir("bag-valid");
+            var calculatedOxum = _tagFileService.CalculateOxum(_testDir);
+            var bagInfo = Path.Combine(_testDir, "bag-info.txt");
             var tagDict = _tagFileService.GetTags(bagInfo);
             Assert.Equal(tagDict["Payload-Oxum"][0], calculatedOxum);
         }
@@ -95,8 +87,8 @@ namespace bagit.net.tests.unit
         [Trait("Category", "Unit")]
         public void Test_Validate_BagitTXT()
         {
-            var validBag = Path.Combine(_testDir, "bag-valid");
-            _tagFileService.ValidateBagitTXT(validBag);
+            _testDir = TestHelpers.PrepareTempTestDataDir("bag-valid");
+            _tagFileService.ValidateBagitTXT(_testDir);
             Assert.Empty(_messageService.GetAll());
         }
 
@@ -104,16 +96,16 @@ namespace bagit.net.tests.unit
         [Trait("Category", "Unit")]
         public void Test_Has_BagInfo()
         {
-            var validBag = Path.Combine(_testDir, "bag-valid");
-            Assert.True(_tagFileService.HasBagInfo(validBag));
+            _testDir = TestHelpers.PrepareTempTestDataDir("bag-valid");
+            Assert.True(_tagFileService.HasBagInfo(_testDir));
         }
 
         [Fact]
         [Trait("Category", "Unit")]
         public void Test_Validate_BagInfo()
         {
-            var validBag = Path.Combine(_testDir, "bag-valid");
-            _tagFileService.ValidateBagInfo(Path.Combine(validBag, "bag-info.txt"));
+            _testDir = TestHelpers.PrepareTempTestDataDir("bag-valid");
+            _tagFileService.ValidateBagInfo(Path.Combine(_testDir, "bag-info.txt"));
             Assert.Empty(_messageService.GetAll());
         }
 
@@ -121,8 +113,8 @@ namespace bagit.net.tests.unit
         [Trait("Category", "Unit")]
         public void Test_Get_Tags()
         {
-            var validBag = Path.Combine(_testDir, "bag-valid");
-            var bagInfo = Path.Combine(validBag, "bag-info.txt");
+            _testDir = TestHelpers.PrepareTempTestDataDir("bag-valid");
+            var bagInfo = Path.Combine(_testDir, "bag-info.txt");
             var tags = _tagFileService.GetTags(bagInfo);
             Assert.True(tags.Count > 0);
         }
@@ -142,11 +134,11 @@ namespace bagit.net.tests.unit
         [Trait("Category", "Unit")]
         public void Test_Add_Tag(string key, string value)
         {
-            var validBag = Path.Combine(_testDir, "bag-valid");
-            _tagFileService.AddTag(key, value, validBag);
+            _testDir = TestHelpers.PrepareTempTestDataDir("bag-valid");
+            _tagFileService.AddTag(key, value, _testDir);
             var messages = _messageService.GetAll();
             Assert.False(MessageHelpers.HasError(messages));
-            var bagInfo = Path.Combine(validBag, "bag-info.txt");
+            var bagInfo = Path.Combine(_testDir, "bag-info.txt");
             var tags = _tagFileService.GetTags(bagInfo);
             Assert.True(tags.ContainsKey(key));
             Assert.Equal(tags[key][0], value);
@@ -156,12 +148,12 @@ namespace bagit.net.tests.unit
         [Trait("Category", "Unit")]
         public void Test_Add_Multiple_Tags()
         {
-            var validBag = Path.Combine(_testDir, "bag-valid");
-            _tagFileService.AddTag("External-Identifier", "ARC-2025-000123", validBag);
-            _tagFileService.AddTag("External-Identifier", "ARC-2025-000124", validBag);
+            _testDir = TestHelpers.PrepareTempTestDataDir("bag-valid");
+            _tagFileService.AddTag("External-Identifier", "ARC-2025-000123", _testDir);
+            _tagFileService.AddTag("External-Identifier", "ARC-2025-000124", _testDir);
             var messages = _messageService.GetAll();
             Assert.False(MessageHelpers.HasError(messages));
-            var bagInfo = Path.Combine(validBag, "bag-info.txt");
+            var bagInfo = Path.Combine(_testDir, "bag-info.txt");
             var tags = _tagFileService.GetTags(bagInfo);
             Assert.Equal("ARC-2025-000123", tags["External-Identifier"][0]);
             Assert.Equal("ARC-2025-000124", tags["External-Identifier"][1]);
@@ -175,8 +167,8 @@ namespace bagit.net.tests.unit
         [Trait("Category", "Unit")]
         public void Test_Add_Non_Repeatable_Tag(string key, string value)
         {
-            var validBag = Path.Combine(_testDir, "bag-valid");
-            _tagFileService.AddTag(key, value, validBag);
+            _testDir = TestHelpers.PrepareTempTestDataDir("bag-valid");
+            _tagFileService.AddTag(key, value, _testDir);
             var messages = _messageService.GetAll();
             Assert.True(MessageHelpers.HasError(messages));
         }
@@ -185,12 +177,12 @@ namespace bagit.net.tests.unit
         [Trait("Category", "Unit")]
         public void Test_Set_Tag()
         {
-            var validBag = Path.Combine(_testDir, "bag-valid");
-            _tagFileService.AddTag("External-Identifier", "ARC-2025-000123", validBag);
-            _tagFileService.SetTag("External-Identifier", "ARC-2025-000124", validBag);
+            _testDir = TestHelpers.PrepareTempTestDataDir("bag-valid");
+            _tagFileService.AddTag("External-Identifier", "ARC-2025-000123", _testDir);
+            _tagFileService.SetTag("External-Identifier", "ARC-2025-000124", _testDir);
             var messages = _messageService.GetAll();
             Assert.False(MessageHelpers.HasError(messages));
-            var bagInfo = Path.Combine(validBag, "bag-info.txt");
+            var bagInfo = Path.Combine(_testDir, "bag-info.txt");
             var tags = _tagFileService.GetTags(bagInfo);
             Assert.Equal("ARC-2025-000124", tags["External-Identifier"][0]);
         }
@@ -199,10 +191,10 @@ namespace bagit.net.tests.unit
         [Trait("Category", "Unit")]
         public void Test_Delete_Tag()
         {
-            var validBag = Path.Combine(_testDir, "bag-valid");
-            _tagFileService.DeleteTag("Payload-Oxum", validBag);
+            _testDir = TestHelpers.PrepareTempTestDataDir("bag-valid");
+            _tagFileService.DeleteTag("Payload-Oxum", _testDir);
             Assert.False(MessageHelpers.HasError(_messageService.GetAll()));
-            var bagInfo = Path.Combine(validBag, "bag-info.txt");
+            var bagInfo = Path.Combine(_testDir, "bag-info.txt");
             var tags = _tagFileService.GetTags(bagInfo);
             Assert.False(tags.ContainsKey("Payload-Oxum"));
         }

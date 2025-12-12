@@ -7,7 +7,7 @@ namespace bagit.net.tests.unit
 {
     public class ManifestServiceTests : IDisposable
     {
-        private readonly string _tmpDir;
+        private string _testDir = string.Empty;
         private readonly ServiceProvider _serviceProvider;
         private readonly IManifestService _manifestService;
         private readonly IMessageService _messageService;
@@ -17,7 +17,6 @@ namespace bagit.net.tests.unit
         private readonly int _processes = 1;
         public ManifestServiceTests(ITestOutputHelper output)
         {
-            _tmpDir = TestHelpers.PrepareTempTestData();
             _serviceProvider = ManifestServiceConfigurator.BuildServiceProvider();
             _manifestService = _serviceProvider.GetRequiredService<IManifestService>();
             _messageService = _serviceProvider.GetRequiredService<IMessageService>();
@@ -35,8 +34,8 @@ namespace bagit.net.tests.unit
         public void Dispose()
         {
             _serviceProvider.Dispose();
-            if (Directory.Exists(_tmpDir))
-                Directory.Delete(_tmpDir, true);
+            if (Directory.Exists(_testDir))
+                Directory.Delete(_testDir, true);
         }
 
         [Theory]
@@ -48,22 +47,21 @@ namespace bagit.net.tests.unit
         [Trait("Category", "Unit")]
         public async Task Test_Create_Payload_Manifest(ChecksumAlgorithm algorithm, string manifestName)
         {
-            var dataBag = Path.Combine(_tmpDir, "data-only");
-            await _manifestService.CreatePayloadManifest(dataBag, new List<ChecksumAlgorithm> { algorithm }, _processes);
-            Assert.True(File.Exists(Path.Combine(dataBag, manifestName)));
-
+            _testDir = TestHelpers.PrepareTempTestDataDir("data-only");
+            await _manifestService.CreatePayloadManifest(_testDir, new List<ChecksumAlgorithm> { algorithm }, _processes);
+            Assert.True(File.Exists(Path.Combine(_testDir, manifestName)));
         }
 
         [Fact]
         [Trait("Category", "Unit")]
         public async Task Test_Create_Multiple_Payload_Manifests()
         {
-            var dataBag = Path.Combine(_tmpDir, "data-only");
-            await _manifestService.CreatePayloadManifest(dataBag, _algorithms, _processes);
+            _testDir = TestHelpers.PrepareTempTestDataDir("data-only");
+            await _manifestService.CreatePayloadManifest(_testDir, _algorithms, _processes);
             foreach (var algorithm in _algorithms)
             {
                 var algorithmCode = _checksumService.GetAlgorithmCode(algorithm);
-                var manifestPath = Path.Combine(dataBag, $"manifest-{algorithmCode}.txt");
+                var manifestPath = Path.Combine(_testDir, $"manifest-{algorithmCode}.txt");
                 Assert.True(File.Exists(manifestPath));
                 var lines = File.ReadAllLines(manifestPath);
                 Assert.True(lines.Length > 0, $"Manifest {manifestPath} should have at least one line.");
@@ -79,9 +77,9 @@ namespace bagit.net.tests.unit
         [InlineData(ChecksumAlgorithm.SHA512, "tagmanifest-sha512.txt")]
         public void Test_Create_Tag_Manifest(ChecksumAlgorithm algorithm, string manifestName)
         {
-            var dataBag = Path.Combine(_tmpDir, "no-tag-manifest");
-            _manifestService.CreateTagManifestFile(dataBag, new List<ChecksumAlgorithm>() { algorithm });
-            var tagManifestPath = Path.Combine(dataBag, manifestName);
+            _testDir = TestHelpers.PrepareTempTestDataDir("no-tag-manifest");
+            _manifestService.CreateTagManifestFile(_testDir, new List<ChecksumAlgorithm>() { algorithm });
+            var tagManifestPath = Path.Combine(_testDir, manifestName);
             Assert.True(File.Exists(tagManifestPath));
             var lines = File.ReadAllLines(tagManifestPath);
             Assert.True(lines.Length > 0);
@@ -91,12 +89,12 @@ namespace bagit.net.tests.unit
         [Trait("Category", "Unit")]
         public void Test_Create_Multiple_Tag_Manifests()
         {
-            var dataBag = Path.Combine(_tmpDir, "bag-valid");
-            _manifestService.CreateTagManifestFile(dataBag, _algorithms);
+            _testDir = TestHelpers.PrepareTempTestDataDir("bag-valid");
+            _manifestService.CreateTagManifestFile(_testDir, _algorithms);
             foreach (var algorithm in _algorithms)
             {
                 var algorithmCode = _checksumService.GetAlgorithmCode(algorithm);
-                var tagmanifestPath = Path.Combine(dataBag, $"tagmanifest-{algorithmCode}.txt");
+                var tagmanifestPath = Path.Combine(_testDir, $"tagmanifest-{algorithmCode}.txt");
                 Assert.True(File.Exists(tagmanifestPath));
                 var lines = File.ReadAllLines(tagmanifestPath);
                 Assert.True(lines.Length > 0);
@@ -108,12 +106,12 @@ namespace bagit.net.tests.unit
         [InlineData("valid-bag")]
         [InlineData("valid-bag-bagitnet")]
         public void Test_Validate_Manifests(string bag) {
-            var validBag = Path.Combine(_tmpDir, bag);
+            _testDir = TestHelpers.PrepareTempTestDataDir(bag);
             var manifests = new List<string>() { "manifest-sha256.txt", "tagmanifest-sha256.txt"};
             
             foreach (var manifest in manifests)
             {
-                var manifestFile = Path.Combine(validBag, manifest);
+                var manifestFile = Path.Combine(_testDir, manifest);
                 Console.WriteLine($"Checking file: {manifestFile}, exists: {File.Exists(manifestFile)}");
                 Console.WriteLine($"Temp dir: {Path.GetTempPath()}");
 
@@ -127,11 +125,11 @@ namespace bagit.net.tests.unit
         [Trait("Category", "Unit")]
         public void Test_Get_Manifest_KVP()
         {
-            var validBag = Path.Combine(_tmpDir, "valid-bag");
+            _testDir = TestHelpers.PrepareTempTestDataDir("valid-bag");
             var manifests = new List<string>() { "manifest-sha256.txt", "tagmanifest-sha256.txt" };
             foreach (var manifest in manifests)
             {
-                var manifestFile = Path.Combine(validBag, manifest);
+                var manifestFile = Path.Combine(_testDir, manifest);
                 var kvp = _manifestService.GetManifestAsKeyValuePairs(manifestFile);
                 Assert.True(kvp.Count > 0);
             }
@@ -141,8 +139,8 @@ namespace bagit.net.tests.unit
         [Trait("Category", "Unit")]
         public void Test_Validate_Bag_For_Completeness()
         {
-            var validBag = Path.Combine(_tmpDir, "valid-bag");
-            _manifestService.ValidateManifestFilesCompleteness(validBag);
+            _testDir = TestHelpers.PrepareTempTestDataDir("valid-bag");
+            _manifestService.ValidateManifestFilesCompleteness(_testDir);
             Assert.Empty(_messageService.GetAll());
 
         }
@@ -151,8 +149,8 @@ namespace bagit.net.tests.unit
         [Trait("Category", "Unit")]
         public void Test_Validate_Incomplete_Bag_For_Completeness()
         {
-            var validBag = Path.Combine(_tmpDir, "bag-incomplete");
-            _manifestService.ValidateManifestFilesCompleteness(validBag);
+            _testDir = TestHelpers.PrepareTempTestDataDir("bag-incomplete");
+            _manifestService.ValidateManifestFilesCompleteness(_testDir);
             var messages = _messageService.GetAll();
             Assert.NotEmpty(messages);
             foreach(var message in messages)
