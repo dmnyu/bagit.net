@@ -3,9 +3,9 @@ using bagit.net.interfaces;
 using Microsoft.Extensions.DependencyInjection;
 using Xunit.Abstractions;
 
-namespace bagit.net.tests.unit
+namespace bagit.net.tests.bagit.net.tests.integration
 {
-    public class CreationServiceTests : IDisposable
+    public class TestCreationService : IDisposable
     {
         private string _testDir = string.Empty;
         private readonly ServiceProvider _serviceProvider;
@@ -14,7 +14,7 @@ namespace bagit.net.tests.unit
         private readonly ITestOutputHelper _output;
         private readonly int _processes = 1;
 
-        public CreationServiceTests(ITestOutputHelper output)
+        public TestCreationService(ITestOutputHelper output)
         {
             _serviceProvider = DefaultServiceConfigurator.BuildServiceProvider();
             _creationService = _serviceProvider.GetRequiredService<ICreationService>();
