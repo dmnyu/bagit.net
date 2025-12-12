@@ -37,10 +37,6 @@ namespace bagit.net.tests.integration
             _validationService.ValidateBagFast(_testDir);
             var messages = _messageService.GetAll();
             Assert.False(MessageHelpers.HasError(messages));
-            if (MessageHelpers.HasError(messages))
-                foreach(var message in messages)
-                    _output.WriteLine($"{message}");
-
         }
 
         [Fact]
@@ -50,10 +46,6 @@ namespace bagit.net.tests.integration
             _testDir = TestHelpers.PrepareTempTestDataDir("bag-invalid-oxum");
             _validationService.ValidateBagFast(_testDir);
             Assert.NotEmpty(_messageService.GetAll());
-            foreach(var message in  _messageService.GetAll())
-            {
-                _output.WriteLine($"{message}");
-            }
         }
 
         [Fact]
@@ -63,10 +55,6 @@ namespace bagit.net.tests.integration
             _testDir = TestHelpers.PrepareTempTestDataDir("bag-valid");
             _validationService.ValidateBag(_testDir, 1);
             Assert.False(MessageHelpers.HasError(_messageService.GetAll()));
-            foreach(var message in _messageService.GetAll())
-            {
-                _output.WriteLine($"{message}");
-            }
         }
 
         [Fact]
@@ -86,10 +74,6 @@ namespace bagit.net.tests.integration
             _validationService.ValidateBagCompleteness(_testDir);
             var messages = _messageService.GetAll();
             Assert.NotEmpty(messages);
-            foreach (var message in messages.ToList())
-            {
-                _output.WriteLine($"{message}");
-            }
         }
     }
 }

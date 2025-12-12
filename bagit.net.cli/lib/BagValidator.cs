@@ -1,9 +1,8 @@
 ﻿using bagit.net.domain;
 using bagit.net.interfaces;
-using bagit.net.services;
 using Microsoft.Extensions.Logging;
 using Spectre.Console;
-using System.Formats.Tar;
+
 
 namespace bagit.net.cli.lib
 {
@@ -88,9 +87,6 @@ namespace bagit.net.cli.lib
                     {
                         _messageService.Add(new MessageRecord(MessageLevel.ERROR, $"Bag Creation failed: {ex}"));
                     }
-
-                
-
                 }
                 
                 return 0;

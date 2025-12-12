@@ -36,7 +36,7 @@ namespace bagit.net.services
                 _ => throw new ArgumentOutOfRangeException(nameof(algorithm))
             };
 
-            var buffer = ArrayPool<byte>.Shared.Rent(4 * 1024 * 1024);
+            var buffer = ArrayPool<byte>.Shared.Rent(16 * 1024 * 1024);
             try
             {
                 int bytesRead;
@@ -52,7 +52,7 @@ namespace bagit.net.services
 
             // Finalize hash
             hashAlgorithm.TransformFinalBlock(Array.Empty<byte>(), 0, 0);
-            return Convert.ToHexString(hashAlgorithm.Hash!);
+            return Convert.ToHexString(hashAlgorithm.Hash!).ToLower();
         }
 
 

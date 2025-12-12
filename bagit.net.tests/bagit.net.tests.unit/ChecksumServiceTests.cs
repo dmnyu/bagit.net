@@ -44,12 +44,12 @@ namespace bagit.net.tests.unit
         [InlineData(ChecksumAlgorithm.SHA384, "38b060a751ac96384cd9327eb1b1e36a21fdb71114be07434c0cc7bf63f6e1da274edebfe76f65fbd51ad2f14898b95b")]
         [InlineData(ChecksumAlgorithm.SHA512, "cf83e1357eefb8bdf1542850d66d8007d620e4050b5715dc83f4a921d36ce9ce47d0d13c5d85f2b0ff8318d2877eec2f63b931bd47417a81a538327af927da3e")]
 
-        public void Test_Compare_Checksums_For_Empty_File(ChecksumAlgorithm algorithm, string expectedChecksum)
+        public async Task Test_Compare_Checksums_For_Empty_File(ChecksumAlgorithm algorithm, string expectedChecksum)
         {
             _testDir = TestHelpers.PrepareTempTestDataDir("");
             var emptyFile = Path.Combine(_testDir, "empty.txt");
             File.WriteAllBytes(emptyFile, Array.Empty<byte>());
-            AssertFileChecksum(emptyFile, expectedChecksum, algorithm);
+            await AssertFileChecksum(emptyFile, expectedChecksum, algorithm);
         }
         
         [Theory]
@@ -59,11 +59,11 @@ namespace bagit.net.tests.unit
         [InlineData(ChecksumAlgorithm.SHA256, "8c219e899115cdfb4ec7c2f03353a55a54a3e48a952439f1f55d57d3a2146e69")]
         [InlineData(ChecksumAlgorithm.SHA384, "548a36e2e8de7a9a30bda5db1557ec3a4c9233a01a93c79e52bc2124f1e678ca0f3ee65abcd612d5fc58d7c6fc169498")]
         [InlineData(ChecksumAlgorithm.SHA512, "07893577f0b21751081feb2817bc817bdf7d8084aca7e40a8a727be89d731c05be418974d2ee4834bf6722775e9712a5d4dd2661cd666549eb571c8643443942")]
-        public void Test_Compare_Checksums_For_Golden_File(ChecksumAlgorithm algorithm, string expectedChecksum)
+        public async Task Test_Compare_Checksums_For_Golden_File(ChecksumAlgorithm algorithm, string expectedChecksum)
         {
             _testDir = TestHelpers.PrepareTempTestDataDir("golden-files");
             var goldenFile = Path.Combine(_testDir, "golden-file.txt");
-            AssertFileChecksum(goldenFile, expectedChecksum, algorithm);
+            await AssertFileChecksum(goldenFile, expectedChecksum, algorithm);
         }
 
         [Theory]
@@ -78,8 +78,8 @@ namespace bagit.net.tests.unit
             Assert.Equal(checksumCode, _checksumService.GetAlgorithmCode(algorithm));
         }
 
-        private void AssertFileChecksum(string filePath, string expected, ChecksumAlgorithm algorithm) =>
-            Assert.True(_checksumService.CompareChecksum(filePath, expected, algorithm), $"{algorithm} failed");
+        private async Task AssertFileChecksum(string filePath, string expected, ChecksumAlgorithm algorithm) =>
+            Assert.True(await _checksumService.CompareChecksum(filePath, expected, algorithm), $"{algorithm} failed");
 
     }
 }

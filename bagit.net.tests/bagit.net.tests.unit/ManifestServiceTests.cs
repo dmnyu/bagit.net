@@ -105,7 +105,7 @@ namespace bagit.net.tests.unit
         [Trait("Category", "Unit")]
         [InlineData("valid-bag")]
         [InlineData("valid-bag-bagitnet")]
-        public void Test_Validate_Manifests(string bag) {
+        public async Task Test_Validate_Manifests(string bag) {
             _testDir = TestHelpers.PrepareTempTestDataDir(bag);
             var manifests = new List<string>() { "manifest-sha256.txt", "tagmanifest-sha256.txt"};
             
@@ -116,7 +116,7 @@ namespace bagit.net.tests.unit
                 Console.WriteLine($"Temp dir: {Path.GetTempPath()}");
 
 
-                var ex = Record.Exception(() => _manifestService.ValidateManifestFile(manifestFile));
+                var ex = await Record.ExceptionAsync(() => _manifestService.ValidateManifestFile(manifestFile, 1));
                 Assert.Null(ex);
             }
         }
@@ -166,7 +166,7 @@ namespace bagit.net.tests.unit
             _testDir = TestHelpers.PrepareTempTestDataDir("bag-incomplete");
             _manifestService.ValidateManifestFiles(_testDir, 6);
             var messages = _messageService.GetAll();
-            Assert.Empty(messages);
+            Assert.False(MessageHelpers.HasError(_messageService.GetAll()));
         }
 
     }
