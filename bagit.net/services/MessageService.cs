@@ -37,6 +37,9 @@ namespace bagit.net.services
 
             switch (messageRecord.GetLevel())
             {
+                case MessageLevel.DEBUG:
+                    _logger.LogDebug(messageRecord.GetMessage());
+                    break;
                 case MessageLevel.INFO:
                     if (!quiet) _logger.LogInformation(messageRecord.GetMessage());
                     break;

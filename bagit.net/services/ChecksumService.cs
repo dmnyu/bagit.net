@@ -1,6 +1,7 @@
 ﻿using bagit.net.domain;
 using bagit.net.interfaces;
 using System.Buffers;
+using System.Runtime.CompilerServices;
 using System.Security.Cryptography;
 using System.Text.RegularExpressions;
 
@@ -67,6 +68,20 @@ namespace bagit.net.services
             var calculated = await CalculateChecksum(path, algorithm);
             return string.Equals(calculated, checksum, StringComparison.OrdinalIgnoreCase);
 
+        }
+
+        
+        public async Task CompareChecksums(string payloadPath, Dictionary<ChecksumAlgorithm, string> hashes)
+        {
+            _messageService.Add(new MessageRecord(MessageLevel.INFO, $"calculating checksum for {payloadPath}"));
+            foreach(var hash in hashes)
+            {
+                var match = await CompareChecksum(payloadPath, hash.Value, hash.Key);
+                if(!match)
+                {
+                    _messageService.Add(new MessageRecord(MessageLevel.ERROR, $"checksum mismatch for {payloadPath} expected {hash.Value}"));
+                }
+            }
         }
 
         public string GetAlgorithmCode(ChecksumAlgorithm algorithm)

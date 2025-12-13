@@ -191,26 +191,25 @@ namespace bagit.net.services
             return ChecksumAlgorithmMap.Algorithms[match.Groups[1].Value.ToLowerInvariant()];
         }
 
-        // Validation methods
+        /* --------------------
+         * 
+         * Validation Methods
+         * 
+         ----------------------*/ 
 
-
-        public async Task ValidateManifestFiles(string bagPath, int processes)
+        public async Task ValidateManifestFiles(string bagRoot, int processes)
         {
-            var files = Directory
-                .EnumerateFiles(bagPath)
-                .Where(f => _manifestRegex.IsMatch(Path.GetFileName(f)))
-                .ToList();
-
             _messageService.Add(new MessageRecord(MessageLevel.INFO, $"validating checksums using {processes} processes"));
+            var manifestEntries = ParseManifests(bagRoot);
 
             using var semaphore = new SemaphoreSlim(processes);
 
-            var tasks = files.Select(async file =>
+            var tasks = manifestEntries.Select(async manifestEntry =>
             {
                 await semaphore.WaitAsync();
                 try
                 {
-                    await ValidateManifestFile(file, processes);
+                    await _checksumService.CompareChecksums(manifestEntry.Key, manifestEntry.Value);
                 }
                 finally
                 {
@@ -219,47 +218,45 @@ namespace bagit.net.services
             });
 
             await Task.WhenAll(tasks);
+            
         }
 
-        public async Task ValidateManifestFile(string manifestFile, int processes)
+        public Dictionary<string, Dictionary<ChecksumAlgorithm, string>> ParseManifests(string bagRoot)
         {
-            string? bagRoot = Path.GetDirectoryName(manifestFile);
-            if (bagRoot == null)
-            {
-                _messageService.Add(new MessageRecord(MessageLevel.ERROR, $"Cannot determine directory for manifest '{manifestFile}'."));
-                return;
+            var payloadExpectations = new Dictionary<string, Dictionary<ChecksumAlgorithm, string>>();
+            var manifestFiles = Directory
+                .EnumerateFiles(bagRoot)
+                .Where(f => _manifestRegex.IsMatch(Path.GetFileName(f)))
+                .ToList();
+
+            foreach (var manifestFile in manifestFiles) {
+                var algorithm = GetManifestAlgorithm(manifestFile);
+                var lines = File.ReadAllLines(manifestFile);
+                foreach (var line in lines) {
+                    var (payloadfile, checksumValue) = ValidateManifestLine(line);
+                    var payloadPath = Path.Combine(bagRoot, payloadfile);
+                    if (payloadExpectations.ContainsKey(payloadPath))
+                        payloadExpectations[payloadPath].Add(algorithm, checksumValue);
+                    else
+                    {
+                        payloadExpectations[payloadPath] = [];
+                        payloadExpectations[payloadPath].Add(algorithm, checksumValue);
+                    }
+
+                }
             }
-
-            var lines = await File.ReadAllLinesAsync(manifestFile);
-
-            using var semaphore = new SemaphoreSlim(processes);
-
-            var tasks = lines
-                .Where(line => !string.IsNullOrWhiteSpace(line))
-                .Select(async line =>
-                {
-                    await semaphore.WaitAsync();
-                    try
-                    {
-                        await ValidateManifestLine(line, bagRoot, Path.GetFileName(manifestFile), GetManifestAlgorithm(manifestFile));
-                    }
-                    finally
-                    {
-                        semaphore.Release();
-                    }
-                });
-
-            await Task.WhenAll(tasks);
+            return payloadExpectations;
         }
+        
+     
 
-
-        public async Task ValidateManifestLine(string line, string manifestDir, string manifestFileName, ChecksumAlgorithm algorithm)
+        public (string payloadFile, string hash) ValidateManifestLine(string line)
         {
             var parts = line.Split(' ', 2, StringSplitOptions.None);
             if (parts.Length != 2)
             {
                 _messageService.Add(new MessageRecord(MessageLevel.ERROR, $"Invalid manifest line format: '{line}'."));
-                return;
+                return (string.Empty, string.Empty);
             }
 
             string checksum = parts[0].Trim();
@@ -272,24 +269,17 @@ namespace bagit.net.services
                     .Replace('\\', Path.DirectorySeparatorChar);
             }
 
-            string fullPath = Path.Combine(manifestDir, payloadFile);
-            string filename = Path.GetFileName(payloadFile);
-
             if (line.Length > 200)
                 _messageService.Add(new MessageRecord(MessageLevel.WARNING, $"Manifest line exceeds 200 characters, may be too long for some file systems: {line}"));
 
-            if (!IsValidUtf8(filename))
-                _messageService.Add(new MessageRecord(MessageLevel.WARNING, $"{filename} contains non-unicode characters"));
+            if (!IsValidUtf8(payloadFile))
+                _messageService.Add(new MessageRecord(MessageLevel.WARNING, $"{payloadFile} contains non-unicode characters"));
 
-            if (!filename.IsNormalized(NormalizationForm.FormC))
-                _messageService.Add(new MessageRecord(MessageLevel.WARNING, $"{fullPath} is not NFC-Normalized"));
+            if (!payloadFile.IsNormalized(NormalizationForm.FormC))
+                _messageService.Add(new MessageRecord(MessageLevel.WARNING, $"{payloadFile} is not NFC-Normalized"));
 
-            _messageService.Add(new MessageRecord(MessageLevel.INFO, $"Verifying checksum for file {fullPath}"));
+            return(payloadFile, checksum);
 
-            // This is the key: make checksum comparison async
-            bool valid = await _checksumService.CompareChecksum(fullPath, checksum, algorithm);
-            if (!valid)
-                _messageService.Add(new MessageRecord(MessageLevel.ERROR, $"Checksum mismatch for '{payloadFile}' in manifest '{manifestFileName}'. Expected: {checksum}"));
         }
 
         public void ValidateManifestLineEndings(string manifestFile)
