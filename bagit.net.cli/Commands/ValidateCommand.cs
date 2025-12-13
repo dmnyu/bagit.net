@@ -1,4 +1,5 @@
 ﻿using bagit.net.cli.lib;
+using bagit.net.domain;
 using Microsoft.Extensions.DependencyInjection;
 using Spectre.Console;
 using Spectre.Console.Cli;
@@ -32,6 +33,7 @@ namespace bagit.net.cli.Commands
 
         public override async Task<int> ExecuteAsync(CommandContext context, Settings settings, CancellationToken cancellationToken)
         {
+            MessageContext.Quiet.Value = settings.Quiet;
             try
             {
                 var serviceProvider = ServiceConfigurator.BuildServiceProvider<BagValidator>(settings.logFile);
