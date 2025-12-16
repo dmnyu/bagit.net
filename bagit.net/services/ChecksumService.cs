@@ -4,6 +4,7 @@ using System.Buffers;
 using System.Runtime.CompilerServices;
 using System.Security.Cryptography;
 using System.Text.RegularExpressions;
+using System.Threading;
 
 
 namespace bagit.net.services
@@ -56,8 +57,67 @@ namespace bagit.net.services
             return Convert.ToHexString(hashAlgorithm.Hash!).ToLower();
         }
 
+        private HashAlgorithm GetHashAlgorithm(ChecksumAlgorithm algorithm)
+        {
+            return algorithm switch
+            {
+                ChecksumAlgorithm.MD5 => MD5.Create(),
+                ChecksumAlgorithm.SHA1 => SHA1.Create(),
+                ChecksumAlgorithm.SHA256 => SHA256.Create(),
+                ChecksumAlgorithm.SHA384 => SHA384.Create(),
+                ChecksumAlgorithm.SHA512 => SHA512.Create(),
+                _ => throw new ArgumentOutOfRangeException(nameof(algorithm), algorithm, null)
+            };
+        }
+        public async Task<Dictionary<ChecksumAlgorithm, string>> CalculateAllChecksums(string path, IEnumerable<ChecksumAlgorithm> algorithms)
+        {
+            var hashes = algorithms.Select(a => (a, GetHashAlgorithm(a))).ToList();
 
-        public async Task<bool> CompareChecksum(string? path, string checksum, ChecksumAlgorithm algorithm)
+            using var stream = new FileStream(path, FileMode.Open, FileAccess.Read, FileShare.Read, 81920, useAsync: true);
+            byte[] buffer = new byte[81920];
+            int bytesRead;
+
+            while ((bytesRead = await stream.ReadAsync(buffer)) > 0)
+            {
+                foreach (var (alg, hashAlg) in hashes)
+                    hashAlg.TransformBlock(buffer, 0, bytesRead, null, 0);
+            }
+
+            foreach (var (_, hashAlg) in hashes)
+                hashAlg.TransformFinalBlock(Array.Empty<byte>(), 0, 0);
+
+            return hashes.ToDictionary(
+                h => h.Item1,
+                h => BitConverter.ToString(h.Item2.Hash!).Replace("-", "").ToLowerInvariant()
+            );
+        }
+        
+
+        public async Task CompareChecksums(string payloadPath, Dictionary<ChecksumAlgorithm, string> hashes, int processes)
+        {
+            _messageService.Add(new MessageRecord(MessageLevel.INFO, $"calculating checksums for {payloadPath}"));
+
+            var semaphore = new SemaphoreSlim(processes);
+            await semaphore.WaitAsync();
+            try
+            {
+                var calculated = await CalculateAllChecksums(payloadPath, hashes.Keys);
+
+                foreach (var kv in hashes)
+                {
+                    if (!string.Equals(calculated[kv.Key], kv.Value, StringComparison.OrdinalIgnoreCase))
+                    {
+                        _messageService.Add(new MessageRecord(MessageLevel.ERROR, $"checksum mismatch for {payloadPath} expected {kv.Value}"));
+                    }
+                }
+            }
+            finally
+            {
+                semaphore.Release();
+            }
+        }
+
+        public async Task<bool> CompareChecksum(string path, string checksum, ChecksumAlgorithm algorithm)
         {
             bool isValid;
             string? cleanedChecksum;    
@@ -67,22 +127,9 @@ namespace bagit.net.services
 
             var calculated = await CalculateChecksum(path, algorithm);
             return string.Equals(calculated, checksum, StringComparison.OrdinalIgnoreCase);
-
         }
 
-        
-        public async Task CompareChecksums(string payloadPath, Dictionary<ChecksumAlgorithm, string> hashes)
-        {
-            _messageService.Add(new MessageRecord(MessageLevel.INFO, $"calculating checksum for {payloadPath}"));
-            foreach(var hash in hashes)
-            {
-                var match = await CompareChecksum(payloadPath, hash.Value, hash.Key);
-                if(!match)
-                {
-                    _messageService.Add(new MessageRecord(MessageLevel.ERROR, $"checksum mismatch for {payloadPath} expected {hash.Value}"));
-                }
-            }
-        }
+
 
         public string GetAlgorithmCode(ChecksumAlgorithm algorithm)
         {

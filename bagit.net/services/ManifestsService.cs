@@ -209,7 +209,7 @@ namespace bagit.net.services
                 await semaphore.WaitAsync();
                 try
                 {
-                    await _checksumService.CompareChecksums(manifestEntry.Key, manifestEntry.Value);
+                    await _checksumService.CompareChecksums(manifestEntry.Key, manifestEntry.Value, processes);
                 }
                 finally
                 {
@@ -229,20 +229,27 @@ namespace bagit.net.services
                 .Where(f => _manifestRegex.IsMatch(Path.GetFileName(f)))
                 .ToList();
 
-            foreach (var manifestFile in manifestFiles) {
+            foreach (var manifestFile in manifestFiles)
+            {
                 var algorithm = GetManifestAlgorithm(manifestFile);
                 var lines = File.ReadAllLines(manifestFile);
-                foreach (var line in lines) {
-                    var (payloadfile, checksumValue) = ValidateManifestLine(line);
-                    var payloadPath = Path.Combine(bagRoot, payloadfile);
-                    if (payloadExpectations.ContainsKey(payloadPath))
-                        payloadExpectations[payloadPath].Add(algorithm, checksumValue);
-                    else
-                    {
-                        payloadExpectations[payloadPath] = [];
-                        payloadExpectations[payloadPath].Add(algorithm, checksumValue);
-                    }
 
+                foreach (var line in lines)
+                {
+                    var (payloadfile, checksumValue) = ValidateManifestLine(line);
+
+                    if (!string.IsNullOrEmpty(payloadfile))
+                    {
+                        var payloadPath = Path.Combine(bagRoot!, payloadfile);
+
+                        if (!payloadExpectations.TryGetValue(payloadPath, out var algorithmDict))
+                        {
+                            algorithmDict = new Dictionary<ChecksumAlgorithm, string>();
+                            payloadExpectations[payloadPath] = algorithmDict;
+                        }
+
+                        algorithmDict[algorithm] = checksumValue;
+                    }
                 }
             }
             return payloadExpectations;

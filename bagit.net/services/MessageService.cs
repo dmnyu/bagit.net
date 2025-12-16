@@ -38,7 +38,7 @@ namespace bagit.net.services
             switch (messageRecord.GetLevel())
             {
                 case MessageLevel.DEBUG:
-                    _logger.LogDebug(messageRecord.GetMessage());
+                    if(!quiet) _logger.LogDebug(messageRecord.GetMessage());
                     break;
                 case MessageLevel.INFO:
                     if (!quiet) _logger.LogInformation(messageRecord.GetMessage());
@@ -47,7 +47,7 @@ namespace bagit.net.services
                     _logger.LogError(messageRecord.GetMessage());
                     break;
                 case MessageLevel.WARNING:
-                    _logger.LogWarning(messageRecord.GetMessage());
+                    if (!quiet) _logger.LogWarning(messageRecord.GetMessage());
                     break;
                 default:
                     throw new InvalidDataException("Unknown message level");
