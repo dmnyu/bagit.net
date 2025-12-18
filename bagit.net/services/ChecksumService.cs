@@ -28,15 +28,7 @@ namespace bagit.net.services
                 bufferSize: 1024 * 1024,
                 useAsync: true);
 
-            using HashAlgorithm hashAlgorithm = algorithm switch
-            {
-                ChecksumAlgorithm.MD5 => MD5.Create(),
-                ChecksumAlgorithm.SHA1 => SHA1.Create(),
-                ChecksumAlgorithm.SHA256 => SHA256.Create(),
-                ChecksumAlgorithm.SHA384 => SHA384.Create(),
-                ChecksumAlgorithm.SHA512 => SHA512.Create(),
-                _ => throw new ArgumentOutOfRangeException(nameof(algorithm))
-            };
+            var hashAlgorithm = GetHashAlgorithm(algorithm);
 
             var buffer = ArrayPool<byte>.Shared.Rent(16 * 1024 * 1024);
             try

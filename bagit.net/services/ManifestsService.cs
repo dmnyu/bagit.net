@@ -255,8 +255,6 @@ namespace bagit.net.services
             return payloadExpectations;
         }
         
-     
-
         public (string payloadFile, string hash) ValidateManifestLine(string line)
         {
             var parts = line.Split(' ', 2, StringSplitOptions.None);

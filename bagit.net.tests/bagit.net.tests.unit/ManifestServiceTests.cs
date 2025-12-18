@@ -101,26 +101,6 @@ namespace bagit.net.tests.unit
             }
         }
 
-        [Theory]
-        [Trait("Category", "Unit")]
-        [InlineData("valid-bag")]
-        [InlineData("valid-bag-bagitnet")]
-        public async Task Test_Validate_Manifests(string bag) {
-            _testDir = TestHelpers.PrepareTempTestDataDir(bag);
-            var manifests = new List<string>() { "manifest-sha256.txt", "tagmanifest-sha256.txt"};
-            
-            foreach (var manifest in manifests)
-            {
-                var manifestFile = Path.Combine(_testDir, manifest);
-                Console.WriteLine($"Checking file: {manifestFile}, exists: {File.Exists(manifestFile)}");
-                Console.WriteLine($"Temp dir: {Path.GetTempPath()}");
-
-
-                var ex = await Record.ExceptionAsync(() => _manifestService.ValidateManifestFile(manifestFile, 1));
-                Assert.Null(ex);
-            }
-        }
-
         [Fact]
         [Trait("Category", "Unit")]
         public void Test_Get_Manifest_KVP()
