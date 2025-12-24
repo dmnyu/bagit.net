@@ -4,11 +4,11 @@
 It allows you to create **BagIt bags**—structured file collections with checksums for reliable storage and transfer of digital content.  
 It currently consists of a core library (`bagit.net`) and a CLI application (`bagit.net.cli`) for Linux, MacOS, and Windows.
 
-[![Release](https://img.shields.io/badge/release-v0.3.0--alpha-blue)](https://github.com/dmnyu/bagit.net/releases/v0.3.0-alpha)
+[![Release](https://img.shields.io/badge/release-v0.3.0--beta-blue)](https://github.com/dmnyu/bagit.net/releases/v0.3.0-beta)
 ![BagIt.NET CI](https://github.com/dmnyu/bagit.net/actions/workflows/ci.yml/badge.svg)
 
-> ⚠️ **Note:** This project is in early development. It currently supports the creation and validation of **BagIt-formatted bags**.
-There is currently no error handling in place and will crash if an error is encountered. See the [roadmap](https://github.com/dmnyu/bagit.net/blob/main/bagitnet_roadmap.md) for current project status
+> ⚠️ **Beta Note:** This project is in active development. It currently supports the creation, validation and management of **BagIt-formatted bags**.
+There is currently basic error handling in place, but additional edge-case handling is still needed. See the [roadmap](https://github.com/dmnyu/bagit.net/blob/main/bagitnet_roadmap.md) for current project status
 
 ---
 
@@ -126,8 +126,8 @@ bagit.net help
 
 ### Linux
 ```bash
-wget https://github.com/dmnyu/bagit.net/releases/download/v0.3.0-alpha/bagit.net.cli-v0.3.0-alpha-linux-x64.tgz
-tar xvzf bagit.net.cli-v0.3.0-alpha-linux-x64.tgz
+wget https://github.com/dmnyu/bagit.net/releases/download/v0.3.0-beta/bagit.net.cli-v0.3.0-beta-linux-x64.tgz
+tar xvzf bagit.net.cli-v0.3.0-beta-linux-x64.tgz
 cd bagit.net
 sudo ./install.sh
 bagit.net --help
@@ -138,13 +138,12 @@ bagit.net --help
 > * On RHEL/CentOS systems with SELinux or `noexec` restrictions on `/tmp`, these binaries may not run.
 > * The install script will attempt to move the bagit.net binary to ~/bin
 
-
 ---
 
 ### Windows
 ```powershell
-Invoke-WebRequest -Uri https://github.com/dmnyu/bagit.net/releases/download/v0.3.0-alpha/bagit.net.cli-v0.3.0-alpha-win-x64.zip -OutFile bagit.net.cli-v0.3.0-alpha-win-x64.zip
-Expand-Archive bagit.net.cli-v0.3.0-alpha-win-x64.zip -DestinationPath .
+Invoke-WebRequest -Uri https://github.com/dmnyu/bagit.net/releases/download/v0.3.0-beta/bagit.net.cli-v0.3.0-beta-win-x64.zip -OutFile bagit.net.cli-v0.3.0-beta-win-x64.zip
+Expand-Archive bagit.net.cli-v0.3.0-beta-win-x64.zip -DestinationPath .
 cd .\bagit.net
 .\bagit.net.exe --help
 .\install.ps1
@@ -156,8 +155,8 @@ cd .\bagit.net
 
 ### MacOS
 ```bash
-wget https://github.com/dmnyu/bagit.net/releases/download/v0.3.0-alpha/bagit.net.cli-v0.3.0-alpha-macos-arm64.tgz
-tar xvzf bagit.net.cli-v0.3.0-alpha-macos-arm64.tgz
+wget https://github.com/dmnyu/bagit.net/releases/download/v0.3.0-beta/bagit.net.cli-v0.3.0-beta-macos-arm64.tgz
+tar xvzf bagit.net.cli-v0.3.0-beta-macos-arm64.tgz
 cd bagit.net
 sudo ./install.sh
 bagit.net --help
