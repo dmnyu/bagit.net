@@ -80,6 +80,7 @@ namespace bagit.net.tests.unit
             _testDir = TestHelpers.PrepareTempTestDataDir("no-tag-manifest");
             _manifestService.CreateTagManifestFile(_testDir, new List<ChecksumAlgorithm>() { algorithm });
             var tagManifestPath = Path.Combine(_testDir, manifestName);
+            foreach(var message in _messageService.GetAll())
             Assert.True(File.Exists(tagManifestPath));
             var lines = File.ReadAllLines(tagManifestPath);
             Assert.True(lines.Length > 0);

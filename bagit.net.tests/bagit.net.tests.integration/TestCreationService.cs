@@ -3,7 +3,7 @@ using bagit.net.interfaces;
 using Microsoft.Extensions.DependencyInjection;
 using Xunit.Abstractions;
 
-namespace bagit.net.tests.bagit.net.tests.integration
+namespace bagit.net.tests.integration
 {
     public class TestCreationService : IDisposable
     {
