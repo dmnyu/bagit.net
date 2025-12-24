@@ -50,36 +50,21 @@ namespace bagit.net.services
         );
 
         var semaphore = new SemaphoreSlim(processes);
-        var fileEntries = GetPayloadFiles(bagRoot);
-
-        // Start a task for each file
-        var tasks = fileEntries.Select(async entry =>
-        {
-            var currentEntry = entry; // local copy to avoid async capture issues
-            await semaphore.WaitAsync();
-            try
+            var fileEntries = GetPayloadFiles(bagRoot);
+            var tasks = fileEntries.Select(entry => Task.Run(async () =>
             {
-                _messageService.Add(new MessageRecord(MessageLevel.INFO, $"Generating manifest lines for file {currentEntry}"));
-                var checksums = await _checksumService.CalculateChecksums(Path.Combine(bagRoot, currentEntry), algorithms);
-                foreach( var checksum in checksums ) {
+                var fullPath = Path.Combine(bagRoot, entry);
+                var checksums = await _checksumService.CalculateChecksums(fullPath, algorithms);
 
-                    var algorithmCode = _checksumService.GetAlgorithmCode(checksum.Key);
-                    // Append checksum line safely
-                    lock (lockObjects[algorithmCode])
-                    {
-                       checksumManifests[algorithmCode].AppendLine($"{checksum.Value} {currentEntry}");
-                    }
+                foreach (var checksum in checksums)
+                {
+                    var algCode = _checksumService.GetAlgorithmCode(checksum.Key);
+                    lock (lockObjects[algCode])
+                        checksumManifests[algCode].AppendLine($"{checksum.Value} {entry}");
                 }
-                
-            }
-            finally
-            {
-                semaphore.Release();
-            }
-        });
+            }));
 
-        // Wait for all files to finish
-        await Task.WhenAll(tasks);
+            await Task.WhenAll(tasks);
 
         // Write out each manifest
         foreach (var kvp in checksumManifests)
