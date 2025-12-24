@@ -4,7 +4,7 @@
 It allows you to create **BagIt bags**—structured file collections with checksums for reliable storage and transfer of digital content.  
 It currently consists of a core library (`bagit.net`) and a CLI application (`bagit.net.cli`) for Linux, MacOS, and Windows.
 
-[![Release](https://img.shields.io/badge/release-v0.2.6--alpha-blue)](https://github.com/dmnyu/bagit.net/releases/v0.2.6-alpha)
+[![Release](https://img.shields.io/badge/release-v0.3.0--alpha-blue)](https://github.com/dmnyu/bagit.net/releases/v0.3.0-alpha)
 ![BagIt.NET CI](https://github.com/dmnyu/bagit.net/actions/workflows/ci.yml/badge.svg)
 
 > ⚠️ **Note:** This project is in early development. It currently supports the creation and validation of **BagIt-formatted bags**.
@@ -21,9 +21,11 @@ Create a BagIt-formatted bag from a directory.
 
 | Option | Description |
 |--------|-------------|
-| `--algorithm` | Specify the checksum algorithm to use: `md5`, `sha1`, `sha256` (default), `sha384`, or `sha512`. |
+| `--algorithm` | Specify which checksum algorithms to use: `md5`, `sha1`, `sha256` (default), `sha384`, or `sha512`. |
 | `--log` | Specify the location to write logging (default: stdout). |
 | `--tag-file` | Specify the location of an external tag-file to include in bag-info.txt |
+|`--processes`|Specify the number of threads to use for  checksum calculation|
+|`--quiet`|Only output warnings and errors|
 
 **Usage:**
 ```bash
@@ -32,6 +34,12 @@ bagit.net create /path/to/directory
 
 # Create a bag using MD5 checksums
 bagit.net create --algorithm md5 /path/to/directory
+
+# Create a bag using multiple checksum algorithms
+bagit.net create --algorithm md5,sha1,sha256 /path/to/directory
+
+# Create a bag using multiple threads
+bagit.net create --algorithm md5,sha1,sha256 --processes 4 /path/to/directory
 
 # Log to a file
 bagit.net create --log bagit.net.log /path/to/directory
@@ -50,6 +58,8 @@ Validate a BagIt-formatted bag.
 | `--fast` | Validate the bag based on payload-oxum only. |
 | `--complete` | Validate the bag based on completeness only. |
 | `--log` | Specify the location to write logging (default: stdout). |
+|`--processes`|Specify the number of threads to use for  checksum calculation|
+|`--quiet`|Only output warnings and errors|
 
 **Usage:**
 ```bash
@@ -58,6 +68,9 @@ bagit.net validate /path/to/bag
 
 # Validate a bag with logging to file
 bagit.net validate --log bagit.net.log /path/to/bag
+
+# Validate a bag using multiple threads
+bagit.net validate --processes 4 /path/to/directory
 
 # Fast validation
 bagit.net validate --fast /path/to/bag
@@ -113,23 +126,25 @@ bagit.net help
 
 ### Linux
 ```bash
-wget https://github.com/dmnyu/bagit.net/releases/download/v0.2.6-alpha/bagit.net.cli-v0.2.6-alpha-linux-x64.tgz
-tar xvzf bagit.net.cli-v0.2.6-alpha-linux-x64.tgz
+wget https://github.com/dmnyu/bagit.net/releases/download/v0.3.0-alpha/bagit.net.cli-v0.3.0-alpha-linux-x64.tgz
+tar xvzf bagit.net.cli-v0.3.0-alpha-linux-x64.tgz
 cd bagit.net
 sudo ./install.sh
 bagit.net --help
 ```
 
-**Linux / SELinux Notes:**  
-bagit.net single-file self-contained binaries require the ability to create and execute temporary files at runtime.  
-On RHEL/CentOS systems with SELinux or `noexec` restrictions on `/tmp`, these binaries may not run.
+> **Linux / SELinux Notes:**  
+> * bagit.net single-file self-contained binaries require the ability to create and execute temporary files at runtime.  
+> * On RHEL/CentOS systems with SELinux or `noexec` restrictions on `/tmp`, these binaries may not run.
+> * The install script will attempt to move the bagit.net binary to ~/bin
+
 
 ---
 
 ### Windows
 ```powershell
-Invoke-WebRequest -Uri https://github.com/dmnyu/bagit.net/releases/download/v0.2.6-alpha/bagit.net.cli-v0.2.6-alpha-win-x64.zip -OutFile bagit.net.cli-v0.2.6-alpha-win-x64.zip
-Expand-Archive bagit.net.cli-v0.2.6-alpha-win-x64.zip -DestinationPath .
+Invoke-WebRequest -Uri https://github.com/dmnyu/bagit.net/releases/download/v0.3.0-alpha/bagit.net.cli-v0.3.0-alpha-win-x64.zip -OutFile bagit.net.cli-v0.3.0-alpha-win-x64.zip
+Expand-Archive bagit.net.cli-v0.3.0-alpha-win-x64.zip -DestinationPath .
 cd .\bagit.net
 .\bagit.net.exe --help
 .\install.ps1
@@ -141,13 +156,15 @@ cd .\bagit.net
 
 ### MacOS
 ```bash
-wget https://github.com/dmnyu/bagit.net/releases/download/v0.2.6-alpha/bagit.net.cli-v0.2.6-alpha-macos-arm64.tgz
-tar xvzf bagit.net.cli-v0.2.6-alpha-macos-arm64.tgz
+wget https://github.com/dmnyu/bagit.net/releases/download/v0.3.0-alpha/bagit.net.cli-v0.3.0-alpha-macos-arm64.tgz
+tar xvzf bagit.net.cli-v0.3.0-alpha-macos-arm64.tgz
 cd bagit.net
 sudo ./install.sh
 bagit.net --help
 ```
-> **note** This is an automated build from Github Actions, it is not tested.
+> **notes** 
+> * This is an automated build from Github Actions, it is not tested.
+> * The install script will attempt to move the bagit.net binary to ~/bin
 
 ---
 

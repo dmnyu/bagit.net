@@ -33,7 +33,7 @@ namespace bagit.net.cli.Commands
 
         public override async Task<int> ExecuteAsync(CommandContext context, Settings settings, CancellationToken cancellationToken)
         {
-            MessageContext.Quiet.Value = settings.Quiet;
+            BagitContext.Quiet.Value = settings.Quiet;
             try
             {
                 var serviceProvider = ServiceConfigurator.BuildServiceProvider<BagValidator>(settings.logFile);
@@ -42,7 +42,6 @@ namespace bagit.net.cli.Commands
                     settings.Directory, 
                     settings.Fast, 
                     settings.Completeness, 
-                    settings.Quiet, 
                     settings.logFile,
                     settings.Processes,
                     cancellationToken);

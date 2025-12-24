@@ -5,7 +5,6 @@ using Microsoft.Extensions.Logging;
 namespace bagit.net.services
 {
     
-
     public class MessageService : IMessageService
     {
         private readonly ILogger _logger;
@@ -33,7 +32,7 @@ namespace bagit.net.services
 
         public void LogEvent(MessageRecord messageRecord)
         {
-            bool quiet = MessageContext.Quiet.Value;
+            bool quiet = BagitContext.Quiet.Value;
 
             switch (messageRecord.GetLevel())
             {

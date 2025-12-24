@@ -36,7 +36,7 @@ public class CreateCommand : AsyncCommand<CreateCommand.Settings>
     public override async Task<int> ExecuteAsync(CommandContext context, Settings settings, CancellationToken cancellationToken)
     {
        
-        MessageContext.Quiet.Value = settings.Quiet;
+        BagitContext.Quiet.Value = settings.Quiet;
 
         try
         {
