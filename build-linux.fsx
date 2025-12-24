@@ -140,15 +140,18 @@ copyFile (Path.Combine(publishDir, exeName)) (Path.Combine(distPath, exeDestName
 copyFile installScriptSource installScriptDest
 
 // 6. Compress the dist directory
-let tgFilePath = Path.Combine(archivePath, $"bagit.net.cli-{version}-linux-x64.tgz")
-createTgz distPath tgFilePath
+if args |> Array.exists ((=) "--install") then
+    log "Creating distrobution archive"
+    let tgFilePath = Path.Combine(archivePath, $"bagit.net.cli-{version}-linux-x64.tgz")
+    createTgz distPath tgFilePath
+    log "archive created successfully"
 
-log "Build completed successfully."
-
-//install if there is a --install flag
+// 7. install if there is a --install flag
 if args |> Array.exists ((=) "--install") then
     log "Installing binary"
     let relativeBinPath = $"./bagit.net.cli/dist/{version}/linux/bagit.net"
     let binPath = Path.GetFullPath(relativeBinPath)
     runProcess "bash" "install.sh" binPath
     log "bin installed successfully"
+
+log "Build completed successfully"

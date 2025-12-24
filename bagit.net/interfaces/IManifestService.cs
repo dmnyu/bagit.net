@@ -4,13 +4,12 @@ namespace bagit.net.interfaces
 {
     public interface IManifestService
     {
-        void CreatePayloadManifest(string bagRoot, ChecksumAlgorithm algorithm);
-        void CreateTagManifestFile(string bagRoot, ChecksumAlgorithm algorithm);
+        Task CreatePayloadManifest(string bagRoot, IEnumerable<ChecksumAlgorithm> algorithms, int processes);
+        void CreateTagManifestFile(string bagRoot, IEnumerable<ChecksumAlgorithm> algorithms);
         List<KeyValuePair<string, string>> GetManifestAsKeyValuePairs(string manifestPath);
-        void ValidateManifestFiles(string bagRoot);
-        void ValidateManifestFile(string manifestFile);
+        Task ValidateManifestFiles(string bagPath, int processes);
+        (string payloadFile, string hash) ValidateManifestLine(string line);
         void ValidateManifestFilesCompleteness(string bagRoot);
-        void ValidateManifestFileCompleteness(string manifestFile);
         void UpdateTagManifest(string bagRoot);
     }
 }

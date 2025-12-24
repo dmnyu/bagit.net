@@ -1,8 +1,10 @@
-﻿using System.Runtime.InteropServices;
+﻿using bagit.net.domain;
+using bagit.net.interfaces;
+using System.Collections.Concurrent;
+using System.Runtime.InteropServices;
+using System.Security.Cryptography;
 using System.Text;
 using System.Text.RegularExpressions;
-using bagit.net.interfaces;
-using bagit.net.domain;
 
 namespace bagit.net.services
 {
@@ -16,8 +18,8 @@ namespace bagit.net.services
         private static readonly Regex _nonCREndingsRegex = new(@"\r(?!\n)");
         public static readonly Regex _checkSumRegex = new(@"-(md5|sha1|sha256|sha384|sha512)\b", RegexOptions.Compiled);
         public static readonly Regex _tagmanifestRegex = new(@"tagmanifest-(md5|sha1|sha256|sha384|sha512).txt$", RegexOptions.Compiled);
-       
-    
+
+
         public ManifestService(IChecksumService checksumService, IMessageService messageService, IFileManagerService fileManagerService)
         {
             _checksumService = checksumService;
@@ -25,165 +27,158 @@ namespace bagit.net.services
             _messageService = messageService;
         }
 
-        public void CreatePayloadManifest(string bagRoot, ChecksumAlgorithm algorithm)
-        {
-            var algorithmCode = _checksumService.GetAlgorithmCode(algorithm);
-            _messageService.Add(new MessageRecord(MessageLevel.INFO, $"Generating manifests using {algorithmCode}"));
-            var manifestContent = new StringBuilder();
+
+    /*
+     * Create Manifests
+     */
+
+    public async Task CreatePayloadManifest(string bagRoot, IEnumerable<ChecksumAlgorithm> algorithms, int processes)
+    {
+        
+        _messageService.Add(new MessageRecord(MessageLevel.INFO, $"Using {processes} processes to generate manifests: {string.Join(",", algorithms)}"));
+        // Prepare per-algorithm StringBuilders and lock objects
+        var checksumManifests = algorithms
+            .Distinct()
+            .ToDictionary(
+                alg => _checksumService.GetAlgorithmCode(alg),
+                alg => new StringBuilder()
+            );
+
+        var lockObjects = algorithms.ToDictionary(
+            alg => _checksumService.GetAlgorithmCode(alg),
+            alg => new object()
+        );
+
+        var semaphore = new SemaphoreSlim(processes);
             var fileEntries = GetPayloadFiles(bagRoot);
-            foreach (var entry in fileEntries)
+            var tasks = fileEntries.Select(entry => Task.Run(async () =>
             {
-                _messageService.Add(new MessageRecord(MessageLevel.INFO, $"Generating manifest lines for file {entry}"));
-                var checksum = _checksumService.CalculateChecksum(Path.Combine(bagRoot, entry), algorithm);
-                manifestContent.Append($"{checksum.Trim()} {entry.Trim()}\n");
-            }
+                var fullPath = Path.Combine(bagRoot, entry);
+                var checksums = await _checksumService.CalculateChecksums(fullPath, algorithms);
 
-            var manifestFilename = Path.Combine(bagRoot, $"manifest-{algorithmCode}.txt");
-            File.WriteAllText(manifestFilename, manifestContent.ToString(), new UTF8Encoding(encoderShouldEmitUTF8Identifier: false));
-        }
-
-        public void CreateTagManifestFile(string bagRoot, ChecksumAlgorithm algorithm)
-        {
-            var algorithmCode = _checksumService.GetAlgorithmCode(algorithm);
-            var manifestFilename = Path.Combine(bagRoot, $"tagmanifest-{algorithmCode}.txt");
-            _messageService.Add(new MessageRecord(MessageLevel.INFO, $"Creating {manifestFilename}"));
-            
-            StringBuilder sb  = new StringBuilder();
-            var fileEntries = GetRootFiles(bagRoot);
-            foreach (var entry in fileEntries)
-            {
-                var checksum = _checksumService.CalculateChecksum(Path.Combine(bagRoot, entry), algorithm);
-                sb.Append($"{checksum.Trim()} {entry.Trim()}\n");
-            }
-
-            _fileManagerService.WriteToFile(manifestFilename, sb.ToString());
-        }
-
-        public void UpdateTagManifest(string bagRoot)
-        {
-            var rootFiles = Directory.GetFiles(bagRoot);
-            foreach (var rootFile in rootFiles)
-            {
-                if (_tagmanifestRegex.IsMatch(rootFile))
+                foreach (var checksum in checksums)
                 {
-                    _messageService.Add(new MessageRecord(MessageLevel.INFO, $"Updating {rootFile}"));
-                    var algorithm = GetManifestAlgorithm(rootFile);
-                    var tmpFile = _fileManagerService.CreateTempFile(bagRoot);
-                    StringBuilder sb = new StringBuilder();
-                    var fileEntries = GetRootFiles(bagRoot);
-                    foreach (var entry in fileEntries)
-                    {
-                        if (Path.GetFileName(entry) != Path.GetFileName(tmpFile) && Path.GetFileName(entry) != Path.GetFileName(rootFile))
-                        {
-                            var checksum = _checksumService.CalculateChecksum(Path.Combine(bagRoot, entry), algorithm);
-                            sb.Append($"{checksum.Trim()} {entry.Trim()}\n");
-                        }
-                    }
-                    _fileManagerService.WriteToFile(tmpFile, sb.ToString());
-                    _fileManagerService.DeleteFile(rootFile);
-                    _fileManagerService.MoveFile(tmpFile, rootFile);
+                    var algCode = _checksumService.GetAlgorithmCode(checksum.Key);
+                    lock (lockObjects[algCode])
+                        checksumManifests[algCode].AppendLine($"{checksum.Value} {entry}");
+                }
+            }));
+
+            await Task.WhenAll(tasks);
+
+        // Write out each manifest
+        foreach (var kvp in checksumManifests)
+        {
+            var manifestPath = Path.Combine(bagRoot, $"manifest-{kvp.Key}.txt");
+            await File.WriteAllTextAsync(manifestPath, kvp.Value.ToString());
+        }
+    }
+
+    public void CreateTagManifestFile(string bagRoot, IEnumerable<ChecksumAlgorithm> algorithms)
+        {
+
+            var checksumManifests = algorithms
+                .Distinct()
+                .ToDictionary(
+                    alg => _checksumService.GetAlgorithmCode(alg),
+                    alg => new StringBuilder()
+            );
+
+            var fileEntries = GetRootFiles(bagRoot);
+
+            foreach (var entry in fileEntries)
+            {
+                foreach (var algorithm in algorithms)
+                {
+                    var algorithmCode = _checksumService.GetAlgorithmCode(algorithm);
+                    var checksum = _checksumService.CalculateChecksum(Path.Combine(bagRoot, entry), algorithm).GetAwaiter().GetResult();
+                    checksumManifests[algorithmCode].AppendLine($"{checksum} {entry}");
                 }
             }
 
-        }
-
-        internal IEnumerable<string> GetPayloadFiles(string bagRoot)
-        {
-            string dataDir = Path.Combine(bagRoot, "data");
-
-            if (!Directory.Exists(dataDir))
-                yield break;
-
-            foreach (var file in Directory.EnumerateFiles(dataDir, "*", SearchOption.AllDirectories))
-            {
-                string relativePath = Path.GetRelativePath(bagRoot, file);
-                relativePath = relativePath.Replace(Path.DirectorySeparatorChar, '/');
-                yield return relativePath;
+            foreach (var algorithm in algorithms) {
+                var algorithmCode = _checksumService.GetAlgorithmCode(algorithm);
+                var manifestFilename = Path.Combine(bagRoot, $"tagmanifest-{algorithmCode}.txt");
+                _fileManagerService.WriteToFile(manifestFilename, checksumManifests[algorithmCode].ToString());
             }
         }
+        
+        /*********************
+         * 
+         * Validation Methods
+         * 
+         *********************/ 
 
-        internal IEnumerable<string> GetRootFiles(string bagRoot)
+        public async Task ValidateManifestFiles(string bagRoot, int processes)
         {
-            foreach (var file in Directory.EnumerateFiles(bagRoot, "*", SearchOption.TopDirectoryOnly))
+            _messageService.Add(new MessageRecord(MessageLevel.INFO, $"validating checksums using {processes} processes"));
+            var manifestEntries = ParseManifests(bagRoot);
+
+            using var semaphore = new SemaphoreSlim(processes);
+
+            var tasks = manifestEntries.Select(async manifestEntry =>
             {
-                string relativePath = Path.GetRelativePath(bagRoot, file);
-                relativePath = relativePath.Replace(Path.DirectorySeparatorChar, '/');
-                yield return relativePath;
-            }
-        }
-
-        public List<KeyValuePair<string, string>> GetManifestAsKeyValuePairs(string manifestPath)
-        {
-            return File.ReadAllLines(manifestPath)
-                .Where(line => !string.IsNullOrWhiteSpace(line))
-                .Select(line =>
+                await semaphore.WaitAsync();
+                try
                 {
-                    var parts = line.Split(' ', 2);
-                    if (parts.Length != 2)
-                        throw new FormatException($"Invalid manifest line: {line}");
-                    return new KeyValuePair<string, string>(parts[0].Trim(), parts[1].Trim());
-                })
-                .ToList();
-        }
+                    await _checksumService.CompareChecksums(manifestEntry.Key, manifestEntry.Value, processes);
+                }
+                finally
+                {
+                    semaphore.Release();
+                }
+            });
 
-        public void ValidateManifestFiles(string bagPath)
-        {
-            foreach (var f in Directory.EnumerateFiles(bagPath))
-            {
-                if (_manifestRegex.IsMatch(Path.GetFileName(f)))
-                    ValidateManifestFile(f);
-            }
-        }
-
-        public void ValidateManifestFile(string manifestFile)
-        {
-            var messages = new List<MessageRecord>();
-            string? bagRoot = Path.GetDirectoryName(manifestFile);
-            string fn = Path.GetFileName(manifestFile);
-            ChecksumAlgorithm algorithm = GetManifestAlgorithm(fn);
-
-            ValidateManifestLineEndings(manifestFile);
-
-            // Fix: Ensure bagRoot is not null before passing to ValidateManifestLine
-            if (bagRoot == null)
-            {
-                _messageService.Add(new MessageRecord(MessageLevel.ERROR, $"Cannot determine directory for manifest file '{manifestFile}'."));
-                return;
-            }
-
-            foreach (var line in File.ReadLines(manifestFile))
-            {
-                if (string.IsNullOrWhiteSpace(line))
-                    continue;
-
-                ValidateManifestLine(line, bagRoot, fn, algorithm);
-            }
-        }
-
-        internal ChecksumAlgorithm GetManifestAlgorithm(string manifestFilename)
-        {
-            Match match = _checkSumRegex.Match(manifestFilename);
-            if (!match.Success)
-                throw new InvalidDataException($"Cannot determine checksum algorithm from manifest filename '{manifestFilename}'.");
-
-            return ChecksumAlgorithmMap.Algorithms[match.Groups[1].Value.ToLowerInvariant()];
-        }
-
-        internal void ValidateManifestLine(string line, string manifestDir, string manifestFileName, ChecksumAlgorithm algorithm)
-        {
+            await Task.WhenAll(tasks);
             
+        }
 
+        public Dictionary<string, Dictionary<ChecksumAlgorithm, string>> ParseManifests(string bagRoot)
+        {
+            var payloadExpectations = new Dictionary<string, Dictionary<ChecksumAlgorithm, string>>();
+            var manifestFiles = Directory
+                .EnumerateFiles(bagRoot)
+                .Where(f => _manifestRegex.IsMatch(Path.GetFileName(f)))
+                .ToList();
+
+            foreach (var manifestFile in manifestFiles)
+            {
+                var algorithm = GetManifestAlgorithm(manifestFile);
+                var lines = File.ReadAllLines(manifestFile);
+
+                foreach (var line in lines)
+                {
+                    var (payloadfile, checksumValue) = ValidateManifestLine(line);
+
+                    if (!string.IsNullOrEmpty(payloadfile))
+                    {
+                        var payloadPath = Path.Combine(bagRoot!, payloadfile);
+
+                        if (!payloadExpectations.TryGetValue(payloadPath, out var algorithmDict))
+                        {
+                            algorithmDict = new Dictionary<ChecksumAlgorithm, string>();
+                            payloadExpectations[payloadPath] = algorithmDict;
+                        }
+
+                        algorithmDict[algorithm] = checksumValue;
+                    }
+                }
+            }
+            return payloadExpectations;
+        }
+        
+        public (string payloadFile, string hash) ValidateManifestLine(string line)
+        {
             var parts = line.Split(' ', 2, StringSplitOptions.None);
             if (parts.Length != 2)
             {
                 _messageService.Add(new MessageRecord(MessageLevel.ERROR, $"Invalid manifest line format: '{line}'."));
-                return;
+                return (string.Empty, string.Empty);
             }
 
             string checksum = parts[0].Trim();
             string payloadFile = parts[1].Trim();
 
-            // Normalize path for Windows
             if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
             {
                 payloadFile = payloadFile
@@ -191,24 +186,18 @@ namespace bagit.net.services
                     .Replace('\\', Path.DirectorySeparatorChar);
             }
 
-            string fullPath = Path.Combine(manifestDir, payloadFile);
-            string filename = Path.GetFileName(payloadFile);
-
-
             if (line.Length > 200)
                 _messageService.Add(new MessageRecord(MessageLevel.WARNING, $"Manifest line exceeds 200 characters, may be too long for some file systems: {line}"));
 
-            if (!IsValidUtf8(filename))
-                _messageService.Add(new MessageRecord(MessageLevel.WARNING, $"{filename} contains non-unicode characters"));
+            if (!IsValidUtf8(payloadFile))
+                _messageService.Add(new MessageRecord(MessageLevel.WARNING, $"{payloadFile} contains non-unicode characters"));
 
-            if (!filename.IsNormalized(NormalizationForm.FormC))
-                _messageService.Add(new MessageRecord(MessageLevel.WARNING, $"{fullPath} is not NFC-Normalized"));
+            if (!payloadFile.IsNormalized(NormalizationForm.FormC))
+                _messageService.Add(new MessageRecord(MessageLevel.WARNING, $"{payloadFile} is not NFC-Normalized"));
 
-            _messageService.Add(new MessageRecord(MessageLevel.INFO, $"Verifying checksum for file {fullPath}"));
-            if (!_checksumService.CompareChecksum(fullPath, checksum, algorithm))
-                _messageService.Add(new MessageRecord(MessageLevel.ERROR, $"Checksum mismatch for '{payloadFile}' in manifest '{manifestFileName}'. Expected: {checksum}"));
+            return(payloadFile, checksum);
+
         }
-
 
         public void ValidateManifestLineEndings(string manifestFile)
         {
@@ -249,6 +238,47 @@ namespace bagit.net.services
             }
         }
 
+
+        /********************
+        * 
+        * Update Manifests
+        * 
+        ********************/
+
+        public void UpdateTagManifest(string bagRoot)
+        {
+            var rootFiles = Directory.GetFiles(bagRoot);
+            foreach (var rootFile in rootFiles)
+            {
+                if (_tagmanifestRegex.IsMatch(rootFile))
+                {
+                    _messageService.Add(new MessageRecord(MessageLevel.INFO, $"Updating {rootFile}"));
+                    var algorithm = GetManifestAlgorithm(rootFile);
+                    var tmpFile = _fileManagerService.CreateTempFile(bagRoot);
+                    StringBuilder sb = new StringBuilder();
+                    var fileEntries = GetRootFiles(bagRoot);
+                    foreach (var entry in fileEntries)
+                    {
+                        if (Path.GetFileName(entry) != Path.GetFileName(tmpFile) && Path.GetFileName(entry) != Path.GetFileName(rootFile))
+                        {
+                            var checksum = _checksumService.CalculateChecksum(Path.Combine(bagRoot, entry), algorithm);
+                            sb.Append($"{checksum} {entry}\n");
+                        }
+                    }
+                    _fileManagerService.WriteToFile(tmpFile, sb.ToString());
+                    _fileManagerService.DeleteFile(rootFile);
+                    _fileManagerService.MoveFile(tmpFile, rootFile);
+                }
+            }
+
+        }
+
+
+        /**********************
+         * 
+         *  Completeness Only
+         *  
+         *  *******************/
         public void ValidateManifestFilesCompleteness(string bagRoot)
         {
             
@@ -280,5 +310,62 @@ namespace bagit.net.services
                 }
             } 
         }
+
+
+        /******************
+         * 
+         * Helper Methods
+         * 
+         ******************/
+
+        public List<KeyValuePair<string, string>> GetManifestAsKeyValuePairs(string manifestPath)
+        {
+            return File.ReadAllLines(manifestPath)
+                .Where(line => !string.IsNullOrWhiteSpace(line))
+                .Select(line =>
+                {
+                    var parts = line.Split(' ', 2);
+                    if (parts.Length != 2)
+                        throw new FormatException($"Invalid manifest line: {line}");
+                    return new KeyValuePair<string, string>(parts[0].Trim(), parts[1].Trim());
+                })
+                .ToList();
+        }
+
+        internal ChecksumAlgorithm GetManifestAlgorithm(string manifestFilename)
+        {
+            Match match = _checkSumRegex.Match(manifestFilename);
+            if (!match.Success)
+                throw new InvalidDataException($"Cannot determine checksum algorithm from manifest filename '{manifestFilename}'.");
+
+            return ChecksumAlgorithmMap.Algorithms[match.Groups[1].Value.ToLowerInvariant()];
+        }
+
+        internal IEnumerable<string> GetPayloadFiles(string bagRoot)
+        {
+            string dataDir = Path.Combine(bagRoot, "data");
+
+            if (!Directory.Exists(dataDir))
+                yield break;
+
+            foreach (var file in Directory.EnumerateFiles(dataDir, "*", SearchOption.AllDirectories))
+            {
+                string relativePath = Path.GetRelativePath(bagRoot, file);
+                relativePath = relativePath.Replace(Path.DirectorySeparatorChar, '/');
+                yield return relativePath;
+            }
+        }
+
+        internal IEnumerable<string> GetRootFiles(string bagRoot)
+        {
+            foreach (var file in Directory.EnumerateFiles(bagRoot, "*", SearchOption.TopDirectoryOnly))
+            {
+                string relativePath = Path.GetRelativePath(bagRoot, file);
+                relativePath = relativePath.Replace(Path.DirectorySeparatorChar, '/');
+                yield return relativePath;
+            }
+        }
+
+
     }
 }

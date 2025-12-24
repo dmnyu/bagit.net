@@ -1,14 +1,64 @@
 ﻿using bagit.net.domain;
 using bagit.net.interfaces;
+using Microsoft.Extensions.Logging;
 
 namespace bagit.net.services
 {
+    
     public class MessageService : IMessageService
     {
+        private readonly ILogger _logger;
+        private readonly object _lock = new();
+        public MessageService(ILogger<MessageService> logger) {
+            _logger = logger;
+        }
+
         private readonly List<MessageRecord> _messages = new();
-        public void Add(MessageRecord message) => _messages.Add(message);
-        public void AddRange(IEnumerable<MessageRecord> messages) => _messages.AddRange(messages);
+        public void Add(MessageRecord message)
+        {
+            lock (_lock)
+            {
+                _messages.Add(message);
+                LogEvent(message);
+            }
+        }
+        public void AddRange(IEnumerable<MessageRecord> messages) {
+            _messages.AddRange(messages);
+            LogEvents(messages);
+        
+        }
         public IReadOnlyList<MessageRecord> GetAll() => _messages.AsReadOnly();
         public void Clear() => _messages.Clear();
+
+        public void LogEvent(MessageRecord messageRecord)
+        {
+            bool quiet = BagitContext.Quiet.Value;
+
+            switch (messageRecord.GetLevel())
+            {
+                case MessageLevel.DEBUG:
+                    if(!quiet) _logger.LogDebug(messageRecord.GetMessage());
+                    break;
+                case MessageLevel.INFO:
+                    if (!quiet) _logger.LogInformation(messageRecord.GetMessage());
+                    break;
+                case MessageLevel.ERROR:
+                    _logger.LogError(messageRecord.GetMessage());
+                    break;
+                case MessageLevel.WARNING:
+                    if (!quiet) _logger.LogWarning(messageRecord.GetMessage());
+                    break;
+                default:
+                    throw new InvalidDataException("Unknown message level");
+            }
+        }
+
+        public void LogEvents(IEnumerable<MessageRecord> records)
+        {
+            foreach (var messageRecord in records)
+            {
+                LogEvent(messageRecord);
+            }
+        }
     }
 }

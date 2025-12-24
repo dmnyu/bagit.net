@@ -1,0 +1,11 @@
+Source-Organization: Example Digital Archives Division
+Organization-Address: 123 Preservation Way, Archive City, NY 10001
+Contact-Name: Jane Archivist
+Contact-Phone: +1-212-555-0123
+Contact-Email: jane.archivist@example.org
+External-Description: Digitized photographs from the 1940s, scanned at 600dpi.
+External-Identifier: ARC-2025-000123
+Bag-Group-Identifier: WWII-Photo-Collection
+Bag-Count: 1 of 3
+Internal-Sender-Identifier: DIGI-SERVER-004
+Internal-Sender-Description: Batch export from the Digitization Workflow System

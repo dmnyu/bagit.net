@@ -11,6 +11,14 @@
             return tempDir;
         }
 
+        public static string PrepareTempTestDataDir(string dir)
+        {
+            var tempDir = Path.Combine(Path.GetTempPath(), $"BagitTest_{Guid.NewGuid()}");
+            var originalDir = Path.Combine(AppContext.BaseDirectory, "TestData", dir);
+            CopyDirectory(originalDir, tempDir);
+            return tempDir;
+        }
+
 
         private static void CopyDirectory(string sourceDir, string destDir)
         {

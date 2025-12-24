@@ -143,6 +143,7 @@ copyFile installScriptSource installScriptDest
 if args |> Array.contains "--archive" then
     log "creating zip archive"
     zipDirectory distPath zipFilePath
+    log "archive created successfully"
 
 // 7. install if there is a --install flag
 if args |> Array.exists ((=) "--install") then
@@ -150,3 +151,5 @@ if args |> Array.exists ((=) "--install") then
     let binPath = $"bagit.net.cli\\dist\\{version}\\windows\\bagit.net"
     runProcess "powershell.exe" "-ExecutionPolicy Bypass -File .\\install.ps1" binPath
     log "bin installed successfully"
+
+log "Build completed successfully"

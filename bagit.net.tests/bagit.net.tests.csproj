@@ -8,6 +8,12 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <Compile Remove="bagit.net.tests.benchmarks\**" />
+    <EmbeddedResource Remove="bagit.net.tests.benchmarks\**" />
+    <None Remove="bagit.net.tests.benchmarks\**" />
+  </ItemGroup>
+
+  <ItemGroup>
     <PackageReference Include="coverlet.collector" Version="6.0.2" />
     <PackageReference Include="Microsoft.NET.Test.Sdk" Version="17.12.0" />
     <PackageReference Include="xunit" Version="2.9.2" />
@@ -31,6 +37,7 @@
   <ItemGroup>
     <Folder Include="TestData\bag-incomplete\data\subdir\" />
     <Folder Include="TestData\golden-files\" />
+    <Folder Include="TestData\foo\" />
   </ItemGroup>
 
 </Project>

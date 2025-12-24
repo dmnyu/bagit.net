@@ -1,7 +1,10 @@
 ﻿using bagit.net.domain;
 using bagit.net.interfaces;
+using System.Buffers;
+using System.Runtime.CompilerServices;
 using System.Security.Cryptography;
 using System.Text.RegularExpressions;
+using System.Threading;
 
 
 namespace bagit.net.services
@@ -15,34 +18,98 @@ namespace bagit.net.services
             _messageService = messageService;
         }
 
-        public string CalculateChecksum(string? filePath, ChecksumAlgorithm algorithm)
+        public async Task<Dictionary<ChecksumAlgorithm, string>> CalculateChecksums(string path, IEnumerable<ChecksumAlgorithm> algorithms)
         {
-            ArgumentNullException.ThrowIfNull(filePath);
-            if (!File.Exists(filePath))
+            var hashes = algorithms.Select(a => (a, GetHashAlgorithm(a))).ToList();
+
+            using var stream = new FileStream(path, FileMode.Open, FileAccess.Read, FileShare.Read, 81920, useAsync: true);
+            byte[] buffer = new byte[81920];
+            int bytesRead;
+
+            while ((bytesRead = await stream.ReadAsync(buffer)) > 0)
             {
-                _messageService.Add(new MessageRecord(MessageLevel.ERROR, $"{filePath} not found."));
-                return string.Empty;
+                foreach (var (alg, hashAlg) in hashes)
+                    hashAlg.TransformBlock(buffer, 0, bytesRead, null, 0);
             }
 
-            HashAlgorithm hashAlgorithm = algorithm switch
+            foreach (var (_, hashAlg) in hashes)
+                hashAlg.TransformFinalBlock(Array.Empty<byte>(), 0, 0);
+
+            return hashes.ToDictionary(
+                h => h.Item1,
+                h => BitConverter.ToString(h.Item2.Hash!).Replace("-", "").ToLowerInvariant()
+            );
+        }
+
+        public async Task<string> CalculateChecksum(string path, ChecksumAlgorithm algorithm)
+        {
+            using var fs = new FileStream(
+                path,
+                FileMode.Open,
+                FileAccess.Read,
+                FileShare.Read,
+                bufferSize: 1024 * 1024,
+                useAsync: true);
+
+            var hashAlgorithm = GetHashAlgorithm(algorithm);
+
+            var buffer = ArrayPool<byte>.Shared.Rent(16 * 1024 * 1024);
+            try
+            {
+                int bytesRead;
+                while ((bytesRead = await fs.ReadAsync(buffer.AsMemory(0, buffer.Length))) > 0) 
+                 hashAlgorithm.TransformBlock(buffer, 0, bytesRead, null, 0); 
+            }
+            finally
+            {
+                ArrayPool<byte>.Shared.Return(buffer);
+            }
+
+            // Finalize hash
+            hashAlgorithm.TransformFinalBlock(Array.Empty<byte>(), 0, 0);
+            return Convert.ToHexString(hashAlgorithm.Hash!).ToLower();
+        }
+
+        private HashAlgorithm GetHashAlgorithm(ChecksumAlgorithm algorithm)
+        {
+            return algorithm switch
             {
                 ChecksumAlgorithm.MD5 => MD5.Create(),
                 ChecksumAlgorithm.SHA1 => SHA1.Create(),
                 ChecksumAlgorithm.SHA256 => SHA256.Create(),
                 ChecksumAlgorithm.SHA384 => SHA384.Create(),
                 ChecksumAlgorithm.SHA512 => SHA512.Create(),
-                _ => throw new ArgumentOutOfRangeException(nameof(algorithm))
+                _ => throw new ArgumentOutOfRangeException(nameof(algorithm), algorithm, null)
             };
+        }
 
-            using (hashAlgorithm)
-            using (var fileStream = File.OpenRead(filePath))
+        
+
+        public async Task CompareChecksums(string payloadPath, Dictionary<ChecksumAlgorithm, string> hashes, int processes)
+        {
+            _messageService.Add(new MessageRecord(MessageLevel.INFO, $"calculating checksums for {payloadPath}"));
+
+            var semaphore = new SemaphoreSlim(processes);
+            await semaphore.WaitAsync();
+            try
             {
-                byte[] hashBytes = hashAlgorithm.ComputeHash(fileStream);
-                return Convert.ToHexString(hashBytes).ToLowerInvariant();
+                var calculated = await CalculateChecksums(payloadPath, hashes.Keys);
+
+                foreach (var kv in hashes)
+                {
+                    if (!string.Equals(calculated[kv.Key], kv.Value, StringComparison.OrdinalIgnoreCase))
+                    {
+                        _messageService.Add(new MessageRecord(MessageLevel.ERROR, $"checksum mismatch for {payloadPath} expected {kv.Value}"));
+                    }
+                }
+            }
+            finally
+            {
+                semaphore.Release();
             }
         }
 
-        public bool CompareChecksum(string? path, string checksum, ChecksumAlgorithm algorithm)
+        public async Task<bool> CompareChecksum(string path, string checksum, ChecksumAlgorithm algorithm)
         {
             bool isValid;
             string? cleanedChecksum;    
@@ -50,10 +117,11 @@ namespace bagit.net.services
             if(!isValid)
                 return false;
 
-            var calculatedMD5 = CalculateChecksum(path, algorithm);
-
-            return calculatedMD5.Equals(cleanedChecksum, StringComparison.OrdinalIgnoreCase);
+            var calculated = await CalculateChecksum(path, algorithm);
+            return string.Equals(calculated, checksum, StringComparison.OrdinalIgnoreCase);
         }
+
+
 
         public string GetAlgorithmCode(ChecksumAlgorithm algorithm)
         {
