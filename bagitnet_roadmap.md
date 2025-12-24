@@ -4,22 +4,6 @@ This roadmap outlines the planned feature development and release milestones for
 
 ---
 
-## **0.2.7 - Multiple Checksum Support  Multithreaded Checksum Calculation**
-**Objective:** Allow multiple checksum algorithms be declared when creating a bag and create manifest files for each algorithm. Improve performance of manifest generation using parallelism.
-
-**Features:**
-- Support for multiple checksums during bag creation
-- Parallel hashing across payload files.
-- Configurable degree of parallelism (`--threads N`).
-- Streamed hashing to minimize memory usage.
-- Thread‑safe logging.
-- Performance benchmarking and regression tests.
-
-**Notes:**
-This release focuses on speed and scalability, especially for large bags.
-
----
-
 ## Future Considerations (Post‑0.3)
 These are ideas for after the 0.4.x line:
 - Bag transfer to http endpoint
@@ -27,7 +11,8 @@ These are ideas for after the 0.4.x line:
 - Partial rehashing (only changed files).
 - Support for bag serialization (ZIP, TAR).
 - Plug‑in architecture for custom checksum algorithms.
-- Avalonia GUI
+- Avalonia frontend for Windows/Linux/Mac
+- fetch files
 
 ---
 
@@ -35,6 +20,19 @@ These are ideas for after the 0.4.x line:
 
 ---
 
+## **0.3.0 - Multiple Checksum Support  Multithreaded Checksum Calculation**
+**Objective:** Allow multiple checksum algorithms be declared when creating a bag and create manifest files for each algorithm. Improve performance of manifest generation using parallelism.
+
+**Features:**
+- Support for multiple checksums during bag creation
+- Parallel hashing across payload files.
+- Configurable degree of parallelism (`--processes N`).
+- Streamed hashing to minimize memory usage.
+- Thread‑safe logging.
+- Performance benchmarking and regression tests.
+
+**Notes:**
+This release focuses on speed and scalability, especially for large bags.
 
 ## **0.2.6 — Tag File Editing**
 **Objective:** Add full support for reading, modifying, and generating tag files.
