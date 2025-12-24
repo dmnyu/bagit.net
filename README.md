@@ -170,6 +170,26 @@ bagit.net --help
 
 ## Additional Notes
 - The CLI **requires the .NET 9 runtime** to be installed on your system.  
-- On Linux and MacOS, the default install path is `/usr/local/bin/bagit.net`.  
+- On Linux and MacOS, the default install path is `~/bin/bagit.net`.  
 - On Windows, the default install path is `%LOCALAPPDATA%\bagit.net\bagit.net.exe`.  
 - For CI/CD or scripting, you can run the CLI directly from the extracted directory without installing.
+
+## Source Build
+### Windows
+```powershell
+git clone https://github.com/dmnyu/bagit.net
+cd bagit.net
+dotnet fsi build-win.fsx --install --archive
+```
+### Linux
+```powershell
+git clone https://github.com/dmnyu/bagit.net
+cd bagit.net
+dotnet fsi build-linux.fsx --install --archive
+```
+>Note
+> - --install will run the install script to install the bagit.net cli bin to your home directory
+> -  --archive will create the compressed cli distrobution in the dist directory
+> - there is no current macos build
+
+
