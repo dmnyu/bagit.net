@@ -2,9 +2,6 @@
 using bagit.net.services;
 using Microsoft.Extensions.DependencyInjection;
 using Serilog;
-using Serilog.Events;
-using Serilog.Formatting;
-using Spectre.Console;
 
 namespace bagit.net.domain
 {
@@ -13,8 +10,7 @@ namespace bagit.net.domain
         public static ServiceProvider BuildServiceProvider<TWorker>(string? logFile = "")
             where TWorker : class
         {
-            var loggerConfig = new LoggerConfiguration()
-    .MinimumLevel.Debug();
+            var loggerConfig = new LoggerConfiguration().MinimumLevel.Debug();
 
             if (string.IsNullOrEmpty(logFile))
             {
@@ -41,35 +37,16 @@ namespace bagit.net.domain
         }
     }
 
-    public class ShortLevelFormatter : ITextFormatter
+    public static class BagItServiceCollectionExtensions
     {
-        private readonly Dictionary<LogEventLevel, string> LevelMap = new()
+        public static IServiceCollection AddBagIt(this IServiceCollection services)
         {
-            [LogEventLevel.Verbose] = "trace",
-            [LogEventLevel.Debug] = "debug",
-            [LogEventLevel.Information] = "info",
-            [LogEventLevel.Warning] = "warn",
-            [LogEventLevel.Error] = "error",
-            [LogEventLevel.Fatal] = "fatal"
-        };
+            services.AddLogging();
+            services.AddSingleton<CreationService>();
+            services.AddSingleton<ValidationService>();
+            // etc
 
-        public void Format(LogEvent logEvent, TextWriter output)
-        {
-            var timestamp = logEvent.Timestamp.ToString("yyyy-MM-dd HH:mm:ss");
-            var level = LevelMap[logEvent.Level];
-
-            // Escape both the level prefix and the message for Spectre
-            var safeLevel = Markup.Escape(level);
-            var safeMessage = Markup.Escape(logEvent.RenderMessage());
-
-            output.WriteLine($"{timestamp} [{safeLevel}] {safeMessage}");
-
-            if (logEvent.Exception != null)
-            {
-                // Write exceptions safely as plain text
-                var exceptionText = Markup.Escape(logEvent.Exception.ToString());
-                output.WriteLine(exceptionText);
-            }
+            return services;
         }
     }
 }

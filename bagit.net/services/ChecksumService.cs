@@ -1,17 +1,15 @@
 ﻿using bagit.net.domain;
 using bagit.net.interfaces;
 using System.Buffers;
-using System.Runtime.CompilerServices;
 using System.Security.Cryptography;
 using System.Text.RegularExpressions;
-using System.Threading;
 
 
 namespace bagit.net.services
 {
-
     public class ChecksumService : IChecksumService
     {
+
         private readonly IMessageService _messageService;
         public ChecksumService(IMessageService messageService)
         {
