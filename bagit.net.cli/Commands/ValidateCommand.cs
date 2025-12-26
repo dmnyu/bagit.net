@@ -36,7 +36,7 @@ namespace bagit.net.cli.Commands
             BagitContext.Quiet.Value = settings.Quiet;
             try
             {
-                var serviceProvider = ServiceConfigurator.BuildServiceProvider<BagValidator>(settings.logFile);
+                var serviceProvider = BagitServiceProvider.BuildServiceProvider<BagValidator>(settings.logFile);
                 var validator = serviceProvider.GetRequiredService<BagValidator>();
                 return await validator.ValidateBag(
                     settings.Directory, 

@@ -1,4 +1,5 @@
 ﻿using bagit.net.cli.lib;
+using bagit.net.domain;
 using Microsoft.Extensions.DependencyInjection;
 using Spectre.Console.Cli;
 using System.ComponentModel;
@@ -30,7 +31,7 @@ class ManageCommand : Command<ManageCommand.Settings>
 
     public override int Execute(CommandContext context, Settings settings, CancellationToken cancellationToken)
     {
-        var serviceProvider = ServiceConfigurator.BuildServiceProvider<TagManager>();
+        var serviceProvider = BagitServiceProvider.BuildServiceProvider<TagManager>();
         var manager = serviceProvider.GetRequiredService<TagManager>();
         if(settings.Add != null)
             manager.Add(settings.Directory, settings.Add);

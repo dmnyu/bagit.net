@@ -40,8 +40,7 @@ public class CreateCommand : AsyncCommand<CreateCommand.Settings>
 
         try
         {
-            var serviceProvider = ServiceConfigurator
-                .BuildServiceProvider<BagCreator>(settings.LogFile);
+            var serviceProvider = BagitServiceProvider.BuildServiceProvider<BagCreator>(settings.LogFile);
 
             var creator = serviceProvider.GetRequiredService<BagCreator>();
 
