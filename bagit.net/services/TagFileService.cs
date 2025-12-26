@@ -60,7 +60,7 @@ namespace bagit.net.services
             sb.Append($"Bagging-Date: {DateTime.UtcNow:yyyy-MM-dd}\n");
             sb.Append($"Payload-Oxum: {oxum}\n");
 
-            if( tagFileLocation != null )
+            if(tagFileLocation != null)
             {
                 var tagFileName = Path.GetFileName(tagFileLocation);
                 _messageService.Add(new MessageRecord(MessageLevel.INFO, $"Adding metadata file {tagFileName} to bag-info.txt"));

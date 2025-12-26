@@ -7,9 +7,16 @@
 
     }
 
-    public static class BagitContext
+    public static class Options
     {
         public static readonly AsyncLocal<bool> Quiet = new();
         public static readonly AsyncLocal<int> BufferSize = new();
+        public static readonly AsyncLocal<IEnumerable<ChecksumAlgorithm>> ChecksumAlgorithms = new();
+        public static readonly AsyncLocal<string?> LogFile = new();
+        public static readonly AsyncLocal<string?> TagFile = new();
+        public static readonly AsyncLocal<int> Processes = new();
+        public static readonly AsyncLocal<string> Directory = new();
+        public static readonly AsyncLocal<CancellationToken> CancellationToken = new();
+
     }
 }

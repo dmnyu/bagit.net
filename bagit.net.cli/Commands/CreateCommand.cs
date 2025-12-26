@@ -36,7 +36,14 @@ public class CreateCommand : AsyncCommand<CreateCommand.Settings>
     public override async Task<int> ExecuteAsync(CommandContext context, Settings settings, CancellationToken cancellationToken)
     {
        
-        BagitContext.Quiet.Value = settings.Quiet;
+        Options.Quiet.Value = settings.Quiet;
+        Options.BufferSize.Value = 8;
+        Options.ChecksumAlgorithms.Value = GetAlgorithms(settings.Algorithm ?? string.Empty);
+        Options.LogFile.Value = settings.LogFile ?? null;
+        Options.TagFile.Value = settings.LogFile ?? null;
+        Options.Processes.Value = settings.Processes ?? 1;
+        Options.Directory.Value = settings.Directory;
+        Options.CancellationToken.Value = cancellationToken;
 
         try
         {
@@ -44,18 +51,47 @@ public class CreateCommand : AsyncCommand<CreateCommand.Settings>
 
             var creator = serviceProvider.GetRequiredService<BagCreator>();
 
-            return await creator.CreateBag(
-                settings.Directory,
-                settings.Algorithm,
-                settings.TagFile,
-                settings.LogFile,
-                settings.Processes,
-                cancellationToken);
+            return await creator.CreateBag();
         }
         catch (Exception ex)
         {
             AnsiConsole.MarkupLine($"[red][bold]ERROR:[/] {ex.Message}");
             return 1;
         }
+    }
+
+    private IEnumerable<ChecksumAlgorithm> GetAlgorithms(string algorithmCmd)  //move to domain package in core
+    {
+        var algorithms = new List<ChecksumAlgorithm>();
+        if (string.IsNullOrWhiteSpace(algorithmCmd))
+        {
+            algorithms.Add(ChecksumAlgorithm.SHA256);
+        }
+        else
+        {
+
+            var algorithmSplit = algorithmCmd.Split(",");
+            if (algorithmSplit.Length == 0)
+            {
+                var ca = algorithmCmd.ToLower().Trim();
+                if (ChecksumAlgorithmMap.Algorithms.ContainsKey(ca))
+                {
+                    algorithms.Add(ChecksumAlgorithmMap.Algorithms[ca]);
+                }
+            }
+            else
+            {
+                foreach (var candidateAlgorithm in algorithmSplit)
+                {
+                    var ca = candidateAlgorithm.ToLower().Trim();
+                    if (ChecksumAlgorithmMap.Algorithms.ContainsKey(ca))
+                    {
+                        algorithms.Add(ChecksumAlgorithmMap.Algorithms[ca]);
+                    }
+
+                }
+            }
+        }
+        return algorithms;
     }
 }

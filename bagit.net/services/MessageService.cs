@@ -32,7 +32,7 @@ namespace bagit.net.services
 
         public void LogEvent(MessageRecord messageRecord)
         {
-            bool quiet = BagitContext.Quiet.Value;
+            bool quiet = Options.Quiet.Value;
 
             switch (messageRecord.GetLevel())
             {

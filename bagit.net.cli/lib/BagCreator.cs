@@ -3,78 +3,52 @@ using bagit.net.interfaces;
 using bagit.net.services;
 using Microsoft.Extensions.Logging;
 using Spectre.Console;
-using System.Security.Cryptography;
+
 
 namespace bagit.net.cli.lib
 {
     public class BagCreator
     {
-        readonly ICreationService _creationService;
-        readonly ILogger _logger;
-        private IMessageService _messageService;
-        readonly IManifestService _manifestService;
-            
-        public BagCreator(ILogger<BagCreator> logger, ICreationService creationService, IMessageService messageService, IManifestService manifestService)
+        private readonly ICreationService _creationService;
+        private readonly IMessageService _messageService;
+
+        public BagCreator(ICreationService creationService, IMessageService messageService)
         {
-            _logger = logger;
             _creationService = creationService;
             _messageService = messageService;
-            _manifestService = manifestService;
         }
 
-        public async Task<int> CreateBag(string? dirLocation, string? checkSumAlgorithm, string? tagFile, string? logFile, int? processes, CancellationToken cancellationToken)
+        public async Task<int> CreateBag()
         {
             //_messageService.Add(new MessageRecord(MessageLevel.INFO, $"using bagit.net v{Bagit.VERSION}"));
-            if (string.IsNullOrWhiteSpace(dirLocation))
+            if (string.IsNullOrWhiteSpace(Options.Directory.Value))
             {
                 AnsiConsole.MarkupLine("[red][bold]ERROR:[/][/]");
                 AnsiConsole.MarkupLine("[red]a directory to bag must be specified when creating a bag[/]\n");
-                BagitCLI.app.Run(new string[] { "help" }, cancellationToken);
+                BagitCLI.app.Run(new string[] { "help" }, Options.CancellationToken.Value);
                 return 1;
             }
 
-            var bagPath = Path.GetFullPath(dirLocation);
-            if (!Directory.Exists(bagPath))
+            Options.Directory.Value = Path.GetFullPath(Options.Directory.Value);
+            if (!Directory.Exists(Options.Directory.Value))
             {
                 AnsiConsole.MarkupLine("[red][bold]ERROR:[/][/]");
-                AnsiConsole.MarkupLine($"[red]the directory {bagPath} does not exist[/]\n");
-                BagitCLI.app.Run(new string[] { "help" }, cancellationToken);
-                return 1;
-            }
-
-
-            //get the algorithms
-            IEnumerable<ChecksumAlgorithm> algorithms;
-            if (string.IsNullOrWhiteSpace(checkSumAlgorithm))
-            {
-                algorithms = new List<ChecksumAlgorithm>() { ChecksumAlgorithm.SHA256 };
-            }
-            else
-            {
-                algorithms = GetAlgorithms(checkSumAlgorithm);
-            }
-
-            if (!algorithms.Any())
-            {
-                AnsiConsole.MarkupLine("[red][bold]ERROR:[/][/]");
-                AnsiConsole.MarkupLine($"[red]no supported checksum algorithms found[/]\n");
-                BagitCLI.app.Run(new string[] { "help" }, cancellationToken);
+                AnsiConsole.MarkupLine($"[red]the directory {Options.Directory.Value} does not exist[/]\n");
+                BagitCLI.app.Run(new string[] { "help" }, Options.CancellationToken.Value);
                 return 1;
             }
 
 
             //get logging option
-            if (!string.IsNullOrWhiteSpace(logFile))
+            if (!string.IsNullOrWhiteSpace(Options.LogFile.Value))
             {
                 AnsiConsole.MarkupLine($"bagit.net.cli v{Bagit.VERSION}");
-                AnsiConsole.MarkupLine($"Logging to {logFile}");
+                AnsiConsole.MarkupLine($"Logging to {Options.LogFile.Value}");
             }
-
-            int p = processes ?? 1;
 
             try
             {
-                await _creationService.CreateBag(bagPath, algorithms, tagFile, p);
+                await _creationService.CreateBag(Options.Directory.Value, Options.ChecksumAlgorithms.Value, Options.TagFile.Value, Options.Processes.Value);
             }
             catch (Exception ex)
             {
@@ -82,29 +56,6 @@ namespace bagit.net.cli.lib
             }
             
             return 0;
-        }
-
-        private IEnumerable<ChecksumAlgorithm> GetAlgorithms(string algorithmCmd)  //move to domain package in core
-        {
-            var algorithms = new List<ChecksumAlgorithm>();
-            var algorithmSplit = algorithmCmd.Split(",");
-            if (algorithmSplit.Length == 0) {
-                var ca = algorithmCmd.ToLower().Trim();
-                if (ChecksumAlgorithmMap.Algorithms.ContainsKey(ca))
-                {
-                    algorithms.Add(ChecksumAlgorithmMap.Algorithms[ca]);
-                }
-            }
-            foreach(var candidateAlgorithm in algorithmSplit)
-            {
-                var ca = candidateAlgorithm.ToLower().Trim();
-                if (ChecksumAlgorithmMap.Algorithms.ContainsKey(ca))
-                {
-                    algorithms.Add(ChecksumAlgorithmMap.Algorithms[ca]);
-                }
-
-            }
-            return algorithms;
         }
     }
 }
